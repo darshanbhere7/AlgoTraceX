@@ -68,12 +68,13 @@
 /* Base element styles */
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
   background-color: var(--background);
   color: var(--foreground);
+  /* Changed from flex to block to fix layout issues */
+  display: block;
+  /* Removed place-items: center that was causing alignment issues */
 }
 
 h1 {
@@ -172,5 +173,22 @@ button:focus-visible {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Added container class for better layout structure */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Responsive layout adjustments */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
   }
 }
