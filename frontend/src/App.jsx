@@ -4,20 +4,17 @@ import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import Dashboard from './pages/User/Dashboard';
 import Progress from './pages/User/Progress';
-// import Visualizer from './pages/User/Visualizer';
-// import CodeView from './pages/User/CodeView';
-// import WeeklyTest from './pages/User/WeeklyTest';
-// import AIRecommendations from './pages/User/AIRecommendations';
-// import AdminDashboard from './pages/Admin/AdminDashboard';
-// import ManageTopics from './pages/Admin/ManageTopics';
-// import ManageTests from './pages/Admin/ManageTests';
-// import UserAnalytics from './pages/Admin/UserAnalytics';
-// import ManageUsers from './pages/Admin/ManageUsers';
+import WeeklyTest from './pages/User/WeeklyTest';
+import AdminDashboard from './pages/Admin/AdminDashboard';
+import ManageTopics from './pages/Admin/ManageTopics';
+import ManageTests from './pages/Admin/ManageTests';
+import ManageUsers from './pages/Admin/ManageUsers';
+import UserAnalytics from './pages/Admin/UserAnalytics';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 
-// Create a simple NotFound component since it's not imported
+// Create a simple NotFound component
 const NotFound = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -58,13 +55,7 @@ function App() {
             }>
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="progress" element={<Progress />} />
-              {/* Uncomment these routes when the components are ready */}
-              {/* <Route path="visualizer" element={<Visualizer />} /> */}
-              {/* <Route path="code-view" element={<CodeView />} /> */}
-              {/* <Route path="weekly-test" element={<WeeklyTest />} /> */}
-              {/* <Route path="ai-recommendations" element={<AIRecommendations />} /> */}
-              
-              {/* Redirect to dashboard for any unmatched user paths */}
+              <Route path="weekly-test" element={<WeeklyTest />} />
               <Route path="*" element={<Navigate to="/user/dashboard" replace />} />
             </Route>
           </Route>
@@ -82,22 +73,11 @@ function App() {
                 </div>
               </div>
             }>
-              {/* Uncomment these routes when the components are ready */}
-              {/* <Route path="dashboard" element={<AdminDashboard />} /> */}
-              {/* <Route path="manage-topics" element={<ManageTopics />} /> */}
-              {/* <Route path="manage-tests" element={<ManageTests />} /> */}
-              {/* <Route path="user-analytics" element={<UserAnalytics />} /> */}
-              {/* <Route path="manage-users" element={<ManageUsers />} /> */}
-              
-              {/* Temporary dashboard for admin - replace with actual component when ready */}
-              <Route path="dashboard" element={
-                <div className="p-6 bg-white rounded shadow">
-                  <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
-                  <p>Admin functionality is under development.</p>
-                </div>
-              } />
-              
-              {/* Redirect to admin dashboard for any unmatched admin paths */}
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="manage-topics" element={<ManageTopics />} />
+              <Route path="manage-tests" element={<ManageTests />} />
+              <Route path="user-analytics" element={<UserAnalytics />} />
+              <Route path="manage-users" element={<ManageUsers />} />
               <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
             </Route>
           </Route>
