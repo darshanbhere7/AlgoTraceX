@@ -1,10 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const { getAvailableTests, submitTest } = require('../controllers/testController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, adminOnly } = require('../middleware/authMiddleware');
+const {
+  createTest,
+  getAllTests,
+  getTestByWeek,
+  submitTest,
+  deleteTest
+} = require('../controllers/testController');
 
-// Weekly Tests for Users
-router.get('/', protect, getAvailableTests);      // Get all available tests
-router.post('/submit', protect, submitTest);       // Submit a test
+// Admin routes
+router.post('/', protect, adminOnly, createTest);
+router.get('/admin', protect, adminOnly, getAllTests);
+router.delete('/:id', protect, adminOnly, deleteTest);
+
+// User routes
+router.get('/', protect, getAllTests);
+router.get('/:week', protect, getTestByWeek);
+router.post('/submit', protect, submitTest);
 
 module.exports = router;

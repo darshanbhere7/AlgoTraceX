@@ -59,7 +59,20 @@ export const AuthProvider = ({ children }) => {
 
       // Store token in localStorage
       localStorage.setItem('token', data.token);
-      setUser(data.user);
+      
+      // Fetch complete user data including progress
+      const userResponse = await fetch('http://localhost:5000/api/user/profile', {
+        headers: {
+          'Authorization': `Bearer ${data.token}`
+        }
+      });
+
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        setUser(userData);
+      } else {
+        throw new Error('Failed to fetch user data');
+      }
       
       // Redirect based on user role
       if (data.user.role === 'admin') {
@@ -129,10 +142,13 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.message || 'Failed to update progress');
       }
 
-      // Update user state with new progress
-      setUser(prev => ({
-        ...prev,
-        progress: progressData
+      // Update user state with the complete user data from the response
+      setUser(prevUser => ({
+        ...prevUser,
+        progress: {
+          ...prevUser.progress,
+          ...data.progress
+        }
       }));
 
       return true;

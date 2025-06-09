@@ -26,9 +26,29 @@ const userSchema = new mongoose.Schema(
       default: 'user',
     },
     progress: {
-      type: Object,
-      default: {},
-    },
+      overallProgress: {
+        type: Number,
+        default: 0
+      },
+      topics: {
+        arrays: { type: Number, default: 0 },
+        linkedLists: { type: Number, default: 0 },
+        trees: { type: Number, default: 0 },
+        graphs: { type: Number, default: 0 }
+      },
+      lastUpdated: {
+        type: Date,
+        default: Date.now
+      },
+      completedLessons: [{
+        type: String
+      }],
+      testScores: [{
+        testId: String,
+        score: Number,
+        date: Date
+      }]
+    }
   },
   {
     timestamps: true,

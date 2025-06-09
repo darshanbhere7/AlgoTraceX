@@ -13,6 +13,7 @@ import UserAnalytics from './pages/Admin/UserAnalytics';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
+import { Toaster } from 'sonner';
 
 // Create a simple NotFound component
 const NotFound = () => {
@@ -33,6 +34,7 @@ const NotFound = () => {
 function App() {
   return (
     <Router>
+      <Toaster position="top-right" />
       <AuthProvider>
         <Routes>
           {/* Public routes */}
