@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Brain, MessageSquare, BookOpen } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 const AIRecommendations = () => {
   const [loading, setLoading] = useState(false);
@@ -180,8 +181,8 @@ const AIRecommendations = () => {
               <CardTitle className="text-lg">Your Personalized Recommendations</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="bg-muted p-4 rounded-lg">
-                <pre className="whitespace-pre-wrap text-sm">{recommendations}</pre>
+              <div className="bg-muted p-4 rounded-lg prose prose-sm max-w-none dark:prose-invert">
+                <ReactMarkdown>{recommendations}</ReactMarkdown>
               </div>
             </CardContent>
           </Card>
@@ -239,8 +240,8 @@ const AIRecommendations = () => {
               <CardTitle className="text-lg">Answer</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="bg-muted p-4 rounded-lg">
-                <pre className="whitespace-pre-wrap text-sm">{answer}</pre>
+              <div className="bg-muted p-4 rounded-lg prose prose-sm max-w-none dark:prose-invert">
+                <ReactMarkdown>{answer}</ReactMarkdown>
               </div>
             </CardContent>
           </Card>
@@ -305,8 +306,8 @@ const AIRecommendations = () => {
               <CardTitle className="text-lg">Explanation</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="bg-muted p-4 rounded-lg">
-                <pre className="whitespace-pre-wrap text-sm">{explanation}</pre>
+              <div className="bg-muted p-4 rounded-lg prose prose-sm max-w-none dark:prose-invert">
+                <ReactMarkdown>{explanation}</ReactMarkdown>
               </div>
             </CardContent>
           </Card>

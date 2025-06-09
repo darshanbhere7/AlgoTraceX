@@ -43,16 +43,22 @@ const getRecommendations = async (req, res) => {
     Strengths: ${strengths || 'none specified'}
     Weaknesses: ${weaknesses || 'none specified'}
     
-    Please provide a detailed, structured response that includes:
-    1. A personalized learning path based on their current level and topic
-    2. 3-5 specific topics they should focus on next, with brief explanations of why
-    3. Recommended practice problems (easy to medium difficulty) with links to platforms like LeetCode or GeeksforGeeks
-    4. Key concepts they should review, especially in their weak areas
-    5. A practical study strategy with time allocation
-    6. Resources (books, websites, courses) that match their level
-    7. Tips for effective practice and common pitfalls to avoid
-    
-    Format the response in a clear, organized way with sections and bullet points. Make it actionable and specific to their profile.`;
+    Please provide a detailed, structured response in markdown format that includes:
+
+    ## Learning Path
+    - A personalized learning path based on their current level and topic
+    - 3-5 specific topics they should focus on next, with brief explanations of why
+
+    ## Practice Problems
+    - Recommended practice problems (easy to medium difficulty) with links to platforms like LeetCode or GeeksforGeeks
+    - Key concepts they should review, especially in their weak areas
+
+    ## Study Strategy
+    - A practical study strategy with time allocation
+    - Resources (books, websites, courses) that match their level
+    - Tips for effective practice and common pitfalls to avoid
+
+    Format the response in a clear, organized way with proper markdown headings, lists, and emphasis. Make it actionable and specific to their profile.`;
 
     const aiResponse = await callGeminiAPI(prompt);
 
@@ -84,16 +90,25 @@ const askQuestion = async (req, res) => {
     Question: ${question}
     ${context ? `Context: ${context}` : ''}
     
-    Please provide a comprehensive answer that includes:
-    1. A clear explanation of the concept
-    2. Relevant examples with code snippets if applicable
-    3. Time and space complexity analysis
-    4. Common variations or edge cases
-    5. Best practices and implementation tips
-    6. Related concepts or algorithms they should know
-    7. Practice problems to reinforce understanding
-    
-    Make the explanation educational and easy to understand. Include visual explanations or analogies if helpful.`;
+    Please provide a comprehensive answer in markdown format that includes:
+
+    ## Explanation
+    - A clear explanation of the concept
+    - Relevant examples with code snippets if applicable
+
+    ## Analysis
+    - Time and space complexity analysis
+    - Common variations or edge cases
+
+    ## Implementation
+    - Best practices and implementation tips
+    - Related concepts or algorithms they should know
+
+    ## Practice
+    - Practice problems to reinforce understanding
+    - Visual explanations or analogies if helpful
+
+    Format the response with proper markdown headings, code blocks, and lists. Make the explanation educational and easy to understand.`;
 
     const aiResponse = await callGeminiAPI(prompt);
 
@@ -122,19 +137,29 @@ const explainAlgorithm = async (req, res) => {
 
     const prompt = `You are an expert DSA tutor. Explain the ${algorithm} algorithm for a ${level || 'beginner'} level student.
 
-    Please provide a comprehensive explanation that includes:
-    1. A clear overview of what the algorithm does and its purpose
-    2. Step-by-step explanation of how it works
-    3. Time and space complexity analysis with explanations
-    4. Implementation details with code examples
-    5. Visual explanation or analogy to help understand the concept
-    6. Common variations and optimizations
-    7. Real-world applications and use cases
-    8. Common pitfalls and how to avoid them
-    9. Practice problems to master the algorithm
-    10. Related algorithms they should learn next
-    
-    Make the explanation appropriate for a ${level} level student. Use clear language and provide examples that match their understanding level.`;
+    Please provide a comprehensive explanation in markdown format that includes:
+
+    ## Overview
+    - A clear overview of what the algorithm does and its purpose
+    - Step-by-step explanation of how it works
+
+    ## Analysis
+    - Time and space complexity analysis with explanations
+    - Implementation details with code examples
+
+    ## Understanding
+    - Visual explanation or analogy to help understand the concept
+    - Common variations and optimizations
+
+    ## Applications
+    - Real-world applications and use cases
+    - Common pitfalls and how to avoid them
+
+    ## Practice
+    - Practice problems to master the algorithm
+    - Related algorithms they should learn next
+
+    Format the response with proper markdown headings, code blocks, and lists. Make the explanation appropriate for a ${level} level student. Use clear language and provide examples that match their understanding level.`;
 
     const aiResponse = await callGeminiAPI(prompt);
 
