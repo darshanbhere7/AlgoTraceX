@@ -6,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const testRoutes = require('./routes/testRoutes');
+const aiRoutes = require('./routes/aiRoutes'); // Added AI routes
 
 // Load environment variables
 dotenv.config();
@@ -25,6 +26,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/tests', testRoutes);
+app.use('/api/ai', aiRoutes); // Added AI routes
 
 // Default route
 app.get('/', (req, res) => {

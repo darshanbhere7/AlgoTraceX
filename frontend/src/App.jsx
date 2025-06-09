@@ -5,6 +5,7 @@ import Register from './pages/Auth/Register';
 import Dashboard from './pages/User/Dashboard';
 import Progress from './pages/User/Progress';
 import WeeklyTest from './pages/User/WeeklyTest';
+import AIRecommendations from './pages/User/AIRecommendations';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import ManageTopics from './pages/Admin/ManageTopics';
 import ManageTests from './pages/Admin/ManageTests';
@@ -58,6 +59,7 @@ function App() {
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="progress" element={<Progress />} />
               <Route path="weekly-test" element={<WeeklyTest />} />
+              <Route path= "ai-recommendations" element= {<AIRecommendations/>}/>
               <Route path="*" element={<Navigate to="/user/dashboard" replace />} />
             </Route>
           </Route>
