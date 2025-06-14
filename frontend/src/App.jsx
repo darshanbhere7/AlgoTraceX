@@ -72,6 +72,7 @@ function App() {
               <Route path="progress" element={<Progress />} />
               <Route path="weekly-test" element={<WeeklyTest />} />
               <Route path="visualizer-home" element={<VisualizerHome />} />
+              <Route path="practice-questions" element={<PracticeQuestions />} />
 
               <Route path="bubble-sort" element={<BubbleSort />} />
               <Route path="merge-sort" element={<MergeSort />} />
