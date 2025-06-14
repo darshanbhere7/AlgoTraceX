@@ -185,20 +185,20 @@ export default function QuickSort() {
     };
 
     const getElementColor = (index) => {
-        if (sortedIndices.has(index)) return "bg-green-500 border-green-400";
-        if (index === pivotIndex) return "bg-red-500 border-red-400 border-4";
-        if (swappingIndices.includes(index)) return "bg-purple-500 border-purple-400 border-2";
-        if (comparingIndices.includes(index)) return "bg-yellow-400 border-yellow-300 border-2 text-black";
+        if (sortedIndices.has(index)) return "bg-green-100 border-green-400 text-green-800";
+        if (index === pivotIndex) return "bg-red-100 border-red-500 border-4 text-red-800";
+        if (swappingIndices.includes(index)) return "bg-purple-100 border-purple-500 border-2 text-purple-800";
+        if (comparingIndices.includes(index)) return "bg-yellow-100 border-yellow-500 border-2 text-yellow-800";
         if (partitionRange.length === 2 && index >= partitionRange[0] && index <= partitionRange[1]) {
-            return "bg-blue-500 border-blue-300 border-2";
+            return "bg-blue-100 border-blue-400 border-2 text-blue-800";
         }
-        return "bg-gray-600 border-gray-500";
+        return "bg-white border-gray-300 text-gray-800";
     };
 
     return (
-        <Card className="bg-neutral-900 text-white p-6 max-w-7xl mx-auto">
+        <Card className="bg-white text-gray-900 p-6 max-w-7xl mx-auto border border-gray-200 shadow-lg">
             <CardContent className="space-y-6">
-                <h2 className="text-3xl font-bold mb-4 text-center bg-gradient-to-r from-yellow-600 to-yellow-400 bg-clip-text text-transparent">
+                <h2 className="text-3xl font-bold mb-4 text-center text-gray-800">
                     Quick Sort Visualizer
                 </h2>
 
@@ -212,16 +212,16 @@ export default function QuickSort() {
                             disabled={sorting}
                             onChange={(e) => setCurrentInput(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && handleAddValue()}
-                            className="w-48"
+                            className="w-48 border-gray-300"
                             min="0"
                             max="999"
                         />
-                        <Button onClick={handleAddValue} disabled={sorting} size="sm">
+                        <Button onClick={handleAddValue} disabled={sorting} size="sm" className="bg-neutral-800 hover:bg-neutral-700 text-white">
                             Add
                         </Button>
                     </div>
                     
-                    <Button onClick={generateRandomArray} disabled={sorting} className="hover:bg-white hover:text-black">
+                    <Button onClick={generateRandomArray} disabled={sorting} className="bg-neutral-700 hover:bg-neutral-900 text-white">
                         Generate Random (12 elements)
                     </Button>
                     
@@ -229,19 +229,19 @@ export default function QuickSort() {
                         onClick={quickSort}
                         disabled={sorting || array.length < 2}
                         variant="default"
-                        className="hover:bg-white hover:text-black"
+                        className="bg-neutral-800 hover:bg-neutral-700 text-white"
                     >
                         {sorting ? "Sorting..." : "Start QuickSort"}
                     </Button>
                     
-                    <Button variant="secondary" onClick={reset} disabled={sorting}>
+                    <Button variant="outline" onClick={reset} disabled={sorting} className="border-gray-300 text-neutral-800 hover:bg-gray-50">
                         Reset
                     </Button>
                 </div>
 
                 {/* Pivot Strategy Selection */}
                 <div className="flex flex-wrap items-center justify-center gap-3">
-                    <span className="text-sm text-gray-400">Pivot Strategy:</span>
+                    <span className="text-sm text-gray-600">Pivot Strategy:</span>
                     {Object.entries(pivotOptions).map(([key, label]) => (
                         <Button
                             key={key}
@@ -249,7 +249,7 @@ export default function QuickSort() {
                             variant={pivotStrategy === key ? "default" : "outline"}
                             onClick={() => setPivotStrategy(key)}
                             disabled={sorting}
-                            className={pivotStrategy !== key ? "text-gray-500 border-gray-500 hover:text-black hover:bg-green-400 hover:border-green-900" : "text-gray-500 bg-white hover:bg-red-400 hover:text-white hover:border-red-900"}
+                            className={pivotStrategy === key ? "bg-neutral-800 text-white hover:bg-neutral-700" : "border-gray-300 text-gray-800 hover:bg-gray-50"}
                         >
                             {label}
                         </Button>
@@ -258,7 +258,7 @@ export default function QuickSort() {
 
                 {/* Speed Selection */}
                 <div className="flex flex-wrap items-center justify-center gap-3">
-                    <span className="text-sm text-gray-400">Animation Speed:</span>
+                    <span className="text-sm text-gray-600">Animation Speed:</span>
                     {Object.keys(speedOptions).map((key) => (
                         <Button
                             key={key}
@@ -266,7 +266,7 @@ export default function QuickSort() {
                             variant={speedKey === key ? "default" : "outline"}
                             onClick={() => setSpeedKey(key)}
                             disabled={sorting}
-                            className={speedKey !== key ? "text-gray-500 border-gray-500 hover:text-black hover:border-white" : ""}
+                            className={speedKey === key ? "bg-neutral-800 text-white hover:bg-neutral-900" : "border-gray-300 text-gray-800 hover:bg-gray-50"}
                         >
                             {key}
                         </Button>
@@ -275,15 +275,15 @@ export default function QuickSort() {
 
                 {/* Current Step Display */}
                 {currentStep && (
-                    <div className="text-center p-4 bg-gradient-to-r from-red-900/50 to-orange-900/50 rounded-lg border border-red-500/30">
-                        <span className="text-lg font-semibold text-yellow-400">{currentStep}</span>
+                    <div className="text-center p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <span className="text-lg font-semibold text-gray-800">{currentStep}</span>
                     </div>
                 )}
 
                 {/* Array Visualizer */}
-                <div className="min-h-32 bg-gradient-to-b from-neutral-800/50 to-neutral-900/50 rounded-xl p-6 border border-gray-700">
+                <div className="min-h-32 bg-gray-50 rounded-xl p-6 border border-gray-200">
                     {array.length === 0 ? (
-                        <div className="flex items-center justify-center h-32 text-gray-400">
+                        <div className="flex items-center justify-center h-32 text-gray-500">
                             <div className="text-center">
                                 <span>Add numbers or generate a random array to see QuickSort in action</span>
                             </div>
@@ -295,15 +295,16 @@ export default function QuickSort() {
                                     key={`${idx}-${val}`}
                                     className={`
                                         ${getElementColor(idx)}
-                                        text-white font-bold text-lg
+                                        font-bold text-lg
                                         w-16 h-16 rounded-lg
                                         flex items-center justify-center
                                         transition-all duration-300 ease-in-out
                                         transform hover:scale-105
-                                        shadow-lg
+                                        shadow-sm
                                         ${swappingIndices.includes(idx) ? 'animate-pulse scale-110' : ''}
                                         ${comparingIndices.includes(idx) ? 'animate-bounce' : ''}
-                                        ${idx === pivotIndex ? 'animate-pulse scale-110 shadow-red-500/50' : ''}
+                                        ${idx === pivotIndex ? 'animate-pulse scale-110' : ''}
+                                        relative
                                     `}
                                     style={{
                                         minWidth: '64px',
@@ -324,44 +325,44 @@ export default function QuickSort() {
                 {/* Legend */}
                 <div className="flex flex-wrap justify-center gap-6 text-sm">
                     <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-gray-600 border border-gray-500 rounded"></div>
-                        <span>Unsorted</span>
+                        <div className="w-4 h-4 bg-white border border-gray-300 rounded"></div>
+                        <span className="text-gray-700">Unsorted</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-blue-500 border-2 border-blue-300 rounded"></div>
-                        <span>Current Partition</span>
+                        <div className="w-4 h-4 bg-blue-100 border-2 border-blue-400 rounded"></div>
+                        <span className="text-gray-700">Current Partition</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-red-500 border-4 border-red-400 rounded"></div>
-                        <span>Pivot</span>
+                        <div className="w-4 h-4 bg-red-100 border-4 border-red-500 rounded"></div>
+                        <span className="text-gray-700">Pivot</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-yellow-400 border-2 border-yellow-300 rounded"></div>
-                        <span>Comparing</span>
+                        <div className="w-4 h-4 bg-yellow-100 border-2 border-yellow-500 rounded"></div>
+                        <span className="text-gray-700">Comparing</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-purple-500 border-2 border-purple-400 rounded"></div>
-                        <span>Swapping</span>
+                        <div className="w-4 h-4 bg-purple-100 border-2 border-purple-500 rounded"></div>
+                        <span className="text-gray-700">Swapping</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-green-500 border border-green-400 rounded"></div>
-                        <span>Sorted</span>
+                        <div className="w-4 h-4 bg-green-100 border border-green-400 rounded"></div>
+                        <span className="text-gray-700">Sorted</span>
                     </div>
                 </div>
 
                 {/* Current Pivot Info */}
                 {pivotIndex >= 0 && (
-                    <div className="text-center p-3 bg-red-900/30 rounded-lg border border-red-500/30">
-                        <span className="text-red-400 font-semibold">
+                    <div className="text-center p-3 bg-red-50 rounded-lg border border-red-200">
+                        <span className="text-red-700 font-semibold">
                             Current Pivot: {array[pivotIndex]} (Position {pivotIndex})
                         </span>
                     </div>
                 )}
 
                 {/* Algorithm Info */}
-                <div className="bg-gradient-to-r from-neutral-800/50 to-neutral-700/50 rounded-lg p-4 text-sm border border-gray-600">
-                    <h3 className="font-bold mb-2 text-yellow-400">QuickSort Algorithm:</h3>
-                    <p className="text-gray-300">
+                <div className="bg-gray-50 rounded-lg p-4 text-sm border border-gray-200">
+                    <h3 className="font-bold mb-2 text-gray-800">QuickSort Algorithm:</h3>
+                    <p className="text-gray-700">
                         QuickSort uses a divide-and-conquer approach by selecting a pivot element and partitioning 
                         the array around it. Elements smaller than the pivot go to the left, larger elements to the right. 
                         The process repeats recursively on each partition.

@@ -82,9 +82,9 @@ export default function LinearSearch() {
     };
 
     return (
-        <Card className="bg-neutral-900 text-white p-6">
+        <Card className="bg-white text-gray-900 p-6 border border-gray-200 shadow-lg">
             <CardContent className="space-y-6">
-                <h2 className="text-2xl font-bold mb-4">Linear Search Visualizer</h2>
+                <h2 className="text-2xl font-bold mb-4 text-gray-800">Linear Search Visualizer</h2>
 
                 {/* Input Panel */}
                 <div className="flex flex-col md:flex-row items-center gap-4">
@@ -95,15 +95,15 @@ export default function LinearSearch() {
                         disabled={searching}
                         onChange={(e) => setCurrentInput(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleAddValue()}
-                        className="w-full md:w-40"
+                        className="w-full md:w-40 border-neutral-300"
                     />
-                    <Button onClick={handleAddValue} disabled={searching} className={"hover:bg-white hover:text-black"}>
+                    <Button onClick={handleAddValue} disabled={searching} className="bg-neutral-800 hover:bg-neutral-700 text-white">
                         Add
                     </Button>
-                    <Button onClick={generateRandomArray} disabled={searching} className={"bg-white text-gray-500 hover:bg-neutral-900 hover:text-white"}>
+                    <Button onClick={generateRandomArray} disabled={searching} className="bg-neutral-800 hover:bg-neutral-700 text-white">
                         Random Array
                     </Button>
-                    <Button onClick={clearAll} disabled={searching} variant="secondary">
+                    <Button onClick={clearAll} disabled={searching} variant="outline" className="border-neutral-300 text-neutral-800 hover:bg-neutral-50">
                         Clear All
                     </Button>
                 </div>
@@ -117,24 +117,25 @@ export default function LinearSearch() {
                         disabled={searching}
                         onChange={(e) => setSearchValue(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && linearSearch()}
-                        className="w-full md:w-40"
+                        className="w-full md:w-40 border-neutral-300"
                     />
                     <Button
                         onClick={linearSearch}
                         disabled={searching || array.length === 0 || !searchValue.trim()}
                         variant="default"
+                        className="bg-neutral-800 hover:bg-neutral-700 text-white"
                     >
                         Start Search
                     </Button>
 
-                    <Button onClick={reset} disabled={searching} variant="secondary">
+                    <Button onClick={reset} disabled={searching} variant="outline" className="border-neutral-300 text-neutral-800 hover:bg-neutral-50">
                         Reset
                     </Button>
                 </div>
 
                 {/* Speed Selection */}
                 <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-sm text-gray-400">Speed:</span>
+                    <span className="text-sm text-neutral-600">Speed:</span>
                     {Object.keys(speedOptions).map((key) => (
                         <Button
                             key={key}
@@ -142,7 +143,7 @@ export default function LinearSearch() {
                             variant={speedKey === key ? "default" : "outline"}
                             onClick={() => setSpeedKey(key)}
                             disabled={searching}
-                            className={speedKey !== key ? "text-gray-500 border-white hover:text-black" : ""}
+                            className={speedKey === key ? "bg-neutral-800 text-white hover:bg-neutral-700" : "border-neutral-300 text-neutral-800 hover:bg-neutral-50"}
                         >
                             {key}
                         </Button>
@@ -150,30 +151,33 @@ export default function LinearSearch() {
                 </div>
 
                 {/* Array Visualizer */}
-                <div className="bg-neutral-800 rounded-lg p-6">
+                <div className="bg-neutral-50 rounded-lg p-6 border border-neutral-200">
                     <div className="flex flex-wrap gap-2 justify-center">
                         {array.map((val, idx) => {
-                            let bgColor = "bg-gray-700";
-                            let textColor = "text-white";
+                            let bgColor = "bg-white";
+                            let textColor = "text-neutral-800";
+                            let borderColor = "border-neutral-300";
                             
                             // Current element being checked
                             if (idx === currentIndex) {
-                                bgColor = "bg-yellow-300";
-                                textColor = "text-black";
+                                bgColor = "bg-yellow-100";
+                                textColor = "text-yellow-800";
+                                borderColor = "border-yellow-400";
                             }
                             // Found element
                             else if (idx === foundIndex) {
-                                bgColor = "bg-green-500";
-                                textColor = "text-white";
+                                bgColor = "bg-green-100";
+                                textColor = "text-green-800";
+                                borderColor = "border-green-400";
                             }
 
                             return (
                                 <div
                                     key={idx}
-                                    className={`${bgColor} ${textColor} border border-gray-600 rounded px-4 py-3 min-w-12 text-center font-mono transition-all duration-300`}
+                                    className={`${bgColor} ${textColor} border ${borderColor} rounded px-4 py-3 min-w-12 text-center font-mono transition-all duration-300 shadow-sm`}
                                 >
                                     <div className="text-sm font-bold">{val}</div>
-                                    <div className="text-xs text-gray-400">{idx}</div>
+                                    <div className="text-xs text-neutral-500">{idx}</div>
                                 </div>
                             );
                         })}
@@ -181,33 +185,42 @@ export default function LinearSearch() {
                 </div>
 
                 {/* Status Display */}
-                <div className="text-center p-4 bg-neutral-800 rounded-lg">
+                <div className="text-center p-4 bg-neutral-50 rounded-lg border border-neutral-200">
                     {searching && (
-                        <p className="text-lg">
+                        <p className="text-lg text-neutral-800">
                             Searching for <span className="font-bold">{searchValue}</span>... 
                             Currently checking index {currentIndex}
                         </p>
                     )}
                     {searchComplete && foundIndex !== -1 && (
-                        <p className="text-lg text-green-600">
+                        <p className="text-lg text-green-700">
                             Found <span className="font-bold">{searchValue}</span> at index {foundIndex}!
                         </p>
                     )}
                     {searchComplete && foundIndex === -1 && (
-                        <p className="text-lg text-red-600">
+                        <p className="text-lg text-red-700">
                             <span className="font-bold">{searchValue}</span> not found in the array.
                         </p>
                     )}
                     {!searching && !searchComplete && array.length > 0 && (
-                        <p className="text-gray-400">
+                        <p className="text-neutral-600">
                             Enter a value to search and click "Start Search"
                         </p>
                     )}
                     {array.length === 0 && (
-                        <p className="text-gray-400">
+                        <p className="text-neutral-600">
                             Add numbers to the array to begin searching
                         </p>
                     )}
+                </div>
+
+                {/* Algorithm Info */}
+                <div className="bg-neutral-50 rounded-lg p-4 text-sm border border-neutral-200">
+                    <h3 className="font-bold mb-2 text-neutral-800">Linear Search Algorithm:</h3>
+                    <p className="text-neutral-700">
+                        Linear search sequentially checks each element in the array from left to right until the target value is found or the end is reached.
+                        <br/><strong>Time Complexity:</strong> O(n) | <strong>Space Complexity:</strong> O(1)
+                    </p>
                 </div>
             </CardContent>
         </Card>

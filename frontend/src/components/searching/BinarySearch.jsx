@@ -104,9 +104,9 @@ export default function BinarySearch() {
     };
 
     return (
-        <Card className="bg-neutral-900 text-white p-6">
+        <Card className="bg-white border border-gray-200 p-6">
             <CardContent className="space-y-6">
-                <h2 className="text-2xl font-bold mb-4">Binary Search Visualizer</h2>
+                <h2 className="text-2xl font-bold mb-4 text-gray-900">Binary Search Visualizer</h2>
 
                 {/* Input Panel */}
                 <div className="flex flex-col md:flex-row items-center gap-4">
@@ -117,15 +117,15 @@ export default function BinarySearch() {
                         disabled={searching}
                         onChange={(e) => setCurrentInput(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleAddValue()}
-                        className="w-full md:w-40"
+                        className="w-full md:w-40 border-gray-300"
                     />
-                    <Button onClick={handleAddValue} disabled={searching} className={"hover:bg-white hover:text-black"}>
+                    <Button onClick={handleAddValue} disabled={searching} className="bg-gray-900 text-white hover:bg-gray-800">
                         Add
                     </Button>
-                    <Button onClick={generateRandomArray} disabled={searching} className={"bg-white text-gray-500 hover:bg-neutral-900 hover:text-white"}>
+                    <Button onClick={generateRandomArray} disabled={searching} className="bg-white text-gray-900 border border-gray-300 hover:bg-gray-50">
                         Random Array
                     </Button>
-                    <Button onClick={clearAll} disabled={searching} variant="secondary">
+                    <Button onClick={clearAll} disabled={searching} className="bg-white text-gray-900 border border-gray-300 hover:bg-gray-50">
                         Clear All
                     </Button>
                 </div>
@@ -139,32 +139,35 @@ export default function BinarySearch() {
                         disabled={searching}
                         onChange={(e) => setSearchValue(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && binarySearch()}
-                        className="w-full md:w-40"
+                        className="w-full md:w-40 border-gray-300"
                     />
                     <Button
                         onClick={binarySearch}
                         disabled={searching || array.length === 0 || !searchValue.trim()}
-                        variant="default"
+                        className="bg-gray-900 text-white hover:bg-gray-800"
                     >
                         Start Search
                     </Button>
 
-                    <Button onClick={reset} disabled={searching} variant="secondary">
+                    <Button onClick={reset} disabled={searching} className="bg-white text-gray-900 border border-gray-300 hover:bg-gray-50">
                         Reset
                     </Button>
                 </div>
 
                 {/* Speed Selection */}
                 <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-sm text-gray-400">Speed:</span>
+                    <span className="text-sm text-gray-600">Speed:</span>
                     {Object.keys(speedOptions).map((key) => (
                         <Button
                             key={key}
                             size="sm"
-                            variant={speedKey === key ? "default" : "outline"}
                             onClick={() => setSpeedKey(key)}
                             disabled={searching}
-                            className={speedKey !== key ? "text-gray-500 border-white hover:text-black" : ""}
+                            className={
+                                speedKey === key 
+                                    ? "bg-gray-900 text-white hover:bg-gray-800" 
+                                    : "bg-white text-gray-900 border border-gray-300 hover:bg-gray-50"
+                            }
                         >
                             {key}
                         </Button>
@@ -172,43 +175,43 @@ export default function BinarySearch() {
                 </div>
 
                 {/* Info Banner */}
-                <div className="bg-blue-900 border border-blue-700 rounded-lg p-3">
-                    <p className="text-sm text-blue-200">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                    <p className="text-sm text-gray-700">
                         <strong>Note:</strong> Binary search requires a sorted array. Numbers are automatically sorted when added.
                     </p>
                 </div>
 
                 {/* Array Visualizer */}
-                <div className="bg-neutral-800 rounded-lg p-6">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
                     <div className="flex flex-wrap gap-2 justify-center">
                         {array.map((val, idx) => {
-                            let bgColor = "bg-gray-700";
-                            let textColor = "text-white";
-                            let borderColor = "border-gray-600";
+                            let bgColor = "bg-white";
+                            let textColor = "text-gray-900";
+                            let borderColor = "border-gray-300";
                             
                             // Found element
                             if (idx === foundIndex) {
                                 bgColor = "bg-green-500";
                                 textColor = "text-white";
-                                borderColor = "border-green-400";
+                                borderColor = "border-green-500";
                             }
                             // Current middle element
                             else if (idx === midIndex) {
                                 bgColor = "bg-blue-500";
                                 textColor = "text-white";
-                                borderColor = "border-blue-400";
+                                borderColor = "border-blue-500";
                             }
                             // Left and right pointers
                             else if (idx === leftIndex || idx === rightIndex) {
                                 bgColor = "bg-orange-500";
                                 textColor = "text-white";
-                                borderColor = "border-orange-400";
+                                borderColor = "border-orange-500";
                             }
                             // Elements in current search range
                             else if (leftIndex !== -1 && rightIndex !== -1 && idx >= leftIndex && idx <= rightIndex) {
-                                bgColor = "bg-gray-600";
-                                textColor = "text-white";
-                                borderColor = "border-gray-500";
+                                bgColor = "bg-gray-100";
+                                textColor = "text-gray-900";
+                                borderColor = "border-gray-400";
                             }
 
                             return (
@@ -217,7 +220,7 @@ export default function BinarySearch() {
                                     className={`${bgColor} ${textColor} border ${borderColor} rounded px-4 py-3 min-w-12 text-center font-mono transition-all duration-300`}
                                 >
                                     <div className="text-sm font-bold">{val}</div>
-                                    <div className="text-xs text-gray-400">{idx}</div>
+                                    <div className="text-xs text-gray-500">{idx}</div>
                                 </div>
                             );
                         })}
@@ -225,7 +228,7 @@ export default function BinarySearch() {
 
                     {/* Legend */}
                     {searching && (
-                        <div className="flex flex-wrap justify-center gap-4 mt-4 text-sm">
+                        <div className="flex flex-wrap justify-center gap-4 mt-4 text-sm text-gray-700">
                             <div className="flex items-center gap-2">
                                 <div className="w-4 h-4 bg-orange-500 rounded"></div>
                                 <span>Left/Right bounds</span>
@@ -235,7 +238,7 @@ export default function BinarySearch() {
                                 <span>Middle element</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 bg-gray-600 rounded"></div>
+                                <div className="w-4 h-4 bg-gray-100 border border-gray-400 rounded"></div>
                                 <span>Search range</span>
                             </div>
                         </div>
@@ -243,12 +246,12 @@ export default function BinarySearch() {
                 </div>
 
                 {/* Status Display */}
-                <div className="text-center p-4 bg-neutral-800 rounded-lg">
+                <div className="text-center p-4 bg-gray-50 border border-gray-200 rounded-lg">
                     {searching && (
-                        <p className="text-lg">
+                        <p className="text-lg text-gray-900">
                             Searching for <span className="font-bold">{searchValue}</span>... 
                             <br />
-                            Left: {leftIndex}, Mid: {midIndex}, Right: {rightIndex}
+                            <span className="text-sm text-gray-600">Left: {leftIndex}, Mid: {midIndex}, Right: {rightIndex}</span>
                         </p>
                     )}
                     {searchComplete && foundIndex !== -1 && (
@@ -262,12 +265,12 @@ export default function BinarySearch() {
                         </p>
                     )}
                     {!searching && !searchComplete && array.length > 0 && (
-                        <p className="text-gray-400">
+                        <p className="text-gray-600">
                             Enter a value to search and click "Start Search"
                         </p>
                     )}
                     {array.length === 0 && (
-                        <p className="text-gray-400">
+                        <p className="text-gray-600">
                             Add numbers to the array to begin searching
                         </p>
                     )}

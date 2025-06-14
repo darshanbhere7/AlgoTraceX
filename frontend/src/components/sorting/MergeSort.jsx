@@ -202,10 +202,10 @@ export default function MergeSort() {
     };
 
     const getNodeColor = (nodeId) => {
-        if (completedNodes.has(nodeId)) return "border-green-500 bg-green-500/20";
-        if (activeNodes.has(nodeId)) return "border-yellow-400 bg-yellow-400/20";
-        if (mergingNodes.has(nodeId)) return "border-purple-400 bg-purple-400/20";
-        return "border-blue-400 bg-blue-400/10";
+        if (completedNodes.has(nodeId)) return "border-green-600 bg-green-50";
+        if (activeNodes.has(nodeId)) return "border-blue-600 bg-blue-50";
+        if (mergingNodes.has(nodeId)) return "border-orange-500 bg-orange-50";
+        return "border-gray-300 bg-gray-50";
     };
 
     const renderTree = () => {
@@ -228,8 +228,8 @@ export default function MergeSort() {
                                     {/* Connection lines to children */}
                                     {levelIndex < levels.length - 1 && node.left < node.right && (
                                         <>
-                                            <div className="absolute top-full left-1/2 w-px h-8 bg-gray-500 transform -translate-x-1/2"></div>
-                                            <div className="absolute top-full left-1/4 w-1/2 h-px bg-gray-500 transform translate-y-4"></div>
+                                            <div className="absolute top-full left-1/2 w-px h-8 bg-gray-400 transform -translate-x-1/2"></div>
+                                            <div className="absolute top-full left-1/4 w-1/2 h-px bg-gray-400 transform translate-y-4"></div>
                                         </>
                                     )}
                                     
@@ -239,7 +239,7 @@ export default function MergeSort() {
                                         ${getNodeColor(node.id)}
                                         ${activeNodes.has(node.id) ? 'scale-110 shadow-lg' : ''}
                                         ${mergingNodes.has(node.id) ? 'animate-pulse' : ''}
-                                        ${completedNodes.has(node.id) ? 'shadow-green-500/50 shadow-lg' : ''}
+                                        ${completedNodes.has(node.id) ? 'shadow-green-200 shadow-lg' : ''}
                                     `}>
                                         <div className="flex gap-1 justify-center">
                                             {node.array.map((val, idx) => (
@@ -249,12 +249,12 @@ export default function MergeSort() {
                                                         w-8 h-8 rounded flex items-center justify-center text-sm font-bold
                                                         transition-all duration-300
                                                         ${completedNodes.has(node.id) 
-                                                            ? 'bg-green-500 text-white' 
+                                                            ? 'bg-green-600 text-white' 
                                                             : activeNodes.has(node.id)
-                                                                ? 'bg-yellow-400 text-black'
+                                                                ? 'bg-blue-600 text-white'
                                                                 : mergingNodes.has(node.id)
-                                                                    ? 'bg-purple-400 text-white'
-                                                                    : 'bg-blue-500 text-white'
+                                                                    ? 'bg-orange-500 text-white'
+                                                                    : 'bg-gray-700 text-white'
                                                         }
                                                     `}
                                                 >
@@ -262,7 +262,7 @@ export default function MergeSort() {
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="text-xs text-center mt-1 text-gray-400">
+                                        <div className="text-xs text-center mt-1 text-gray-500">
                                             Level {node.level}
                                         </div>
                                     </div>
@@ -276,9 +276,9 @@ export default function MergeSort() {
     };
 
     return (
-        <Card className="bg-neutral-900 text-white p-6 max-w-7xl mx-auto">
+        <Card className="bg-white text-gray-900 p-6 max-w-7xl mx-auto border border-gray-200 shadow-lg">
             <CardContent className="space-y-6">
-                <h2 className="text-3xl font-bold mb-4 text-center bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                <h2 className="text-3xl font-bold mb-4 text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                     Merge Sort Visualizer
                 </h2>
 
@@ -292,16 +292,16 @@ export default function MergeSort() {
                             disabled={sorting}
                             onChange={(e) => setCurrentInput(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && handleAddValue()}
-                            className="w-48"
+                            className="w-48 bg-white border-gray-300"
                             min="0"
                             max="999"
                         />
-                        <Button onClick={handleAddValue} disabled={sorting} size="sm">
+                        <Button onClick={handleAddValue} disabled={sorting} size="sm" className="bg-neutral-700 hover:bg-neutral-900 text-white">
                             Add
                         </Button>
                     </div>
                     
-                    <Button onClick={generateRandomArray} disabled={sorting} className="hover:bg-white hover:text-black">
+                    <Button onClick={generateRandomArray} disabled={sorting} className="bg-purple-600 hover:bg-purple-700 text-white">
                         Generate Random (8 elements)
                     </Button>
                     
@@ -309,19 +309,19 @@ export default function MergeSort() {
                         onClick={mergeSort}
                         disabled={sorting || array.length < 2}
                         variant="default"
-                        className="hover:bg-white hover:text-black"
+                        className="bg-green-600 hover:bg-green-700 text-white"
                     >
                         {sorting ? "Visualizing..." : "Start Dynamic Sort"}
                     </Button>
                     
-                    <Button variant="secondary" onClick={reset} disabled={sorting}>
+                    <Button variant="outline" onClick={reset} disabled={sorting} className="border-gray-300 text-gray-700 hover:bg-gray-50">
                         Reset
                     </Button>
                 </div>
 
                 {/* Speed Selection */}
                 <div className="flex flex-wrap items-center justify-center gap-3">
-                    <span className="text-sm text-gray-400">Animation Speed:</span>
+                    <span className="text-sm text-gray-600">Animation Speed:</span>
                     {Object.keys(speedOptions).map((key) => (
                         <Button
                             key={key}
@@ -329,7 +329,10 @@ export default function MergeSort() {
                             variant={speedKey === key ? "default" : "outline"}
                             onClick={() => setSpeedKey(key)}
                             disabled={sorting}
-                            className={speedKey !== key ? "text-gray-500 border-gray-500 hover:text-black hover:border-white" : ""}
+                            className={speedKey === key 
+                                ? "bg-neutral-800 hover:bg-neutral-900 text-white" 
+                                : "text-gray-600 border-gray-300 hover:bg-gray-50 hover:text-gray-900"
+                            }
                         >
                             {key}
                         </Button>
@@ -338,18 +341,18 @@ export default function MergeSort() {
 
                 {/* Current Step Display */}
                 {currentStep && (
-                    <div className="text-center p-4 bg-gradient-to-r from-purple-900/50 to-blue-900/50 rounded-lg border border-purple-500/30">
-                        <span className="text-lg font-semibold text-yellow-400">{currentStep}</span>
+                    <div className="text-center p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+                        <span className="text-lg font-semibold text-blue-700">{currentStep}</span>
                     </div>
                 )}
 
                 {/* Original Array Display */}
                 {array.length > 0 && (
                     <div className="text-center">
-                        <h3 className="text-lg font-semibold mb-2 text-blue-400">Original Array:</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-gray-700">Original Array:</h3>
                         <div className="flex justify-center gap-2">
                             {array.map((val, idx) => (
-                                <div key={idx} className="w-10 h-10 bg-gray-700 rounded flex items-center justify-center font-bold">
+                                <div key={idx} className="w-10 h-10 bg-gray-200 border border-gray-300 rounded flex items-center justify-center font-bold text-gray-700">
                                     {val}
                                 </div>
                             ))}
@@ -358,15 +361,15 @@ export default function MergeSort() {
                 )}
 
                 {/* Dynamic Tree Visualization */}
-                <div className="min-h-96 bg-gradient-to-b from-neutral-800/50 to-neutral-900/50 rounded-xl p-6 border border-gray-700">
+                <div className="min-h-96 bg-gray-50 rounded-xl p-6 border border-gray-200">
                     {array.length === 0 ? (
-                        <div className="flex items-center justify-center h-32 text-gray-400">
+                        <div className="flex items-center justify-center h-32 text-gray-500">
                             <div className="text-center">
                                 <span>Add numbers or generate a random array to see the dynamic tree visualization</span>
                             </div>
                         </div>
                     ) : !sorting && visualTree.length === 0 ? (
-                        <div className="flex items-center justify-center h-32 text-gray-400">
+                        <div className="flex items-center justify-center h-32 text-gray-500">
                             <span>Click "Start Dynamic Sort" to see the merge sort tree in action!</span>
                         </div>
                     ) : (
@@ -377,27 +380,27 @@ export default function MergeSort() {
                 {/* Legend */}
                 <div className="flex flex-wrap justify-center gap-6 text-sm">
                     <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-blue-400/20 border-2 border-blue-400 rounded"></div>
-                        <span>Waiting</span>
+                        <div className="w-4 h-4 bg-gray-50 border-2 border-gray-300 rounded"></div>
+                        <span className="text-gray-600">Waiting</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-yellow-400/20 border-2 border-yellow-400 rounded"></div>
-                        <span>Active</span>
+                        <div className="w-4 h-4 bg-blue-50 border-2 border-blue-600 rounded"></div>
+                        <span className="text-gray-600">Active</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-purple-400/20 border-2 border-purple-400 rounded"></div>
-                        <span>Merging</span>
+                        <div className="w-4 h-4 bg-orange-50 border-2 border-orange-500 rounded"></div>
+                        <span className="text-gray-600">Merging</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-green-500/20 border-2 border-green-500 rounded"></div>
-                        <span>Completed</span>
+                        <div className="w-4 h-4 bg-green-50 border-2 border-green-600 rounded"></div>
+                        <span className="text-gray-600">Completed</span>
                     </div>
                 </div>
 
                 {/* Algorithm Info */}
-                <div className="bg-gradient-to-r from-neutral-800/50 to-neutral-700/50 rounded-lg p-4 text-sm border border-gray-600">
-                    <h3 className="font-bold mb-2 text-purple-400">Merge Sort Visualization:</h3>
-                    <p className="text-gray-300">
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 text-sm border border-blue-200">
+                    <h3 className="font-bold mb-2 text-blue-700">Merge Sort Visualization:</h3>
+                    <p className="text-gray-700">
                         Watch as the array dynamically divides into a tree structure, then merges back up level by level. 
                         Each node shows the current state of that subarray as it gets sorted and merged with its sibling.
                         <br/><strong>Time Complexity:</strong> O(n log n) | <strong>Space Complexity:</strong> O(n)
