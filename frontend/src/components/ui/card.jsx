@@ -1,21 +1,17 @@
-import * as React from "react"
+import React from 'react';
 
 import { cn } from "@/lib/utils"
 
-function Card({
-  className,
-  ...props
-}) {
+export const Card = ({ children, className = '', ...props }) => {
   return (
     <div
-      data-slot="card"
-      className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
-        className
-      )}
-      {...props} />
+      className={`bg-white rounded-lg shadow-md overflow-hidden ${className}`}
+      {...props}
+    >
+      {children}
+    </div>
   );
-}
+};
 
 function CardHeader({
   className,
@@ -91,7 +87,6 @@ function CardFooter({
 }
 
 export {
-  Card,
   CardHeader,
   CardFooter,
   CardTitle,

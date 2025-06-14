@@ -25,6 +25,18 @@ const userSchema = new mongoose.Schema(
       enum: ['user', 'admin'],
       default: 'user',
     },
+    testHistory: [{
+      test: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Test'
+      },
+      answers: [Number],
+      score: Number,
+      date: {
+        type: Date,
+        default: Date.now
+      }
+    }],
     progress: {
       overallProgress: {
         type: Number,
@@ -44,9 +56,15 @@ const userSchema = new mongoose.Schema(
         type: String
       }],
       testScores: [{
-        testId: String,
+        test: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Test'
+        },
         score: Number,
-        date: Date
+        date: {
+          type: Date,
+          default: Date.now
+        }
       }]
     }
   },

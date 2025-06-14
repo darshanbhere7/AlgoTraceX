@@ -15,6 +15,7 @@ const ManageTests = () => {
     title: '',
     topic: '',
     weekNumber: '',
+    timeLimit: 10, // Default time limit in minutes
     questions: [
       {
         question: '',
@@ -29,12 +30,17 @@ const ManageTests = () => {
       setLoading(true);
       setError(null);
       
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
       const [testsResponse, topicsResponse] = await Promise.all([
-        axios.get('http://localhost:5000/api/admin/tests', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        axios.get('http://localhost:5000/api/tests', {
+          headers: { 'Authorization': `Bearer ${token}` }
         }),
         axios.get('http://localhost:5000/api/admin/topics', {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          headers: { 'Authorization': `Bearer ${token}` }
         })
       ]);
 
@@ -42,8 +48,9 @@ const ManageTests = () => {
       setTopics(topicsResponse.data);
     } catch (error) {
       console.error('Failed to fetch data:', error);
-      setError('Failed to load data. Please try again.');
-      toast.error('Failed to load data. Please try again.');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to load data. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -51,9 +58,6 @@ const ManageTests = () => {
 
   useEffect(() => {
     fetchData();
-    // Set up polling for real-time updates
-    const interval = setInterval(fetchData, 30000); // Update every 30 seconds
-    return () => clearInterval(interval);
   }, []);
 
   const handleAddQuestion = () => {
@@ -94,11 +98,22 @@ const ManageTests = () => {
   const handleAddTest = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // Validate time limit
+      if (newTest.timeLimit < 1) {
+        toast.error('Time limit must be at least 1 minute');
+        return;
+      }
+
       const response = await axios.post(
-        'http://localhost:5000/api/admin/tests',
+        'http://localhost:5000/api/tests',
         newTest,
         {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          headers: { 'Authorization': `Bearer ${token}` }
         }
       );
 
@@ -107,6 +122,7 @@ const ManageTests = () => {
         title: '',
         topic: '',
         weekNumber: '',
+        timeLimit: 10,
         questions: [
           {
             question: '',
@@ -118,24 +134,31 @@ const ManageTests = () => {
       toast.success('Test added successfully!');
     } catch (error) {
       console.error('Failed to add test:', error);
-      toast.error('Failed to add test. Please try again.');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to add test. Please try again.';
+      toast.error(errorMessage);
     }
   };
 
   const handleDeleteTest = async (testId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/admin/tests/${testId}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      await axios.delete(`http://localhost:5000/api/tests/${testId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       setTests(prev => prev.filter(test => test._id !== testId));
       toast.success('Test deleted successfully!');
     } catch (error) {
       console.error('Failed to delete test:', error);
-      toast.error('Failed to delete test. Please try again.');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to delete test. Please try again.';
+      toast.error(errorMessage);
     }
   };
 
-  if (loading && !tests.length) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="text-xl text-gray-600">Loading tests...</div>
@@ -143,10 +166,13 @@ const ManageTests = () => {
     );
   }
 
-  if (error && !tests.length) {
+  if (error) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl text-red-600">{error}</div>
+      <div className="flex flex-col justify-center items-center min-h-screen">
+        <div className="text-xl text-red-600 mb-4">{error}</div>
+        <Button onClick={fetchData} variant="outline">
+          Try Again
+        </Button>
       </div>
     );
   }
@@ -155,19 +181,16 @@ const ManageTests = () => {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Manage Tests</h1>
-        <button 
-          onClick={fetchData}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
+        <Button onClick={fetchData} variant="outline">
           Refresh Data
-        </button>
+        </Button>
       </div>
 
       <Card>
         <CardContent className="p-6">
           <h2 className="text-xl font-semibold mb-4">Add New Test</h2>
           <form onSubmit={handleAddTest} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Test Title</label>
                 <Input
@@ -202,6 +225,17 @@ const ManageTests = () => {
                   value={newTest.weekNumber}
                   onChange={(e) => setNewTest(prev => ({ ...prev, weekNumber: e.target.value }))}
                   placeholder="Enter week number"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Time Limit (minutes)</label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={newTest.timeLimit}
+                  onChange={(e) => setNewTest(prev => ({ ...prev, timeLimit: parseInt(e.target.value) || 10 }))}
+                  placeholder="Enter time limit"
                   required
                 />
               </div>
@@ -252,44 +286,63 @@ const ManageTests = () => {
                   </div>
                 </div>
               ))}
-              <Button
-                type="button"
-                onClick={handleAddQuestion}
-                className="w-full"
-              >
-                Add Another Question
+              <Button type="button" onClick={handleAddQuestion} variant="outline">
+                Add Question
               </Button>
             </div>
 
-            <Button type="submit" className="w-full">
-              Add Test
-            </Button>
+            <Button type="submit">Add Test</Button>
           </form>
         </CardContent>
       </Card>
 
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Available Tests</h2>
-        {tests.map(test => (
-          <Card key={test._id}>
-            <CardContent className="p-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-xl font-semibold">{test.title}</h3>
-                  <p className="text-gray-600">Week {test.weekNumber}</p>
-                  <p className="text-gray-600">{test.questions.length} questions</p>
+      <Card>
+        <CardContent className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Available Tests</h2>
+          <div className="space-y-4">
+            {tests.map((test) => (
+              <div key={test._id} className="p-4 border rounded-lg">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-lg font-semibold">{test.title}</h3>
+                    <p className="text-sm text-gray-600">Week {test.weekNumber}</p>
+                    <p className="text-sm text-gray-600">
+                      Topic: {topics.find(t => t._id === test.topic)?.title || 'Unknown Topic'}
+                    </p>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    onClick={() => handleDeleteTest(test._id)}
+                  >
+                    Delete
+                  </Button>
                 </div>
-                <Button
-                  variant="destructive"
-                  onClick={() => handleDeleteTest(test._id)}
-                >
-                  Delete Test
-                </Button>
+                <div className="space-y-2">
+                  {test.questions.map((question, index) => (
+                    <div key={index} className="p-3 bg-gray-50 rounded">
+                      <p className="font-medium">Q{index + 1}: {question.question}</p>
+                      <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {question.options.map((option, oIndex) => (
+                          <div
+                            key={oIndex}
+                            className={`p-2 rounded ${
+                              oIndex === question.correctAnswer
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100'
+                            }`}
+                          >
+                            {option}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
