@@ -1008,9 +1008,30 @@ const AIRecommendations = () => {
             </CardHeader>
             <CardContent>
               <div className="prose prose-sm max-w-none dark:prose-invert">
-                {recommendations.split('\n').map((line, i) => (
-                  <p key={i} className="mb-2">{line}</p>
-                ))}
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                    h1: ({ children }) => <h1 className="text-2xl font-bold mb-4">{children}</h1>,
+                    h2: ({ children }) => <h2 className="text-xl font-bold mb-3">{children}</h2>,
+                    h3: ({ children }) => <h3 className="text-lg font-bold mb-2">{children}</h3>,
+                    ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
+                    ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
+                    li: ({ children }) => <li className="mb-1">{children}</li>,
+                    code: ({ children }) => (
+                      <code className="bg-muted px-1.5 py-0.5 rounded text-sm">{children}</code>
+                    ),
+                    pre: ({ children }) => (
+                      <pre className="bg-muted p-4 rounded-lg overflow-x-auto my-4">{children}</pre>
+                    ),
+                    a: ({ href, children }) => (
+                      <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                        {children}
+                      </a>
+                    ),
+                  }}
+                >
+                  {recommendations}
+                </ReactMarkdown>
               </div>
             </CardContent>
           </Card>
@@ -1124,9 +1145,30 @@ const AIRecommendations = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="prose prose-sm max-w-none dark:prose-invert">
-                        {explanation.split('\n').map((line, i) => (
-                          <p key={i} className="mb-2">{line}</p>
-                        ))}
+                        <ReactMarkdown
+                          components={{
+                            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                            h1: ({ children }) => <h1 className="text-2xl font-bold mb-4">{children}</h1>,
+                            h2: ({ children }) => <h2 className="text-xl font-bold mb-3">{children}</h2>,
+                            h3: ({ children }) => <h3 className="text-lg font-bold mb-2">{children}</h3>,
+                            ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
+                            ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
+                            li: ({ children }) => <li className="mb-1">{children}</li>,
+                            code: ({ children }) => (
+                              <code className="bg-muted px-1.5 py-0.5 rounded text-sm">{children}</code>
+                            ),
+                            pre: ({ children }) => (
+                              <pre className="bg-muted p-4 rounded-lg overflow-x-auto my-4">{children}</pre>
+                            ),
+                            a: ({ href, children }) => (
+                              <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                                {children}
+                              </a>
+                            ),
+                          }}
+                        >
+                          {explanation}
+                        </ReactMarkdown>
                       </div>
                     </CardContent>
                   </Card>
