@@ -192,7 +192,7 @@ const PracticeQuestions = () => {
       </div>
 
       {/* Filters Card */}
-      <Card className="p-4 mb-8">
+      <Card className="p-4 mb-8 overflow-visible">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <CustomDropdown
             label="Topic"
