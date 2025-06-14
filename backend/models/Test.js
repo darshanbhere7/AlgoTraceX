@@ -14,6 +14,12 @@ const testSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  timeLimit: {
+    type: Number,
+    required: false,
+    default: 10,
+    min: 1
+  },
   questions: [{
     question: {
       type: String,

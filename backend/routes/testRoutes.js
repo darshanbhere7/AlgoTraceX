@@ -9,6 +9,9 @@ const {
   deleteTest
 } = require('../controllers/testController');
 
+// Public routes
+router.get('/public', getAllTests);
+
 // Admin routes
 router.post('/', protect, adminOnly, createTest);
 router.get('/admin', protect, adminOnly, getAllTests);

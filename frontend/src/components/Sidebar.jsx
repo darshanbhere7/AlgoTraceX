@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LogOut, Settings } from 'lucide-react';
 
+
 const Sidebar = ({ admin = false }) => {
   const { user, logout } = useAuth();
   
@@ -11,6 +12,8 @@ const Sidebar = ({ admin = false }) => {
     { to: '/user/code-view', label: 'Code View' },
     { to: '/user/weekly-test', label: 'Weekly Tests' },
     { to: '/user/progress', label: 'Progress' },
+    { to: '/user/topics', label: 'Topics' },
+    { to: '/user/practice-questions', label: 'Practice Questions' },
     { to: '/user/ai-recommendations', label: 'AI Recommendations' }
   ];
   
@@ -19,6 +22,7 @@ const Sidebar = ({ admin = false }) => {
     { to: '/admin/manage-topics', label: 'Manage Topics' },
     { to: '/admin/manage-tests', label: 'Manage Tests' },
     { to: '/admin/user-analytics', label: 'User Analytics' },
+    { to: '/admin/admintests', label: 'Practice Questions' },
     { to: '/admin/manage-users', label: 'Manage Users' }
   ];
   

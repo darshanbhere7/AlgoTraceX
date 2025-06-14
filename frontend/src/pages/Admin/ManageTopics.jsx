@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 
 const ManageTopics = () => {
@@ -121,13 +122,26 @@ const ManageTopics = () => {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Description</label>
-              <Input
-                type="text"
+              <Textarea
                 value={newTopic.description}
                 onChange={(e) => setNewTopic({ ...newTopic, description: e.target.value })}
-                placeholder="Enter topic description"
+                placeholder={`Input: An array A of size n. A target value key
+
+Output: Index of the key if found, otherwise -1
+
+🔸 Algorithm:
+LinearSearch(A, n, key)
+1. for i ← 0 to n - 1 do
+2.     if A[i] = key then
+3.         return i
+4. return -1`}
+                className="font-mono"
+                rows={10}
                 required
               />
+              <p className="text-sm text-gray-500 mt-1">
+                Use the format above with Input, Output, and Algorithm sections. Use monospace font for better readability.
+              </p>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Difficulty</label>
@@ -153,16 +167,17 @@ const ManageTopics = () => {
           <div className="space-y-4">
             {topics.map((topic) => (
               <div key={topic._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div>
+                <div className="flex-1">
                   <h3 className="font-medium">{topic.title}</h3>
-                  <p className="text-sm text-gray-600">{topic.description}</p>
-                  <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                  <pre className="text-sm text-gray-600 font-mono whitespace-pre-wrap mt-2">{topic.description}</pre>
+                  <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800 mt-2 inline-block">
                     {topic.difficulty}
                   </span>
                 </div>
                 <Button
                   variant="destructive"
                   onClick={() => handleDeleteTopic(topic._id)}
+                  className="ml-4"
                 >
                   Delete
                 </Button>

@@ -15,6 +15,9 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import { Toaster } from 'sonner';
+import Topics from './pages/User/Topics';
+import ManagePracticeQuestions from './pages/Admin/ManagePracticeQuestions';
+import PracticeQuestions from './pages/User/PracticeQuestions';
 
 // Create a simple NotFound component
 const NotFound = () => {
@@ -57,9 +60,11 @@ function App() {
               </div>
             }>
               <Route path="dashboard" element={<Dashboard />} />
+              <Route path="topics" element={<Topics />} />
               <Route path="progress" element={<Progress />} />
               <Route path="weekly-test" element={<WeeklyTest />} />
-              <Route path= "ai-recommendations" element= {<AIRecommendations/>}/>
+              <Route path="practice-questions" element={<PracticeQuestions />} />
+              <Route path="ai-recommendations" element={<AIRecommendations />} />
               <Route path="*" element={<Navigate to="/user/dashboard" replace />} />
             </Route>
           </Route>
@@ -79,6 +84,8 @@ function App() {
             }>
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="manage-topics" element={<ManageTopics />} />
+              <Route path="practice-questions" element={<PracticeQuestions />} />
+              <Route path="admintests" element={<ManagePracticeQuestions />} />
               <Route path="manage-tests" element={<ManageTests />} />
               <Route path="user-analytics" element={<UserAnalytics />} />
               <Route path="manage-users" element={<ManageUsers />} />
