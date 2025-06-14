@@ -7,7 +7,7 @@ const Sidebar = ({ admin = false }) => {
   
   const userLinks = [
     { to: '/user/dashboard', label: 'Dashboard' },
-    { to: '/user/visualizer', label: 'Algorithm Visualizer' },
+    { to: '/user/visualizer-home', label: 'Algorithm Visualizer' },
     { to: '/user/code-view', label: 'Code View' },
     { to: '/user/weekly-test', label: 'Weekly Tests' },
     { to: '/user/progress', label: 'Progress' },
