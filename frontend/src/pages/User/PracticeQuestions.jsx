@@ -56,11 +56,18 @@ const PracticeQuestions = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
+    difficulty: 'all',
     topic: 'all',
     status: 'all'
   });
-  const [completedQuestions, setCompletedQuestions] = useState(new Set());
-  const [bookmarkedQuestions, setBookmarkedQuestions] = useState(new Set());
+  const [bookmarkedQuestions, setBookmarkedQuestions] = useState(() => {
+    const saved = localStorage.getItem('bookmarkedQuestions');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [completedQuestions, setCompletedQuestions] = useState(() => {
+    const saved = localStorage.getItem('completedQuestions');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [searchQuery, setSearchQuery] = useState('');
 
   // Get unique topics from questions
@@ -100,44 +107,24 @@ const PracticeQuestions = () => {
     setFilters(prev => ({ ...prev, [field]: value }));
   };
 
-  const toggleQuestionCompletion = async (question) => {
-    try {
-      const token = localStorage.getItem('token');
-      const isCompleted = completedQuestions.has(question.url);
-      const updatedCompleted = new Set(completedQuestions);
-
-      if (isCompleted) {
-        await axios.delete(`http://localhost:5000/api/practice-questions/tracking/questions/${question.url}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        updatedCompleted.delete(question.url);
-      } else {
-        await axios.post(
-          'http://localhost:5000/api/practice-questions/tracking/questions',
-          {
-            questionId: question.url,
-            title: question.question,
-            source: 'DSA Sheet',
-            completed: true
-          },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        updatedCompleted.add(question.url);
-      }
-      setCompletedQuestions(updatedCompleted);
-    } catch (error) {
-      console.error('Failed to update completion status:', error);
-    }
+  const handleBookmark = (questionId) => {
+    setBookmarkedQuestions(prev => {
+      const newBookmarks = prev.includes(questionId)
+        ? prev.filter(id => id !== questionId)
+        : [...prev, questionId];
+      localStorage.setItem('bookmarkedQuestions', JSON.stringify(newBookmarks));
+      return newBookmarks;
+    });
   };
 
-  const toggleBookmark = (question) => {
-    const updatedBookmarks = new Set(bookmarkedQuestions);
-    if (updatedBookmarks.has(question.url)) {
-      updatedBookmarks.delete(question.url);
-    } else {
-      updatedBookmarks.add(question.url);
-    }
-    setBookmarkedQuestions(updatedBookmarks);
+  const handleComplete = (questionId) => {
+    setCompletedQuestions(prev => {
+      const newCompleted = prev.includes(questionId)
+        ? prev.filter(id => id !== questionId)
+        : [...prev, questionId];
+      localStorage.setItem('completedQuestions', JSON.stringify(newCompleted));
+      return newCompleted;
+    });
   };
 
   const filteredQuestions = questions.filter(topic => {
@@ -151,9 +138,9 @@ const PracticeQuestions = () => {
       const matchesSearch = q.question.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = 
         filters.status === 'all' ? true :
-        filters.status === 'completed' ? completedQuestions.has(q.url) :
-        filters.status === 'pending' ? !completedQuestions.has(q.url) :
-        filters.status === 'bookmarked' ? bookmarkedQuestions.has(q.url) : true;
+        filters.status === 'completed' ? completedQuestions.includes(q.url) :
+        filters.status === 'pending' ? !completedQuestions.includes(q.url) :
+        filters.status === 'bookmarked' ? bookmarkedQuestions.includes(q.url) : true;
       return matchesSearch && matchesStatus;
     })
   })).filter(topic => topic.questions.length > 0);
@@ -221,26 +208,26 @@ const PracticeQuestions = () => {
                     <h3 className="font-semibold text-lg pr-2">{question.question}</h3>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => toggleBookmark(question)}
+                        onClick={() => handleBookmark(question.url)}
                         className={`p-2 rounded-full transition-colors duration-200 ${
-                          bookmarkedQuestions.has(question.url)
+                          bookmarkedQuestions.includes(question.url)
                             ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
-                        title={bookmarkedQuestions.has(question.url) ? 'Remove Bookmark' : 'Add Bookmark'}
+                        title={bookmarkedQuestions.includes(question.url) ? 'Remove Bookmark' : 'Add Bookmark'}
                       >
                         <FaBookmark />
                       </button>
                       <button
-                        onClick={() => toggleQuestionCompletion(question)}
+                        onClick={() => handleComplete(question.url)}
                         className={`p-2 rounded-full transition-colors duration-200 ${
-                          completedQuestions.has(question.url)
+                          completedQuestions.includes(question.url)
                             ? 'bg-green-100 text-green-600 hover:bg-green-200'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
-                        title={completedQuestions.has(question.url) ? 'Mark as Pending' : 'Mark as Completed'}
+                        title={completedQuestions.includes(question.url) ? 'Mark as Pending' : 'Mark as Completed'}
                       >
-                        {completedQuestions.has(question.url) ? <FaCheck /> : <FaTimes />}
+                        {completedQuestions.includes(question.url) ? <FaCheck /> : <FaTimes />}
                       </button>
                     </div>
                   </div>
@@ -248,12 +235,12 @@ const PracticeQuestions = () => {
                     <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-medium">
                       Question {index + 1}
                     </span>
-                    {completedQuestions.has(question.url) && (
+                    {completedQuestions.includes(question.url) && (
                       <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs font-medium">
                         Completed
                       </span>
                     )}
-                    {bookmarkedQuestions.has(question.url) && (
+                    {bookmarkedQuestions.includes(question.url) && (
                       <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-medium">
                         Bookmarked
                       </span>

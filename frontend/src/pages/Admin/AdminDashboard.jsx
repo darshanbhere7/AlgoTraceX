@@ -86,12 +86,12 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        {/* <Card>
           <CardContent className="p-4">
             <h2 className="text-xl font-semibold">Total Topics</h2>
             <p className="text-2xl">{analytics.totalTopics}</p>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
 
       <div className="mt-8">
