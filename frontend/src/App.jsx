@@ -16,8 +16,16 @@ import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import { Toaster } from 'sonner';
 import Topics from './pages/User/Topics';
-import ManagePracticeQuestions from './pages/Admin/ManagePracticeQuestions';
 import PracticeQuestions from './pages/User/PracticeQuestions';
+import ManagePracticeQuestions from './pages/Admin/ManagePracticeQuestions';
+
+import VisualizerHome from './pages/User/VisualizerHome';
+import BubbleSort from "@/components/sorting/BubbleSort";
+import MergeSort from "./components/sorting/MergeSort";
+import QuickSort from "./components/sorting/QuickSort";
+
+import LinearSearch from "./components/searching/LinearSearch";
+import BinarySearch from "./components/searching/BinarySearch";
 
 // Create a simple NotFound component
 const NotFound = () => {
@@ -63,8 +71,18 @@ function App() {
               <Route path="topics" element={<Topics />} />
               <Route path="progress" element={<Progress />} />
               <Route path="weekly-test" element={<WeeklyTest />} />
+              <Route path="visualizer-home" element={<VisualizerHome />} />
               <Route path="practice-questions" element={<PracticeQuestions />} />
+
+              <Route path="bubble-sort" element={<BubbleSort />} />
+              <Route path="merge-sort" element={<MergeSort />} />
+              <Route path="quick-sort" element={<QuickSort />} />
+
+              <Route path="linear-search" element={<LinearSearch />} />
+              <Route path="binary-search" element={<BinarySearch />} />
+
               <Route path="ai-recommendations" element={<AIRecommendations />} />
+
               <Route path="*" element={<Navigate to="/user/dashboard" replace />} />
             </Route>
           </Route>

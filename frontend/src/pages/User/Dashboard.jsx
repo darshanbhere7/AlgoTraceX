@@ -188,7 +188,7 @@ const Dashboard = () => {
           <h3 className="text-xl font-medium mb-4">Quick Actions</h3>
           <div className="flex flex-col space-y-2">
             <Link 
-              to="/user/visualizer" 
+              to="/user/visualizer-home" 
               className="bg-green-500 text-white py-2 px-4 rounded text-center hover:bg-green-600"
             >
               Algorithm Visualizer
