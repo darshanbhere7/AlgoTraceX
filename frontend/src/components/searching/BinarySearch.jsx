@@ -119,13 +119,25 @@ export default function BinarySearch() {
                         onKeyDown={(e) => e.key === "Enter" && handleAddValue()}
                         className="w-full md:w-40 border-gray-300"
                     />
-                    <Button onClick={handleAddValue} disabled={searching} className="bg-gray-900 text-white hover:bg-gray-800">
+                    <Button 
+                        onClick={handleAddValue} 
+                        disabled={searching || !currentInput.trim()}
+                        className="bg-gray-900 text-white hover:bg-gray-800 disabled:bg-gray-400 disabled:text-gray-200"
+                    >
                         Add
                     </Button>
-                    <Button onClick={generateRandomArray} disabled={searching} className="bg-white text-gray-900 border border-gray-300 hover:bg-gray-50">
+                    <Button 
+                        onClick={generateRandomArray} 
+                        disabled={searching} 
+                        className="bg-neutral-900 text-gray-900 border border-gray-300 hover:bg-neutral-800 disabled:bg-gray-100 disabled:text-gray-400"
+                    >
                         Random Array
                     </Button>
-                    <Button onClick={clearAll} disabled={searching} className="bg-white text-gray-900 border border-gray-300 hover:bg-gray-50">
+                    <Button 
+                        onClick={clearAll} 
+                        disabled={searching} 
+                        className="bg-neutral-400 text-gray-900 border border-gray-300 hover:bg-neutral-800 disabled:bg-gray-100 disabled:text-gray-400"
+                    >
                         Clear All
                     </Button>
                 </div>
@@ -144,12 +156,16 @@ export default function BinarySearch() {
                     <Button
                         onClick={binarySearch}
                         disabled={searching || array.length === 0 || !searchValue.trim()}
-                        className="bg-gray-900 text-white hover:bg-gray-800"
+                        className="bg-gray-900 text-white hover:bg-gray-800 disabled:bg-gray-400 disabled:text-gray-200"
                     >
                         Start Search
                     </Button>
 
-                    <Button onClick={reset} disabled={searching} className="bg-white text-gray-900 border border-gray-300 hover:bg-gray-50">
+                    <Button 
+                        onClick={reset} 
+                        disabled={searching} 
+                        className="bg-neutral-300 text-gray-900 border border-gray-300 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
+                    >
                         Reset
                     </Button>
                 </div>
@@ -165,8 +181,8 @@ export default function BinarySearch() {
                             disabled={searching}
                             className={
                                 speedKey === key 
-                                    ? "bg-gray-900 text-white hover:bg-gray-800" 
-                                    : "bg-white text-gray-900 border border-gray-300 hover:bg-gray-50"
+                                    ? "bg-gray-900 text-white hover:bg-gray-800 disabled:bg-gray-400 disabled:text-gray-200" 
+                                    : "bg-neutral-300 text-gray-900 border border-gray-300 hover:bg-neutral-500 disabled:bg-gray-100 disabled:text-gray-400"
                             }
                         >
                             {key}

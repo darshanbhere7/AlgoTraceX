@@ -27,6 +27,10 @@ import QuickSort from "./components/sorting/QuickSort";
 import LinearSearch from "./components/searching/LinearSearch";
 import BinarySearch from "./components/searching/BinarySearch";
 
+import ArrayVisualizer from "./components/linear/Array";
+import LinkedList from './components/linear/LinkedList';
+import Stack from './components/linear/Stack';
+
 // Create a simple NotFound component
 const NotFound = () => {
   return (
@@ -80,6 +84,10 @@ function App() {
 
               <Route path="linear-search" element={<LinearSearch />} />
               <Route path="binary-search" element={<BinarySearch />} />
+
+              <Route path="array" element={<ArrayVisualizer />} />
+              <Route path="linked-list" element={<LinkedList />} />
+              <Route path="stack" element={<Stack />} />
 
               <Route path="ai-recommendations" element={<AIRecommendations />} />
 
