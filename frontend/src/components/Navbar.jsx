@@ -9,7 +9,7 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <span className="text-xl font-bold">AlgoViz</span>
+              <span className="text-xl font-bold">AlgoTraceX</span>
             </div>
           </div>
           <div className="flex items-center">
