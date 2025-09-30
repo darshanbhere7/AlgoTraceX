@@ -23,9 +23,14 @@ import VisualizerHome from './pages/User/VisualizerHome';
 import BubbleSort from "@/components/sorting/BubbleSort";
 import MergeSort from "./components/sorting/MergeSort";
 import QuickSort from "./components/sorting/QuickSort";
+import HeapSort from './components/sorting/HeapSort';
+import InsertionSort from './components/sorting/InsertionSort';
+import SelectionSort from './components/sorting/SelectionSort';
 
 import LinearSearch from "./components/searching/LinearSearch";
 import BinarySearch from "./components/searching/BinarySearch";
+import JumpSearch from './components/searching/JumpSearch';
+import InterpolationSearch from './components/searching/InterpolationSearch';
 
 import ArrayVisualizer from "./components/linear/Array";
 import LinkedList from './components/linear/LinkedList';
@@ -81,9 +86,14 @@ function App() {
               <Route path="bubble-sort" element={<BubbleSort />} />
               <Route path="merge-sort" element={<MergeSort />} />
               <Route path="quick-sort" element={<QuickSort />} />
+              <Route path="heap-sort" element={<HeapSort />} />
+              <Route path="insertion-sort" element={<InsertionSort />} />
+              <Route path="selection-sort" element={<SelectionSort />} />
 
               <Route path="linear-search" element={<LinearSearch />} />
               <Route path="binary-search" element={<BinarySearch />} />
+              <Route path="jump-search" element={<JumpSearch />} />
+              <Route path="interpolation-search" element={<InterpolationSearch />} />
 
               <Route path="array" element={<ArrayVisualizer />} />
               <Route path="linked-list" element={<LinkedList />} />
