@@ -32,9 +32,16 @@ import BinarySearch from "./components/searching/BinarySearch";
 import JumpSearch from './components/searching/JumpSearch';
 import InterpolationSearch from './components/searching/InterpolationSearch';
 
+import BinaryTree from './components/trees/BinaryTree';
+import BinarySearchTree from './components/trees/BinarySearchTree';
+import AVLTree from './components/trees/AVLTree';
+import RedBlackTree from './components/trees/RedBlackTree';
+import HeapTree from './components/trees/HeapTree';
+
 import ArrayVisualizer from "./components/linear/Array";
 import LinkedList from './components/linear/LinkedList';
 import Stack from './components/linear/Stack';
+import DoublyLinkedList from './components/linear/DoublyLinkedList';
 
 // Create a simple NotFound component
 const NotFound = () => {
@@ -95,9 +102,16 @@ function App() {
               <Route path="jump-search" element={<JumpSearch />} />
               <Route path="interpolation-search" element={<InterpolationSearch />} />
 
+              <Route path="binary-tree" element={<BinaryTree />} />
+              <Route path="bst" element={<BinarySearchTree />} />
+              <Route path="avl-tree" element={<AVLTree />} />
+              <Route path="rb-tree" element={<RedBlackTree />} />
+              <Route path="heap-tree" element={<HeapTree />} />
+
               <Route path="array" element={<ArrayVisualizer />} />
               <Route path="linked-list" element={<LinkedList />} />
               <Route path="stack" element={<Stack />} />
+              <Route path="doubly-linked-list" element={<DoublyLinkedList />} />
 
               <Route path="ai-recommendations" element={<AIRecommendations />} />
 
