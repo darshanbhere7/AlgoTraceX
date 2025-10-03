@@ -23,13 +23,25 @@ import VisualizerHome from './pages/User/VisualizerHome';
 import BubbleSort from "@/components/sorting/BubbleSort";
 import MergeSort from "./components/sorting/MergeSort";
 import QuickSort from "./components/sorting/QuickSort";
+import HeapSort from './components/sorting/HeapSort';
+import InsertionSort from './components/sorting/InsertionSort';
+import SelectionSort from './components/sorting/SelectionSort';
 
 import LinearSearch from "./components/searching/LinearSearch";
 import BinarySearch from "./components/searching/BinarySearch";
+import JumpSearch from './components/searching/JumpSearch';
+import InterpolationSearch from './components/searching/InterpolationSearch';
+
+import BinaryTree from './components/trees/BinaryTree';
+import BinarySearchTree from './components/trees/BinarySearchTree';
+import AVLTree from './components/trees/AVLTree';
+import RedBlackTree from './components/trees/RedBlackTree';
+import HeapTree from './components/trees/HeapTree';
 
 import ArrayVisualizer from "./components/linear/Array";
 import LinkedList from './components/linear/LinkedList';
 import Stack from './components/linear/Stack';
+import DoublyLinkedList from './components/linear/DoublyLinkedList';
 
 // Create a simple NotFound component
 const NotFound = () => {
@@ -81,13 +93,25 @@ function App() {
               <Route path="bubble-sort" element={<BubbleSort />} />
               <Route path="merge-sort" element={<MergeSort />} />
               <Route path="quick-sort" element={<QuickSort />} />
+              <Route path="heap-sort" element={<HeapSort />} />
+              <Route path="insertion-sort" element={<InsertionSort />} />
+              <Route path="selection-sort" element={<SelectionSort />} />
 
               <Route path="linear-search" element={<LinearSearch />} />
               <Route path="binary-search" element={<BinarySearch />} />
+              <Route path="jump-search" element={<JumpSearch />} />
+              <Route path="interpolation-search" element={<InterpolationSearch />} />
+
+              <Route path="binary-tree" element={<BinaryTree />} />
+              <Route path="bst" element={<BinarySearchTree />} />
+              <Route path="avl-tree" element={<AVLTree />} />
+              <Route path="rb-tree" element={<RedBlackTree />} />
+              <Route path="heap-tree" element={<HeapTree />} />
 
               <Route path="array" element={<ArrayVisualizer />} />
               <Route path="linked-list" element={<LinkedList />} />
               <Route path="stack" element={<Stack />} />
+              <Route path="doubly-linked-list" element={<DoublyLinkedList />} />
 
               <Route path="ai-recommendations" element={<AIRecommendations />} />
 
