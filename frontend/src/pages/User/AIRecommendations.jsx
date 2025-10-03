@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,221 +8,243 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Brain, MessageSquare, BookOpen, Plus, Send, User, Bot, Trash2, Copy, ThumbsUp, ThumbsDown, RefreshCw } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
+import { Loader2, Brain, MessageSquare, BookOpen, Plus, Send, User, Bot, Trash2, Copy, RefreshCw } from 'lucide-react';
 
 const AIRecommendations = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const messagesEndRef = useRef(null);
 
-  // Enhanced conversation state with localStorage
-  const [conversations, setConversations] = useState(() => {
-    const savedConversations = localStorage.getItem('aiConversations');
-    if (savedConversations) {
-      const parsedConversations = JSON.parse(savedConversations);
-      // Convert string timestamps back to Date objects
-      return parsedConversations.map(conv => ({
-        ...conv,
-        messages: conv.messages.map(msg => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp)
-        }))
-      }));
-    }
-    return [];
-  });
-  const [currentConversationId, setCurrentConversationId] = useState(() => {
-    const savedCurrentId = localStorage.getItem('currentConversationId');
-    return savedCurrentId || null;
-  });
+  const [conversations, setConversations] = useState([]);
+  const [currentConvId, setCurrentConvId] = useState(null);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
-  // User profile for recommendations with localStorage
-  const [userProfile, setUserProfile] = useState(() => {
-    const savedProfile = localStorage.getItem('aiUserProfile');
-    return savedProfile ? JSON.parse(savedProfile) : {
-      userLevel: 'beginner',
-      currentTopics: [],
-      strengths: [],
-      weaknesses: [],
-      learningGoals: []
-    };
+  const [userProfile, setUserProfile] = useState({
+    level: 'beginner',
+    topics: [],
+    strengths: [],
+    weaknesses: []
   });
   const [recommendations, setRecommendations] = useState('');
-
-  // Algorithm explanation state
   const [algorithm, setAlgorithm] = useState('');
   const [level, setLevel] = useState('beginner');
   const [explanation, setExplanation] = useState('');
 
-  // Common options
-  const commonTopics = [
-    'Arrays', 'Linked Lists', 'Stacks', 'Queues', 'Trees', 'Graphs',
-    'Dynamic Programming', 'Sorting', 'Searching', 'Hash Tables',
-    'Greedy Algorithms', 'Backtracking', 'Bit Manipulation', 'Recursion',
-    'Divide and Conquer', 'Sliding Window', 'Two Pointers'
-  ];
+  const API_BASE_URL = 'http://localhost:5000/api';
 
-  const commonSkills = [
-    'Problem Analysis', 'Time Complexity', 'Space Complexity',
-    'Implementation', 'Debugging', 'Pattern Recognition',
-    'Mathematical Thinking', 'Code Optimization', 'Edge Cases',
-    'Testing', 'Code Readability', 'Algorithm Design'
-  ];
+  const commonTopics = ['Arrays', 'Linked Lists', 'Trees', 'Graphs', 'Dynamic Programming', 'Sorting', 'Searching', 'Hash Tables', 'Greedy', 'Backtracking'];
+  const commonSkills = ['Problem Analysis', 'Time Complexity', 'Space Complexity', 'Implementation', 'Debugging', 'Pattern Recognition'];
 
-  const API_BASE_URL = import.meta?.env?.VITE_API_URL || 'http://localhost:5000/api';
-
-  // Save conversations to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem('aiConversations', JSON.stringify(conversations));
-  }, [conversations]);
-
-  // Save current conversation ID to localStorage
-  useEffect(() => {
-    if (currentConversationId) {
-      localStorage.setItem('currentConversationId', currentConversationId);
-    } else {
-      localStorage.removeItem('currentConversationId');
-    }
-  }, [currentConversationId]);
-
-  // Save user profile to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('aiUserProfile', JSON.stringify(userProfile));
-  }, [userProfile]);
-
-  // Scroll to bottom of messages
-  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, [conversations, isTyping]);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [conversations]);
-
-  // Create new conversation
   const createNewConversation = () => {
-    const newConversation = {
-      id: Date.now().toString(),
-      title: 'New Conversation',
-      messages: [],
-      createdAt: new Date(),
-      userContext: { ...userProfile }
-    };
-    setConversations([newConversation, ...conversations]);
-    setCurrentConversationId(newConversation.id);
+    const newConv = { id: Date.now().toString(), title: 'New Chat', messages: [] };
+    setConversations([newConv, ...conversations]);
+    setCurrentConvId(newConv.id);
   };
 
-  // Get current conversation
-  const getCurrentConversation = () => {
-    return conversations.find(conv => conv.id === currentConversationId);
+  const getCurrentConv = () => conversations.find(c => c.id === currentConvId);
+
+  // A single function to update conversations in state
+  const updateConversationState = (convId, updates) => {
+    setConversations(prev =>
+      prev.map(c => (c.id === convId ? { ...c, ...updates } : c))
+    );
   };
 
-  // Update conversation
-  const updateConversation = (updates) => {
-    setConversations(conversations.map(conv => 
-      conv.id === currentConversationId ? { ...conv, ...updates } : conv
-    ));
+  // Format text with markdown-like syntax
+  const formatText = (text) => {
+    if (!text) return text;
+    
+    // Split by code blocks first to preserve them
+    const parts = text.split(/(```[\s\S]*?```|`[^`]+`)/);
+    
+    return parts.map((part, index) => {
+      // Handle code blocks
+      if (part.startsWith('```')) {
+        const code = part.replace(/```(\w+)?\n?/g, '').replace(/```$/g, '');
+        return (
+          <pre key={index} className="bg-black/10 dark:bg-white/10 p-3 rounded my-2 overflow-x-auto">
+            <code className="text-xs font-mono">{code}</code>
+          </pre>
+        );
+      }
+      
+      // Handle inline code
+      if (part.startsWith('`') && part.endsWith('`')) {
+        return (
+          <code key={index} className="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs font-mono">
+            {part.slice(1, -1)}
+          </code>
+        );
+      }
+      
+      // Handle regular text with bold, italic, and lists
+      const lines = part.split('\n');
+      return (
+        <React.Fragment key={index}>
+          {lines.map((line, lineIndex) => {
+            // Handle bullet points
+            if (line.trim().match(/^[-*•]\s/)) {
+              const content = line.replace(/^[-*•]\s/, '');
+              return (
+                <div key={lineIndex} className="flex gap-2 my-1">
+                  <span>•</span>
+                  <span>{processInlineFormatting(content)}</span>
+                </div>
+              );
+            }
+            
+            // Handle numbered lists
+            if (line.trim().match(/^\d+\.\s/)) {
+              return (
+                <div key={lineIndex} className="my-1">
+                  {processInlineFormatting(line)}
+                </div>
+              );
+            }
+            
+            // Handle headers
+            if (line.trim().startsWith('#')) {
+              const level = line.match(/^#+/)[0].length;
+              const content = line.replace(/^#+\s*/, '');
+              const fontSize = level === 1 ? 'text-lg' : level === 2 ? 'text-base' : 'text-sm';
+              return (
+                <div key={lineIndex} className={`font-bold ${fontSize} mt-3 mb-1`}>
+                  {processInlineFormatting(content)}
+                </div>
+              );
+            }
+            
+            // Regular line
+            return lineIndex < lines.length - 1 ? (
+              <React.Fragment key={lineIndex}>
+                {processInlineFormatting(line)}
+                <br />
+              </React.Fragment>
+            ) : (
+              processInlineFormatting(line)
+            );
+          })}
+        </React.Fragment>
+      );
+    });
   };
 
-  // Enhanced message sending with context awareness
+  const processInlineFormatting = (text) => {
+    if (!text) return text;
+    
+    const parts = [];
+    let currentIndex = 0;
+    
+    // Regex to match **bold**, *italic*, or plain text
+    const regex = /(\*\*[^*]+\*\*|\*[^*]+\*)/g;
+    let match;
+    
+    while ((match = regex.exec(text)) !== null) {
+      // Add text before the match
+      if (match.index > currentIndex) {
+        parts.push(text.slice(currentIndex, match.index));
+      }
+      
+      const matched = match[0];
+      if (matched.startsWith('**') && matched.endsWith('**')) {
+        // Bold text
+        parts.push(
+          <strong key={match.index} className="font-semibold">
+            {matched.slice(2, -2)}
+          </strong>
+        );
+      } else if (matched.startsWith('*') && matched.endsWith('*')) {
+        // Italic text
+        parts.push(
+          <em key={match.index} className="italic">
+            {matched.slice(1, -1)}
+          </em>
+        );
+      }
+      
+      currentIndex = regex.lastIndex;
+    }
+    
+    // Add remaining text
+    if (currentIndex < text.length) {
+      parts.push(text.slice(currentIndex));
+    }
+    
+    return parts.length > 0 ? parts : text;
+  };
+
+  // REFINED: sendMessage logic is now cleaner and more robust
   const sendMessage = async () => {
     if (!currentMessage.trim()) return;
 
-    const conversation = getCurrentConversation();
-    if (!conversation) {
-      createNewConversation();
-      return;
+    const messageToSend = currentMessage;
+    setCurrentMessage(''); // Clear input immediately for better UX
+
+    let activeConvId = currentConvId;
+    let activeConv = getCurrentConv();
+
+    // If no conversation is selected, create a new one
+    if (!activeConv) {
+      const newConv = { id: Date.now().toString(), title: 'New Chat', messages: [] };
+      setConversations(prev => [newConv, ...prev]);
+      setCurrentConvId(newConv.id);
+      activeConv = newConv;
+      activeConvId = newConv.id;
     }
 
-    const userMessage = {
-      id: Date.now().toString(),
-      type: 'user',
-      content: currentMessage,
-      timestamp: new Date()
-    };
+    // Add user message to UI immediately
+    const userMsg = { id: Date.now().toString(), type: 'user', content: messageToSend, timestamp: new Date() };
+    const updatedMessages = [...activeConv.messages, userMsg];
+    const newTitle = activeConv.messages.length === 0 ? (messageToSend.substring(0, 40) + (messageToSend.length > 40 ? '...' : '')) : activeConv.title;
+    updateConversationState(activeConvId, { messages: updatedMessages, title: newTitle });
 
-    // Add user message immediately
-    const updatedMessages = [...conversation.messages, userMessage];
-    updateConversation({ messages: updatedMessages });
-
-    // Update conversation title if it's the first message
-    if (conversation.messages.length === 0) {
-      const title = currentMessage.length > 30 
-        ? currentMessage.substring(0, 30) + '...' 
-        : currentMessage;
-      updateConversation({ title });
-    }
-
-    setCurrentMessage('');
     setLoading(true);
     setIsTyping(true);
     setError('');
 
     try {
-      // Enhanced context building
-      const contextData = {
-        question: currentMessage,
-        conversationHistory: conversation.messages.slice(-10), // Last 10 messages for context
-        userProfile: conversation.userContext,
-        messageType: detectMessageType(currentMessage),
-        previousContext: conversation.messages.length > 0 ? 
-          conversation.messages[conversation.messages.length - 2]?.content : null
-      };
+      // Prepare context for the API: all messages *before* the new one
+      const conversationHistory = activeConv.messages.map(msg => ({
+        role: msg.type === 'user' ? 'user' : 'assistant',
+        content: msg.content
+      }));
 
-      const response = await axios.post(`${API_BASE_URL}/ai/ask`, contextData);
+      const response = await fetch(`${API_BASE_URL}/ai/ask`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: messageToSend,
+          conversationHistory,
+          userProfile // Send the whole profile object for better context
+        })
+      });
 
-      if (response.data.success) {
-        const aiMessage = {
-          id: (Date.now() + 1).toString(),
-          type: 'assistant',
-          content: response.data.answer,
-          timestamp: new Date(),
-          metadata: {
-            responseType: response.data.responseType,
-            confidence: response.data.confidence,
-            suggestedFollowups: response.data.suggestedFollowups || []
-          }
-        };
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'API request failed');
+      }
 
-        const finalMessages = [...updatedMessages, aiMessage];
-        updateConversation({ messages: finalMessages });
+      const data = await response.json();
+
+      if (data.success) {
+        const aiMsg = { id: (Date.now() + 1).toString(), type: 'assistant', content: data.answer, timestamp: new Date() };
+        updateConversationState(activeConvId, { messages: [...updatedMessages, aiMsg] });
       } else {
-        setError('Failed to get response from AI');
+        setError(data.error || 'Failed to get response');
       }
     } catch (err) {
-      setError(err.message || 'Failed to send message');
+      setError(`Failed to connect to server: ${err.message}`);
     } finally {
       setLoading(false);
       setIsTyping(false);
     }
   };
 
-  // Detect message type for better context
-  const detectMessageType = (message) => {
-    const lowerMessage = message.toLowerCase();
-    
-    if (lowerMessage.includes('explain') || lowerMessage.includes('what is')) {
-      return 'explanation';
-    } else if (lowerMessage.includes('how to') || lowerMessage.includes('implement')) {
-      return 'howto';
-    } else if (lowerMessage.includes('example') || lowerMessage.includes('show me')) {
-      return 'example';
-    } else if (lowerMessage.includes('more') || lowerMessage.includes('elaborate')) {
-      return 'followup';
-    } else if (lowerMessage.includes('short') || lowerMessage.includes('brief')) {
-      return 'concise';
-    } else if (lowerMessage.includes('detailed') || lowerMessage.includes('comprehensive')) {
-      return 'detailed';
-    } else if (lowerMessage.includes('code') || lowerMessage.includes('implementation')) {
-      return 'code';
-    }
-    return 'general';
-  };
-
-  // Handle key press for sending messages
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -231,951 +252,388 @@ const AIRecommendations = () => {
     }
   };
 
-  // Clear conversation
-  const clearConversation = () => {
-    if (currentConversationId) {
-      updateConversation({ messages: [] });
+  const clearConv = () => {
+    if (currentConvId) {
+      updateConversationState(currentConvId, { messages: [] });
     }
   };
 
-  // Delete conversation
-  const deleteConversation = (conversationId) => {
-    setConversations(conversations.filter(conv => conv.id !== conversationId));
-    if (currentConversationId === conversationId) {
-      setCurrentConversationId(null);
-    }
+  const deleteConv = (id) => {
+    setConversations(conversations.filter(c => c.id !== id));
+    if (currentConvId === id) setCurrentConvId(null);
   };
 
-  // Copy message content
   const copyMessage = (content) => {
     navigator.clipboard.writeText(content);
   };
+  
+  // REFINED: regenerateResponse logic is simplified
+  const regenerateResponse = async () => {
+    const conv = getCurrentConv();
+    if (!conv || conv.messages.length < 1) return;
 
-  // Regenerate response
-  const regenerateResponse = async (messageIndex) => {
-    const conversation = getCurrentConversation();
-    if (!conversation || messageIndex < 1) return;
+    // Find the last user message to resubmit
+    const lastUserMessageIndex = conv.messages.findLastIndex(m => m.type === 'user');
+    if (lastUserMessageIndex === -1) return;
 
-    const userMessage = conversation.messages[messageIndex - 1];
-    const messages = conversation.messages.slice(0, messageIndex);
+    const messagesToResubmit = conv.messages.slice(0, lastUserMessageIndex + 1);
+    const lastUserMessage = messagesToResubmit[lastUserMessageIndex];
     
-    updateConversation({ messages });
-    
+    // Update UI to show only the history being resubmitted
+    updateConversationState(conv.id, { messages: messagesToResubmit });
+
     setLoading(true);
     setIsTyping(true);
+    setError('');
 
     try {
-      const contextData = {
-        question: userMessage.content,
-        conversationHistory: messages.slice(-10),
-        userProfile: conversation.userContext,
-        messageType: detectMessageType(userMessage.content),
-        regenerate: true
-      };
+        const conversationHistory = messagesToResubmit.slice(0, -1).map(msg => ({
+            role: msg.type === 'user' ? 'user' : 'assistant',
+            content: msg.content
+        }));
 
-      const response = await axios.post(`${API_BASE_URL}/ai/ask`, contextData);
+        const response = await fetch(`${API_BASE_URL}/ai/ask`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                question: lastUserMessage.content,
+                conversationHistory,
+                userProfile
+            })
+        });
 
-      if (response.data.success) {
-        const aiMessage = {
-          id: Date.now().toString(),
-          type: 'assistant',
-          content: response.data.answer,
-          timestamp: new Date(),
-          metadata: {
-            responseType: response.data.responseType,
-            confidence: response.data.confidence,
-            suggestedFollowups: response.data.suggestedFollowups || []
-          }
-        };
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'API request failed');
+        }
 
-        updateConversation({ messages: [...messages, aiMessage] });
-      }
+        const data = await response.json();
+
+        if (data.success) {
+            const aiMsg = { id: Date.now().toString(), type: 'assistant', content: data.answer, timestamp: new Date() };
+            updateConversationState(conv.id, { messages: [...messagesToResubmit, aiMsg] });
+        } else {
+            setError(data.error || 'Failed to regenerate response');
+        }
     } catch (err) {
-      setError('Failed to regenerate response');
+        setError(`Failed to regenerate: ${err.message}`);
     } finally {
-      setLoading(false);
-      setIsTyping(false);
+        setLoading(false);
+        setIsTyping(false);
     }
   };
 
-  // Follow-up question handler
-  const askFollowUp = (question) => {
-    setCurrentMessage(question);
-  };
 
-  // Enhanced recommendations
   const handleGetRecommendations = async () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.post(`${API_BASE_URL}/ai/recommendations`, {
-        ...userProfile,
-        strengths: userProfile.strengths.join(', '),
-        weaknesses: userProfile.weaknesses.join(', '),
-        learningGoals: userProfile.learningGoals.join(', ')
+      const response = await fetch(`${API_BASE_URL}/ai/recommendations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userLevel: userProfile.level,
+          currentTopics: userProfile.topics.join(', '),
+          strengths: userProfile.strengths.join(', '),
+          weaknesses: userProfile.weaknesses.join(', ')
+        })
       });
-
-      if (response.data.success) {
-        setRecommendations(response.data.recommendations);
+      const data = await response.json();
+      if (data.success) {
+        setRecommendations(data.recommendations);
       } else {
         setError('Failed to get recommendations');
       }
     } catch (err) {
-      setError('Failed to get recommendations');
+      setError('Failed to connect to server');
     } finally {
       setLoading(false);
     }
   };
 
-  // Algorithm explanation
   const handleExplainAlgorithm = async () => {
     if (!algorithm.trim()) {
       setError('Please enter an algorithm name');
       return;
     }
-
     setLoading(true);
     setError('');
     try {
-      const response = await axios.post(`${API_BASE_URL}/ai/explain`, {
-        algorithm,
-        level
+      const response = await fetch(`${API_BASE_URL}/ai/explain`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ algorithm, level })
       });
-
-      if (response.data.success) {
-        setExplanation(response.data.explanation);
+      const data = await response.json();
+      if (data.success) {
+        setExplanation(data.explanation);
       } else {
         setError('Failed to get explanation');
       }
     } catch (err) {
-      setError('Failed to get explanation');
+      setError('Failed to connect to server');
     } finally {
       setLoading(false);
     }
   };
 
-  // Profile management helpers
   const addToProfile = (field, value) => {
     if (value && !userProfile[field].includes(value)) {
-      setUserProfile({
-        ...userProfile,
-        [field]: [...userProfile[field], value]
-      });
+      setUserProfile({ ...userProfile, [field]: [...userProfile[field], value] });
     }
   };
 
   const removeFromProfile = (field, index) => {
-    setUserProfile({
-      ...userProfile,
-      [field]: userProfile[field].filter((_, i) => i !== index)
-    });
+    setUserProfile({ ...userProfile, [field]: userProfile[field].filter((_, i) => i !== index) });
   };
-
-  // Add state for custom inputs
-  const [showCustomTopic, setShowCustomTopic] = useState(false);
-  const [showCustomStrength, setShowCustomStrength] = useState(false);
-  const [showCustomWeakness, setShowCustomWeakness] = useState(false);
-  const [customTopic, setCustomTopic] = useState('');
-  const [customStrength, setCustomStrength] = useState('');
-  const [customWeakness, setCustomWeakness] = useState('');
-
-  // Handle custom inputs
-  const handleAddCustomTopic = () => {
-    if (customTopic.trim()) {
-      addToProfile('currentTopics', customTopic);
-      setCustomTopic('');
-      setShowCustomTopic(false);
-    }
-  };
-
-  const handleAddCustomStrength = () => {
-    if (customStrength.trim()) {
-      setUserProfile({
-        ...userProfile,
-        strengths: [...userProfile.strengths, customStrength]
-      });
-      setCustomStrength('');
-      setShowCustomStrength(false);
-    }
-  };
-
-  const handleAddCustomWeakness = () => {
-    if (customWeakness.trim()) {
-      setUserProfile({
-        ...userProfile,
-        weaknesses: [...userProfile.weaknesses, customWeakness]
-      });
-      setCustomWeakness('');
-      setShowCustomWeakness(false);
-    }
-  };
-
-  // Add clear all function
-  const clearAll = (field) => {
-    setUserProfile({
-      ...userProfile,
-      [field]: []
-    });
-  };
-
-  // Add new styles for better content handling
-  const messageContentStyles = {
-    overflowWrap: 'break-word',
-    wordBreak: 'break-word',
-    maxWidth: '100%'
-  };
-
-  // Update the message rendering to handle markdown and prevent overflow
-  const renderMessageContent = (content) => {
-    return (
-      <div className="prose prose-sm max-w-none dark:prose-invert" style={messageContentStyles}>
-        <ReactMarkdown
-          components={{
-            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-            code: ({ children }) => (
-              <code className="bg-muted px-1.5 py-0.5 rounded text-sm">{children}</code>
-            ),
-            pre: ({ children }) => (
-              <pre className="bg-muted p-4 rounded-lg overflow-x-auto my-4">{children}</pre>
-            ),
-            ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
-            ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
-            li: ({ children }) => <li className="mb-1">{children}</li>,
-            h1: ({ children }) => <h1 className="text-2xl font-bold mb-4">{children}</h1>,
-            h2: ({ children }) => <h2 className="text-xl font-bold mb-3">{children}</h2>,
-            h3: ({ children }) => <h3 className="text-lg font-bold mb-2">{children}</h3>,
-            blockquote: ({ children }) => (
-              <blockquote className="border-l-4 border-muted-foreground pl-4 italic my-4">
-                {children}
-              </blockquote>
-            ),
-            a: ({ href, children }) => (
-              <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                {children}
-              </a>
-            ),
-          }}
-        >
-          {content}
-        </ReactMarkdown>
-      </div>
-    );
-  };
-
-  // Add clear all data function
-  const clearAllData = () => {
-    localStorage.removeItem('aiConversations');
-    localStorage.removeItem('currentConversationId');
-    localStorage.removeItem('aiUserProfile');
-    setConversations([]);
-    setCurrentConversationId(null);
-    setUserProfile({
-      userLevel: 'beginner',
-      currentTopics: [],
-      strengths: [],
-      weaknesses: [],
-      learningGoals: []
-    });
-  };
-
-  // Update the conversation rendering
+  
   const renderConversation = () => {
-    const conversation = getCurrentConversation();
+    const conv = getCurrentConv();
+    const lastMessage = conv?.messages[conv.messages.length - 1];
+    const canRegenerate = lastMessage?.type === 'assistant' && !loading;
 
     return (
-      <div className="flex h-[700px] overflow-hidden">
-        {/* Conversation Sidebar */}
-        <div className="w-1/4 border-r bg-muted/30 p-4 overflow-y-auto">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold">Conversations</h3>
-            <div className="flex gap-2">
-              <Button 
-                size="sm" 
-                onClick={createNewConversation}
-                className="h-8 w-8 p-0"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-              {conversations.length > 0 && (
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={clearAllData}
-                  className="h-8 text-xs"
-                >
-                  Clear All Data
-                </Button>
-              )}
-            </div>
+      <div className="flex h-[600px] border rounded-lg">
+        <div className="w-1/4 border-r p-3 overflow-y-auto bg-muted/30">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="font-semibold text-sm">Conversations</h3>
+            <Button size="icon" variant="ghost" onClick={createNewConversation} className="h-7 w-7">
+              <Plus className="h-4 w-4" />
+            </Button>
           </div>
-          
           <div className="space-y-2">
-            {conversations.map((conv) => (
+            {conversations.map((c) => (
               <div
-                key={conv.id}
-                className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                  conv.id === currentConversationId 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'bg-background hover:bg-muted'
-                }`}
-                onClick={() => setCurrentConversationId(conv.id)}
+                key={c.id}
+                className={`p-2 rounded cursor-pointer text-sm transition-colors relative group ${ c.id === currentConvId ? 'bg-primary text-primary-foreground' : 'hover:bg-muted' }`}
+                onClick={() => setCurrentConvId(c.id)}
               >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{conv.title}</p>
-                    <p className="text-xs opacity-70">
-                      {conv.messages.length} messages
-                    </p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-6 w-6 p-0 opacity-70 hover:opacity-100"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteConversation(conv.id);
-                    }}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </div>
+                <p className="truncate pr-8">{c.title}</p>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-6 w-6 p-0 absolute top-1/2 right-1 -translate-y-1/2 opacity-0 group-hover:opacity-100"
+                  onClick={(e) => { e.stopPropagation(); deleteConv(c.id); }}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
               </div>
             ))}
           </div>
         </div>
-
-        {/* Chat Interface */}
-        <div className="flex-1 flex flex-col">
-          {/* Chat Header */}
-          <div className="border-b p-4 flex justify-between items-center bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div>
-              <h3 className="font-semibold">
-                {conversation?.title || 'Start a new conversation'}
-              </h3>
-              {conversation && (
-                <p className="text-sm text-muted-foreground">
-                  {conversation.messages.length} messages
-                </p>
-              )}
-            </div>
-            {conversation && conversation.messages.length > 0 && (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={clearConversation}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Clear
+        <div className="flex-1 flex flex-col bg-background">
+          <div className="border-b p-3 flex justify-between items-center">
+            <h3 className="font-semibold text-sm">{conv?.title || 'Select a conversation'}</h3>
+            {conv && conv.messages.length > 0 && (
+              <Button variant="outline" size="sm" onClick={clearConv} className="h-7 text-xs">
+                <Trash2 className="h-3 w-3 mr-1" />Clear
               </Button>
             )}
           </div>
-
-          {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {!conversation && (
-              <div className="text-center text-muted-foreground py-12">
-                <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Start a new conversation to begin chatting with the AI assistant</p>
-                <Button className="mt-4" onClick={createNewConversation}>
-                  New Conversation
-                </Button>
+            {!conv && (
+              <div className="text-center text-muted-foreground h-full flex flex-col justify-center items-center">
+                <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p className="text-sm mb-3">Select a chat or start a new one</p>
+                <Button size="sm" onClick={createNewConversation}>New Chat</Button>
               </div>
             )}
-
-            {conversation?.messages.map((message, index) => (
-              <div
-                key={message.id}
-                className={`flex gap-3 ${
-                  message.type === 'user' ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                <div
-                  className={`max-w-[80%] rounded-lg p-4 ${
-                    message.type === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
-                  }`}
-                >
-                  <div className="flex items-start gap-2">
-                    {message.type === 'user' ? (
-                      <User className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                    ) : (
-                      <Bot className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      {renderMessageContent(message.content)}
-                      
-                      {/* Message actions */}
-                      <div className="flex items-center gap-2 mt-3 text-xs opacity-70">
-                        <span>{message.timestamp.toLocaleTimeString()}</span>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 w-6 p-0"
-                          onClick={() => copyMessage(message.content)}
-                        >
-                          <Copy className="h-3 w-3" />
-                        </Button>
-                        {message.type === 'assistant' && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-6 w-6 p-0"
-                            onClick={() => regenerateResponse(index + 1)}
-                          >
-                            <RefreshCw className="h-3 w-3" />
-                          </Button>
-                        )}
-                      </div>
-
-                      {/* Suggested follow-ups */}
-                      {message.type === 'assistant' && message.metadata?.suggestedFollowups && (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {message.metadata.suggestedFollowups.map((followup, i) => (
-                            <Badge
-                              key={i}
-                              variant="secondary"
-                              className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
-                              onClick={() => askFollowUp(followup)}
-                            >
-                              {followup}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
+            {conv?.messages.map((msg, idx) => (
+              <div key={msg.id} className={`flex items-start gap-3 ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                {msg.type === 'assistant' && <Bot className="h-5 w-5 mt-2 flex-shrink-0" />}
+                <div className={`max-w-[85%] rounded-lg p-3 text-sm ${ msg.type === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted' }`}>
+                  <div className="break-words">{formatText(msg.content)}</div>
+                   <div className="flex items-center gap-2 mt-2 text-xs opacity-60">
+                     <span>{msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                     <button className="p-1 hover:opacity-100 opacity-70" onClick={() => copyMessage(msg.content)}><Copy className="h-3 w-3" /></button>
+                   </div>
                 </div>
+                {msg.type === 'user' && <User className="h-5 w-5 mt-2 flex-shrink-0" />}
               </div>
             ))}
-
             {isTyping && (
-              <div className="flex gap-3 justify-start">
-                <div className="bg-muted rounded-lg p-4 max-w-[80%]">
-                  <div className="flex items-center gap-2">
-                    <Bot className="h-4 w-4" />
+              <div className="flex items-start gap-3 justify-start">
+                  <Bot className="h-5 w-5 mt-2 flex-shrink-0" />
+                  <div className="bg-muted rounded-lg p-3 flex items-center">
                     <div className="flex gap-1">
                       <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
                       <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
                       <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                     </div>
                   </div>
-                </div>
               </div>
             )}
-
             <div ref={messagesEndRef} />
           </div>
-
-          {/* Message Input */}
-          <div className="border-t p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="flex gap-2">
+          {canRegenerate && (
+            <div className='px-4 pb-2 flex justify-center'>
+                <Button variant="outline" size="sm" onClick={regenerateResponse} disabled={loading}>
+                    <RefreshCw className="h-3 w-3 mr-2" /> Regenerate
+                </Button>
+            </div>
+          )}
+          <div className="border-t p-3">
+            <div className="relative">
               <Textarea
-                placeholder="Ask anything about DSA... (Press Enter to send, Shift+Enter for new line)"
+                placeholder="Ask about DSA... (Enter to send, Shift+Enter for new line)"
                 value={currentMessage}
                 onChange={(e) => setCurrentMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                rows={2}
-                className="resize-none"
-                disabled={loading}
+                onKeyDown={handleKeyPress}
+                rows={1}
+                className="resize-none pr-12 py-3 text-sm"
+                disabled={loading || !currentConvId}
               />
-              <Button
-                onClick={sendMessage}
-                disabled={loading || !currentMessage.trim()}
-                size="icon"
-                className="h-auto"
-              >
-                {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
+              <Button onClick={sendMessage} disabled={loading || !currentMessage.trim()} size="icon" className="absolute right-2 bottom-1.5 h-8 w-8">
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>
-            </div>
-            
-            {/* Quick actions */}
-            <div className="flex flex-wrap gap-2 mt-2">
-              <Badge 
-                variant="outline" 
-                className="cursor-pointer hover:bg-muted"
-                onClick={() => askFollowUp("Explain this in simple terms")}
-              >
-                Simplify
-              </Badge>
-              <Badge 
-                variant="outline" 
-                className="cursor-pointer hover:bg-muted"
-                onClick={() => askFollowUp("Show me code examples")}
-              >
-                Show Code
-              </Badge>
-              <Badge 
-                variant="outline" 
-                className="cursor-pointer hover:bg-muted"
-                onClick={() => askFollowUp("Give me practice problems")}
-              >
-                Practice
-              </Badge>
-              <Badge 
-                variant="outline" 
-                className="cursor-pointer hover:bg-muted"
-                onClick={() => askFollowUp("Tell me more about this")}
-              >
-                More Details
-              </Badge>
             </div>
           </div>
         </div>
       </div>
     );
   };
-
-  // Update the recommendations rendering
-  const renderRecommendations = () => (
-    <Card className="overflow-hidden">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Brain className="h-5 w-5" />
-          Personalized Recommendations
-        </CardTitle>
-        <CardDescription>
-          Create your personalized DSA learning profile to get tailored recommendations
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6 overflow-y-auto max-h-[700px]">
-        {/* Level Selection */}
-        <div className="space-y-2">
-          <Label>Your Current Level</Label>
-          <Select 
-            value={userProfile.userLevel} 
-            onValueChange={(value) => setUserProfile({...userProfile, userLevel: value})}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="beginner">Beginner - Just starting with DSA</SelectItem>
-              <SelectItem value="intermediate">Intermediate - Comfortable with basics</SelectItem>
-              <SelectItem value="advanced">Advanced - Ready for complex problems</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Current Focus */}
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <Label>Current Learning Focus</Label>
-            {userProfile.currentTopics.length > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => clearAll('currentTopics')}
-                className="h-8 text-xs"
-              >
-                Clear All
-              </Button>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Select 
-              onValueChange={(value) => {
-                if (value === 'custom') {
-                  setShowCustomTopic(true);
-                } else {
-                  addToProfile('currentTopics', value);
-                }
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select current focus areas" />
-              </SelectTrigger>
-              <SelectContent>
-                {commonTopics.filter(topic => !userProfile.currentTopics.includes(topic))
-                  .map((topic) => (
-                  <SelectItem key={topic} value={topic}>{topic}</SelectItem>
-                ))}
-                <SelectItem value="custom">Add Custom Topic</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setShowCustomTopic(!showCustomTopic)}
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-          {showCustomTopic && (
-            <div className="flex gap-2 mt-2">
-              <Input
-                placeholder="Enter your custom topic"
-                value={customTopic}
-                onChange={(e) => setCustomTopic(e.target.value)}
-              />
-              <Button onClick={handleAddCustomTopic}>Add</Button>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setShowCustomTopic(false);
-                  setCustomTopic('');
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-          )}
-          <div className="flex flex-wrap gap-2 mt-2">
-            {userProfile.currentTopics.map((topic, index) => (
-              <Badge 
-                key={index} 
-                variant="secondary"
-                className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
-                onClick={() => removeFromProfile('currentTopics', index)}
-              >
-                {topic} ×
-              </Badge>
-            ))}
-          </div>
-        </div>
-
-        {/* Strengths */}
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <Label>Your Strengths</Label>
-            {userProfile.strengths.length > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => clearAll('strengths')}
-                className="h-8 text-xs"
-              >
-                Clear All
-              </Button>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Select 
-              onValueChange={(value) => {
-                if (value === 'custom') {
-                  setShowCustomStrength(true);
-                } else {
-                  addToProfile('strengths', value);
-                }
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Add your strengths" />
-              </SelectTrigger>
-              <SelectContent>
-                {commonSkills.filter(skill => !userProfile.strengths.includes(skill))
-                  .map((skill) => (
-                  <SelectItem key={skill} value={skill}>{skill}</SelectItem>
-                ))}
-                <SelectItem value="custom">Add Custom Strength</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setShowCustomStrength(!showCustomStrength)}
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-          {showCustomStrength && (
-            <div className="flex gap-2 mt-2">
-              <Input
-                placeholder="Enter your custom strength"
-                value={customStrength}
-                onChange={(e) => setCustomStrength(e.target.value)}
-              />
-              <Button onClick={handleAddCustomStrength}>Add</Button>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setShowCustomStrength(false);
-                  setCustomStrength('');
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-          )}
-          <div className="flex flex-wrap gap-2 mt-2">
-            {userProfile.strengths.map((strength, index) => (
-              <Badge 
-                key={index} 
-                variant="secondary"
-                className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
-                onClick={() => removeFromProfile('strengths', index)}
-              >
-                {strength} ×
-              </Badge>
-            ))}
-          </div>
-        </div>
-
-        {/* Weaknesses */}
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <Label>Areas to Improve</Label>
-            {userProfile.weaknesses.length > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => clearAll('weaknesses')}
-                className="h-8 text-xs"
-              >
-                Clear All
-              </Button>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Select 
-              onValueChange={(value) => {
-                if (value === 'custom') {
-                  setShowCustomWeakness(true);
-                } else {
-                  addToProfile('weaknesses', value);
-                }
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Add areas to improve" />
-              </SelectTrigger>
-              <SelectContent>
-                {commonSkills.filter(skill => !userProfile.weaknesses.includes(skill))
-                  .map((skill) => (
-                  <SelectItem key={skill} value={skill}>{skill}</SelectItem>
-                ))}
-                <SelectItem value="custom">Add Custom Area</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setShowCustomWeakness(!showCustomWeakness)}
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-          {showCustomWeakness && (
-            <div className="flex gap-2 mt-2">
-              <Input
-                placeholder="Enter your custom area to improve"
-                value={customWeakness}
-                onChange={(e) => setCustomWeakness(e.target.value)}
-              />
-              <Button onClick={handleAddCustomWeakness}>Add</Button>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setShowCustomWeakness(false);
-                  setCustomWeakness('');
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-          )}
-          <div className="flex flex-wrap gap-2 mt-2">
-            {userProfile.weaknesses.map((weakness, index) => (
-              <Badge 
-                key={index} 
-                variant="destructive"
-                className="cursor-pointer hover:bg-destructive/90"
-                onClick={() => removeFromProfile('weaknesses', index)}
-              >
-                {weakness} ×
-              </Badge>
-            ))}
-          </div>
-        </div>
-
-        <Button 
-          onClick={handleGetRecommendations} 
-          disabled={loading}
-          className="w-full"
-        >
-          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Get Personalized Recommendations
-        </Button>
-
-        {recommendations && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Personalized Learning Plan</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="prose prose-sm max-w-none dark:prose-invert">
-                <ReactMarkdown
-                  components={{
-                    p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                    h1: ({ children }) => <h1 className="text-2xl font-bold mb-4">{children}</h1>,
-                    h2: ({ children }) => <h2 className="text-xl font-bold mb-3">{children}</h2>,
-                    h3: ({ children }) => <h3 className="text-lg font-bold mb-2">{children}</h3>,
-                    ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
-                    ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
-                    li: ({ children }) => <li className="mb-1">{children}</li>,
-                    code: ({ children }) => (
-                      <code className="bg-muted px-1.5 py-0.5 rounded text-sm">{children}</code>
-                    ),
-                    pre: ({ children }) => (
-                      <pre className="bg-muted p-4 rounded-lg overflow-x-auto my-4">{children}</pre>
-                    ),
-                    a: ({ href, children }) => (
-                      <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                        {children}
-                      </a>
-                    ),
-                  }}
-                >
-                  {recommendations}
-                </ReactMarkdown>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </CardContent>
-    </Card>
-  );
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
+  
+    return (
+    <div className="p-4 md:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            AI DSA Learning Assistant
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400">
-            Your intelligent companion for mastering Data Structures & Algorithms
-          </p>
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold mb-2">AI DSA Assistant</h1>
+          <p className="text-muted-foreground">Your context-aware DSA learning companion</p>
         </div>
         
         {error && (
-          <Alert variant="destructive" className="mb-6">
+          <Alert variant="destructive" className="mb-4">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
         
         <Tabs defaultValue="chat" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="chat" className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />
-              Smart Chat
-            </TabsTrigger>
-            <TabsTrigger value="recommendations" className="flex items-center gap-2">
-              <Brain className="h-4 w-4" />
-              Personalized Recommendations
-            </TabsTrigger>
-            <TabsTrigger value="explanations" className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4" />
-              Quick Explain
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 mb-4">
+            <TabsTrigger value="chat"><MessageSquare className="h-4 w-4 mr-2" />Chat</TabsTrigger>
+            <TabsTrigger value="recommendations"><Brain className="h-4 w-4 mr-2" />Recommendations</TabsTrigger>
+            <TabsTrigger value="explanations"><BookOpen className="h-4 w-4 mr-2" />Explain</TabsTrigger>
           </TabsList>
-
           <TabsContent value="chat">
-            <Card className="overflow-hidden">
-              <CardHeader>
-                <CardTitle>Intelligent DSA Assistant</CardTitle>
-                <CardDescription>
-                  Have natural conversations about algorithms and data structures. 
-                  The AI remembers context and adapts to your learning style.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                {renderConversation()}
-              </CardContent>
+            <Card>
+              <CardContent className="p-0">{renderConversation()}</CardContent>
             </Card>
           </TabsContent>
-          
           <TabsContent value="recommendations">
-            {renderRecommendations()}
-          </TabsContent>
-          
-          <TabsContent value="explanations">
-            <Card className="overflow-hidden">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5" />
-                  Quick Algorithm Explanations
-                </CardTitle>
-                <CardDescription>
-                  Get instant explanations for any algorithm
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6 overflow-y-auto max-h-[700px]">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Algorithm Name</Label>
-                    <Input
-                      placeholder="e.g., Quick Sort, Dijkstra's Algorithm"
-                      value={algorithm}
-                      onChange={(e) => setAlgorithm(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Explanation Level</Label>
-                    <Select value={level} onValueChange={setLevel}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="beginner">Beginner - High level overview</SelectItem>
-                        <SelectItem value="intermediate">Intermediate - With examples</SelectItem>
-                        <SelectItem value="advanced">Advanced - Detailed analysis</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <Button 
-                  onClick={handleExplainAlgorithm} 
-                  disabled={loading || !algorithm.trim()}
-                  className="w-full"
-                >
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Explain Algorithm
-                </Button>
-
-                {explanation && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>{algorithm} - {level} level</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="prose prose-sm max-w-none dark:prose-invert">
-                        <ReactMarkdown
-                          components={{
-                            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                            h1: ({ children }) => <h1 className="text-2xl font-bold mb-4">{children}</h1>,
-                            h2: ({ children }) => <h2 className="text-xl font-bold mb-3">{children}</h2>,
-                            h3: ({ children }) => <h3 className="text-lg font-bold mb-2">{children}</h3>,
-                            ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
-                            ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
-                            li: ({ children }) => <li className="mb-1">{children}</li>,
-                            code: ({ children }) => (
-                              <code className="bg-muted px-1.5 py-0.5 rounded text-sm">{children}</code>
-                            ),
-                            pre: ({ children }) => (
-                              <pre className="bg-muted p-4 rounded-lg overflow-x-auto my-4">{children}</pre>
-                            ),
-                            a: ({ href, children }) => (
-                              <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                                {children}
-                              </a>
-                            ),
-                          }}
-                        >
-                          {explanation}
-                        </ReactMarkdown>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+             <Card>
+               <CardHeader>
+                 <CardTitle>Personalized Recommendations</CardTitle>
+                 <CardDescription>Get tailored learning suggestions based on your profile.</CardDescription>
+               </CardHeader>
+               <CardContent className="space-y-4 max-h-[600px] overflow-y-auto">
+                 <div className="space-y-2">
+                   <Label>Your Level</Label>
+                   <Select value={userProfile.level} onValueChange={(v) => setUserProfile({...userProfile, level: v})}>
+                     <SelectTrigger><SelectValue /></SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="beginner">Beginner</SelectItem>
+                       <SelectItem value="intermediate">Intermediate</SelectItem>
+                       <SelectItem value="advanced">Advanced</SelectItem>
+                     </SelectContent>
+                   </Select>
+                 </div>
+                 <div className="space-y-2">
+                   <Label>Learning Topics</Label>
+                   <Select onValueChange={(v) => addToProfile('topics', v)}>
+                     <SelectTrigger><SelectValue placeholder="Add topics you are studying" /></SelectTrigger>
+                     <SelectContent>
+                       {commonTopics.filter(t => !userProfile.topics.includes(t)).map(t => (
+                         <SelectItem key={t} value={t}>{t}</SelectItem>
+                       ))}
+                     </SelectContent>
+                   </Select>
+                   <div className="flex flex-wrap gap-2 pt-2">
+                     {userProfile.topics.map((t, i) => (
+                       <Badge key={i} variant="secondary" className="cursor-pointer" onClick={() => removeFromProfile('topics', i)}>{t} &times;</Badge>
+                     ))}
+                   </div>
+                 </div>
+                 <div className="space-y-2">
+                   <Label>Strengths</Label>
+                   <Select onValueChange={(v) => addToProfile('strengths', v)}>
+                     <SelectTrigger><SelectValue placeholder="Add your strengths" /></SelectTrigger>
+                     <SelectContent>
+                       {commonSkills.filter(s => !userProfile.strengths.includes(s) && !userProfile.weaknesses.includes(s)).map(s => (
+                         <SelectItem key={s} value={s}>{s}</SelectItem>
+                       ))}
+                     </SelectContent>
+                   </Select>
+                   <div className="flex flex-wrap gap-2 pt-2">
+                     {userProfile.strengths.map((s, i) => (
+                       <Badge key={i} variant="secondary" className="cursor-pointer" onClick={() => removeFromProfile('strengths', i)}>{s} &times;</Badge>
+                     ))}
+                   </div>
+                 </div>
+                 <div className="space-y-2">
+                   <Label>Areas to Improve</Label>
+                   <Select onValueChange={(v) => addToProfile('weaknesses', v)}>
+                     <SelectTrigger><SelectValue placeholder="Add areas for improvement" /></SelectTrigger>
+                     <SelectContent>
+                       {commonSkills.filter(s => !userProfile.weaknesses.includes(s) && !userProfile.strengths.includes(s)).map(s => (
+                         <SelectItem key={s} value={s}>{s}</SelectItem>
+                       ))}
+                     </SelectContent>
+                   </Select>
+                   <div className="flex flex-wrap gap-2 pt-2">
+                     {userProfile.weaknesses.map((w, i) => (
+                       <Badge key={i} variant="destructive" className="cursor-pointer" onClick={() => removeFromProfile('weaknesses', i)}>{w} &times;</Badge>
+                     ))}
+                   </div>
+                 </div>
+                 <Button onClick={handleGetRecommendations} disabled={loading} className="w-full">
+                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                   Get Recommendations
+                 </Button>
+                 {recommendations && (
+                   <Card className="bg-muted/50">
+                     <CardHeader><CardTitle>Your Learning Plan</CardTitle></CardHeader>
+                     <CardContent className="text-sm">{formatText(recommendations)}</CardContent>
+                   </Card>
+                 )}
+               </CardContent>
+             </Card>
+           </TabsContent>
+           <TabsContent value="explanations">
+             <Card>
+               <CardHeader>
+                 <CardTitle>Quick Algorithm Explanation</CardTitle>
+                 <CardDescription>Get an instant explanation tailored to your skill level.</CardDescription>
+               </CardHeader>
+               <CardContent className="space-y-4">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                   <div className="space-y-2">
+                     <Label htmlFor="algorithm-input">Algorithm</Label>
+                     <Input id="algorithm-input" placeholder="e.g., Quick Sort" value={algorithm} onChange={(e) => setAlgorithm(e.target.value)} />
+                   </div>
+                   <div className="space-y-2">
+                     <Label>Level</Label>
+                     <Select value={level} onValueChange={setLevel}>
+                       <SelectTrigger><SelectValue /></SelectTrigger>
+                       <SelectContent>
+                         <SelectItem value="beginner">Beginner</SelectItem>
+                         <SelectItem value="intermediate">Intermediate</SelectItem>
+                         <SelectItem value="advanced">Advanced</SelectItem>
+                       </SelectContent>
+                     </Select>
+                   </div>
+                 </div>
+                 <Button onClick={handleExplainAlgorithm} disabled={loading || !algorithm.trim()} className="w-full">
+                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                   Explain Algorithm
+                 </Button>
+                 {explanation && (
+                   <Card className="bg-muted/50">
+                     <CardHeader><CardTitle>{algorithm}</CardTitle></CardHeader>
+                     <CardContent className="text-sm">{formatText(explanation)}</CardContent>
+                   </Card>
+                 )}
+               </CardContent>
+             </Card>
+           </TabsContent>
         </Tabs>
       </div>
     </div>

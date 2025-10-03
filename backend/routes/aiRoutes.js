@@ -1,16 +1,19 @@
 const express = require('express');
 const router = express.Router();
 
-// Import controller functions directly to avoid potential export issues
-const { getRecommendations, askQuestion, explainAlgorithm } = require('../controllers/aiController');
+const {
+  getRecommendations,
+  askQuestion,
+  explainAlgorithm
+} = require('../controllers/aiController');
 
-// Route for getting AI recommendations
+// AI learning recommendations
 router.post('/recommendations', getRecommendations);
 
-// Route for asking AI questions about DSA concepts
+// AI Q&A about DSA
 router.post('/ask', askQuestion);
 
-// Route for getting algorithm explanations
+// AI algorithm explanation
 router.post('/explain', explainAlgorithm);
 
 module.exports = router;
