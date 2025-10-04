@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Brain, MessageSquare, BookOpen, Plus, Send, User, Bot, Trash2, Copy, RefreshCw } from 'lucide-react';
+import chatService from '@/services/chatService';
 
 const AIRecommendations = () => {
   const [loading, setLoading] = useState(false);
@@ -40,10 +41,65 @@ const AIRecommendations = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversations, isTyping]);
 
+  // Load conversations from database on component mount
+  useEffect(() => {
+    const loadConversations = async () => {
+      try {
+        const dbConversations = await chatService.getConversations();
+        // Transform database conversations to match frontend format
+        const transformedConversations = dbConversations.map(conv => ({
+          id: conv._id,
+          title: conv.title,
+          messages: [], // Messages will be loaded separately when conversation is selected
+          lastMessageAt: conv.lastMessageAt,
+          createdAt: conv.createdAt
+        }));
+        setConversations(transformedConversations);
+      } catch (error) {
+        console.error('Error loading conversations:', error);
+        // If there's an error, start with empty conversations
+        setConversations([]);
+      }
+    };
+
+    loadConversations();
+  }, []);
+
   const createNewConversation = () => {
-    const newConv = { id: Date.now().toString(), title: 'New Chat', messages: [] };
+    const newConv = { id: `temp_${Date.now()}`, title: 'New Chat', messages: [] };
     setConversations([newConv, ...conversations]);
     setCurrentConvId(newConv.id);
+  };
+
+  // Load messages for a conversation when it's selected
+  const loadConversationMessages = async (conversationId) => {
+    try {
+      const result = await chatService.getConversationMessages(conversationId);
+      if (result) {
+        const transformedMessages = result.messages.map(msg => ({
+          id: msg._id,
+          type: msg.type,
+          content: msg.content,
+          timestamp: new Date(msg.timestamp)
+        }));
+        
+        // Update the conversation with loaded messages
+        updateConversationState(conversationId, { messages: transformedMessages });
+      }
+    } catch (error) {
+      console.error('Error loading conversation messages:', error);
+    }
+  };
+
+  // Handle conversation selection
+  const selectConversation = (conversationId) => {
+    setCurrentConvId(conversationId);
+    const conv = conversations.find(c => c.id === conversationId);
+    
+    // If conversation has no messages loaded, load them
+    if (conv && conv.messages.length === 0) {
+      loadConversationMessages(conversationId);
+    }
   };
 
   const getCurrentConv = () => conversations.find(c => c.id === currentConvId);
@@ -178,7 +234,7 @@ const AIRecommendations = () => {
     return parts.length > 0 ? parts : text;
   };
 
-  // REFINED: sendMessage logic is now cleaner and more robust
+  // REFINED: sendMessage logic is now cleaner and more robust with database persistence
   const sendMessage = async () => {
     if (!currentMessage.trim()) return;
 
@@ -214,28 +270,34 @@ const AIRecommendations = () => {
         content: msg.content
       }));
 
-      const response = await fetch(`${API_BASE_URL}/ai/ask`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question: messageToSend,
-          conversationHistory,
-          userProfile // Send the whole profile object for better context
-        })
-      });
+      // Use chat service to send message
+      const result = await chatService.sendMessage(
+        messageToSend,
+        conversationHistory,
+        userProfile,
+        activeConvId.startsWith('temp_') ? null : activeConvId // Only send conversationId if it's from database
+      );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'API request failed');
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        const aiMsg = { id: (Date.now() + 1).toString(), type: 'assistant', content: data.answer, timestamp: new Date() };
-        updateConversationState(activeConvId, { messages: [...updatedMessages, aiMsg] });
+      if (result) {
+        const aiMsg = { 
+          id: result.messageId || (Date.now() + 1).toString(), 
+          type: 'assistant', 
+          content: result.answer, 
+          timestamp: new Date() 
+        };
+        
+        // Update conversation with new conversationId if it was created
+        if (result.conversationId && activeConvId.startsWith('temp_')) {
+          const updatedConv = { ...activeConv, id: result.conversationId };
+          setConversations(prev => prev.map(c => c.id === activeConvId ? updatedConv : c));
+          setCurrentConvId(result.conversationId);
+        }
+        
+        updateConversationState(result.conversationId || activeConvId, { 
+          messages: [...updatedMessages, aiMsg] 
+        });
       } else {
-        setError(data.error || 'Failed to get response');
+        setError('Failed to get response');
       }
     } catch (err) {
       setError(`Failed to connect to server: ${err.message}`);
@@ -258,9 +320,20 @@ const AIRecommendations = () => {
     }
   };
 
-  const deleteConv = (id) => {
-    setConversations(conversations.filter(c => c.id !== id));
-    if (currentConvId === id) setCurrentConvId(null);
+  const deleteConv = async (id) => {
+    try {
+      // If it's a database conversation, delete it from the database
+      if (!id.startsWith('temp_')) {
+        await chatService.deleteConversation(id);
+      }
+      
+      // Remove from local state
+      setConversations(conversations.filter(c => c.id !== id));
+      if (currentConvId === id) setCurrentConvId(null);
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+      setError('Failed to delete conversation');
+    }
   };
 
   const copyMessage = (content) => {
@@ -406,7 +479,7 @@ const AIRecommendations = () => {
               <div
                 key={c.id}
                 className={`p-2 rounded cursor-pointer text-sm transition-colors relative group ${ c.id === currentConvId ? 'bg-primary text-primary-foreground' : 'hover:bg-muted' }`}
-                onClick={() => setCurrentConvId(c.id)}
+                onClick={() => selectConversation(c.id)}
               >
                 <p className="truncate pr-8">{c.title}</p>
                 <Button
