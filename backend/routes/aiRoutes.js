@@ -1,19 +1,30 @@
 const express = require('express');
 const router = express.Router();
+const { protect } = require('../middleware/authMiddleware');
 
 const {
   getRecommendations,
   askQuestion,
-  explainAlgorithm
+  explainAlgorithm,
+  getConversations,
+  getConversationMessages,
+  deleteConversation,
+  updateConversationTitle
 } = require('../controllers/aiController');
 
 // AI learning recommendations
 router.post('/recommendations', getRecommendations);
 
-// AI Q&A about DSA
-router.post('/ask', askQuestion);
+// AI Q&A about DSA - Now with authentication
+router.post('/ask', protect, askQuestion);
 
 // AI algorithm explanation
 router.post('/explain', explainAlgorithm);
+
+// Chat conversation management routes
+router.get('/conversations', protect, getConversations);
+router.get('/conversations/:conversationId/messages', protect, getConversationMessages);
+router.delete('/conversations/:conversationId', protect, deleteConversation);
+router.put('/conversations/:conversationId/title', protect, updateConversationTitle);
 
 module.exports = router;
