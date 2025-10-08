@@ -77,8 +77,7 @@ export default function VisualizerHome() {
         { name: "Binary Search Tree", path: "/user/bst", complexity: "O(log n)", description: "Ordered binary tree for efficient searching" },
         { name: "AVL Tree", path: "/user/avl-tree", complexity: "O(log n)", description: "Self-balancing BST with height difference ≤ 1" },
         { name: "Red-Black Tree", path: "/user/rb-tree", complexity: "O(log n)", description: "Balanced binary search tree with color properties" },
-        { name: "Heap", path: "/user/heap", complexity: "O(log n)", description: "Complete binary tree with heap property" },
-        { name: "Trie", path: "/user/trie", complexity: "O(m)", description: "Prefix tree for efficient string operations" }
+        { name: "Heap", path: "/user/heap-tree", complexity: "O(log n)", description: "Complete binary tree with heap property" },
       ]
     },
     {
