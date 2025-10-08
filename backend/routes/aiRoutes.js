@@ -9,7 +9,8 @@ const {
   getConversations,
   getConversationMessages,
   deleteConversation,
-  updateConversationTitle
+  updateConversationTitle,
+  textToSpeech // **Import the new function**
 } = require('../controllers/aiController');
 
 // AI learning recommendations
@@ -20,6 +21,9 @@ router.post('/ask', protect, askQuestion);
 
 // AI algorithm explanation
 router.post('/explain', explainAlgorithm);
+
+// **NEW ROUTE FOR TEXT-TO-SPEECH**
+router.post('/text-to-speech', protect, textToSpeech);
 
 // Chat conversation management routes
 router.get('/conversations', protect, getConversations);

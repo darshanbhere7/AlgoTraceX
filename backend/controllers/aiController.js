@@ -34,11 +34,11 @@ const callGeminiAPI = async (contents) => {
 };
 
 /**
- * Ask Question (multi-turn with context + profile) - Now with database persistence
+ * Ask Question (multi-turn with context + profile + language) - Now with database persistence
  */
 const askQuestion = async (req, res) => {
   try {
-    const { question, conversationHistory = [], userProfile = {}, conversationId } = req.body;
+    const { question, conversationHistory = [], userProfile = {}, conversationId, language = 'English' } = req.body;
     const userId = req.user?.id;
 
     if (!question) {
@@ -51,7 +51,6 @@ const askQuestion = async (req, res) => {
 
     let conversation;
     
-    // If conversationId is provided, find existing conversation
     if (conversationId) {
       conversation = await ChatConversation.findOne({ 
         _id: conversationId, 
@@ -62,7 +61,6 @@ const askQuestion = async (req, res) => {
         return res.status(404).json({ success: false, error: 'Conversation not found' });
       }
     } else {
-      // Create new conversation
       const title = question.substring(0, 50) + (question.length > 50 ? '...' : '');
       conversation = await ChatConversation.create({
         user: userId,
@@ -70,7 +68,6 @@ const askQuestion = async (req, res) => {
       });
     }
 
-    // Save user message to database
     const userMessage = await ChatMessage.create({
       conversation: conversation._id,
       user: userId,
@@ -78,27 +75,21 @@ const askQuestion = async (req, res) => {
       content: question
     });
 
-    // Update conversation's last message timestamp
     conversation.lastMessageAt = new Date();
     await conversation.save();
 
-    const systemPrompt = `You are an expert assistant for Data Structures and Algorithms (DSA) named AlgoBot.
-
-**Your Primary Directives:**
-1. **Persona:** Helpful, knowledgeable, and encouraging tutor. Simplify complex topics.
+    const systemPrompt = `You are an expert DSA assistant named AlgoBot.
+**Your Directives:**
+1. **Persona:** Helpful, encouraging tutor. Simplify complex topics.
 2. **Context:** Review conversation history & user profile before answering.
-3. **Response Style:**
-   - Brief: 1–2 paragraphs.
-   - Detailed: Full explanation with examples.
-   - Default: Moderate depth (3–4 paragraphs).
+3. **Language:** YOU MUST RESPOND IN THE FOLLOWING LANGUAGE: **${language}**.
 4. **User Profile:** Tailor explanation to level '${userProfile?.level || 'beginner'}'.`;
 
-    // Get conversation history from database if no conversationHistory provided
     let historyToUse = conversationHistory;
-    if (conversationHistory.length === 0) {
+    if (historyToUse.length === 0) {
       const dbMessages = await ChatMessage.find({ conversation: conversation._id })
         .sort({ timestamp: 1 })
-        .limit(10); // Limit to last 10 messages for context
+        .limit(10);
       
       historyToUse = dbMessages.map(msg => ({
         role: msg.type === 'assistant' ? 'assistant' : 'user',
@@ -118,7 +109,6 @@ const askQuestion = async (req, res) => {
 
     const aiResponse = await callGeminiAPI(contents);
 
-    // Save AI response to database
     const aiMessage = await ChatMessage.create({
       conversation: conversation._id,
       user: userId,
@@ -126,7 +116,6 @@ const askQuestion = async (req, res) => {
       content: aiResponse
     });
 
-    // Update conversation title if it's the first message
     if (conversation.messages && conversation.messages.length === 0) {
       conversation.title = question.substring(0, 50) + (question.length > 50 ? '...' : '');
       await conversation.save();
@@ -145,23 +134,24 @@ const askQuestion = async (req, res) => {
 };
 
 /**
- * Personalized learning recommendations
+ * Personalized learning recommendations (Refined for concise output)
  */
 const getRecommendations = async (req, res) => {
   try {
     const { userLevel, currentTopics, strengths, weaknesses } = req.body;
 
-    const prompt = `You are an expert DSA tutor. Provide personalized learning recommendations for this student:
-- Level: ${userLevel || 'beginner'}
-- Current Topics: ${currentTopics || 'general DSA'}
-- Strengths: ${strengths || 'none specified'}
-- Weaknesses: ${weaknesses || 'none specified'}
+    const prompt = `You are an expert DSA tutor. Provide a **crisp, actionable, and easy-to-understand** learning plan for this student. Use markdown, bullet points, and bold keywords. Be encouraging but direct.
 
-Give a structured learning plan in markdown with:
-- Key topics to focus on
-- LeetCode/DSA problem links
-- A practical study strategy
-- Encouraging tone`;
+- **Level:** ${userLevel || 'beginner'}
+- **Current Topics:** ${currentTopics || 'general DSA'}
+- **Strengths:** ${strengths || 'none specified'}
+- **Weaknesses:** ${weaknesses || 'none specified'}
+
+**Your output must be structured as follows:**
+1.  **Top 3 Focus Areas:** List the 3 most important topics to master next.
+2.  **Practice Problems:** Suggest 2-3 specific LeetCode problems (with links) for their level.
+3.  **Key Strategy:** Give one practical, powerful tip for their study approach.
+4.  **Quick Encouragement:** A single sentence to motivate them.`;
 
     const contents = [{ role: 'user', parts: [{ text: prompt }] }];
     const aiResponse = await callGeminiAPI(contents);
@@ -173,7 +163,7 @@ Give a structured learning plan in markdown with:
 };
 
 /**
- * Explain Algorithm
+ * Explain Algorithm (Refined for level-specific, concise output)
  */
 const explainAlgorithm = async (req, res) => {
   try {
@@ -183,16 +173,29 @@ const explainAlgorithm = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Algorithm name is required' });
     }
 
-    const prompt = `You are an expert DSA tutor. Explain the "${algorithm}" algorithm.
+    let levelInstructions;
+    switch(level) {
+      case 'advanced':
+        levelInstructions = "Focus on nuance. Compare it to other algorithms, discuss optimized implementations, edge cases, and advanced use-cases. Keep the explanation dense and professional.";
+        break;
+      case 'intermediate':
+        levelInstructions = "Assume basic data structures are known. Provide a clear code example (JS or Python), and explain the 'why' behind the steps. The complexity analysis should be detailed.";
+        break;
+      default: // beginner
+        levelInstructions = "Use a very simple analogy. Explain the core idea in 1-2 sentences. Show a simple code example with clear comments. The complexity explanation should be high-level and intuitive.";
+        break;
+    }
 
-Target Level: ${level || 'beginner'}
+    const prompt = `You are an expert DSA tutor. Explain the **"${algorithm}"** algorithm. Your response must be **concise, clear, and strictly tailored** to the target level.
 
-Provide in markdown:
-1. Analogy or overview
-2. Core steps
-3. Code example (Python or JS)
-4. Time & Space Complexity (with reasoning)
-5. Common use cases`;
+**Target Level: ${level || 'beginner'}**
+${levelInstructions}
+
+**Required Markdown Format:**
+- **Analogy:** A simple, one-sentence analogy.
+- **Core Idea:** A brief explanation of the steps.
+- **Code Example:** A short, well-commented code block in Python or JavaScript.
+- **Complexity:** Time & Space complexity (e.g., O(n log n)) with a brief justification.`;
 
     const contents = [{ role: 'user', parts: [{ text: prompt }] }];
     const aiResponse = await callGeminiAPI(contents);
@@ -202,6 +205,51 @@ Provide in markdown:
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+const textToSpeech = async (req, res) => {
+  const { text } = req.body;
+  if (!text) {
+    return res.status(400).json({ error: 'Text is required' });
+  }
+
+  const apiKey = process.env.ELEVENLABS_API_KEY;
+  if (!apiKey) {
+    console.error('ElevenLabs API key is missing from .env file');
+    return res.status(500).json({ error: 'TTS service is not configured on the server.' });
+  }
+
+  const voiceId = '21m00Tcm4TlvDq8ikWAM'; 
+  const modelId = 'eleven_multilingual_v2';
+  const apiUrl = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`;
+
+  try {
+    const response = await axios.post(apiUrl, {
+      text: text,
+      model_id: modelId,
+      voice_settings: {
+        stability: 0.5,
+        similarity_boost: 0.75,
+      },
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'xi-api-key': apiKey,
+        'Accept': 'audio/mpeg',
+      },
+      responseType: 'stream', 
+    });
+
+    res.setHeader('Content-Type', 'audio/mpeg');
+    
+    response.data.pipe(res);
+
+  } catch (error) {
+    const errorMsg = error.response?.data ? Buffer.from(error.response.data).toString() : error.message;
+    console.error('ElevenLabs API Error:', errorMsg);
+    res.status(500).json({ error: 'Failed to generate speech' });
+  }
+};
+
 
 /**
  * Get user's chat conversations
@@ -216,7 +264,7 @@ const getConversations = async (req, res) => {
 
     const conversations = await ChatConversation.find({ user: userId })
       .sort({ lastMessageAt: -1 })
-      .limit(50); // Limit to 50 most recent conversations
+      .limit(50);
 
     res.json({ success: true, conversations });
   } catch (error) {
@@ -237,7 +285,6 @@ const getConversationMessages = async (req, res) => {
       return res.status(401).json({ success: false, error: 'User authentication required' });
     }
 
-    // Verify conversation belongs to user
     const conversation = await ChatConversation.findOne({ 
       _id: conversationId, 
       user: userId 
@@ -269,7 +316,6 @@ const deleteConversation = async (req, res) => {
       return res.status(401).json({ success: false, error: 'User authentication required' });
     }
 
-    // Verify conversation belongs to user
     const conversation = await ChatConversation.findOne({ 
       _id: conversationId, 
       user: userId 
@@ -279,10 +325,7 @@ const deleteConversation = async (req, res) => {
       return res.status(404).json({ success: false, error: 'Conversation not found' });
     }
 
-    // Delete all messages in the conversation
     await ChatMessage.deleteMany({ conversation: conversationId });
-    
-    // Delete the conversation
     await ChatConversation.findByIdAndDelete(conversationId);
 
     res.json({ success: true, message: 'Conversation deleted successfully' });
@@ -333,5 +376,6 @@ module.exports = {
   getConversations,
   getConversationMessages,
   deleteConversation,
-  updateConversationTitle
+  updateConversationTitle,
+  textToSpeech
 };

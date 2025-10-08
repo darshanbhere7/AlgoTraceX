@@ -2,7 +2,8 @@ const API_BASE_URL = 'http://localhost:5000/api';
 
 // Get auth token from localStorage
 const getAuthToken = () => {
-  return localStorage.getItem('token');
+  // Make sure the key matches what you use to store the token
+  return localStorage.getItem('token'); 
 };
 
 // Chat conversation service
@@ -55,8 +56,8 @@ export const chatService = {
     }
   },
 
-  // Send a message and get AI response
-  async sendMessage(message, conversationHistory = [], userProfile = {}, conversationId = null) {
+  // Send a message and get AI response, now including language
+  async sendMessage(message, conversationHistory = [], userProfile = {}, conversationId = null, language = 'English') {
     try {
       const token = getAuthToken();
       const response = await fetch(`${API_BASE_URL}/ai/ask`, {
@@ -69,7 +70,8 @@ export const chatService = {
           question: message,
           conversationHistory,
           userProfile,
-          conversationId
+          conversationId,
+          language 
         }),
       });
 
@@ -86,6 +88,74 @@ export const chatService = {
       } : null;
     } catch (error) {
       console.error('Error sending message:', error);
+      throw error;
+    }
+  },
+
+  async textToSpeech(text) {
+    try {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/ai/text-to-speech`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch audio stream from server');
+      }
+      
+      const blob = await response.blob();
+      return URL.createObjectURL(blob);
+
+    } catch (error) {
+      console.error('Error fetching text-to-speech audio:', error);
+      throw error;
+    }
+  },
+
+  // **NEW FUNCTION FOR RECOMMENDATIONS**
+  async getRecommendations(userProfile) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/ai/recommendations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userLevel: userProfile.level,
+          currentTopics: userProfile.topics.join(', '),
+          strengths: userProfile.strengths.join(', '),
+          weaknesses: userProfile.weaknesses.join(', ')
+        }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to get recommendations');
+      }
+      const data = await response.json();
+      return data.recommendations;
+    } catch (error) {
+      console.error('Error getting recommendations:', error);
+      throw error;
+    }
+  },
+
+  // **NEW FUNCTION FOR EXPLANATIONS**
+  async explainAlgorithm(algorithm, level) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/ai/explain`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ algorithm, level }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to get explanation');
+      }
+      const data = await response.json();
+      return data.explanation;
+    } catch (error) {
+      console.error('Error getting explanation:', error);
       throw error;
     }
   },
