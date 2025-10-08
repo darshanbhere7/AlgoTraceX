@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { AuroraBackground } from "../components/ui/aurora-background";
+import TextType from "../components/TextType";
+import ShinyText from "../components/ShinyText.jsx";
 
 // Navbar Component
 const Navbar = () => {
@@ -82,32 +84,42 @@ const HeroSection = () => {
     <AuroraBackground>
       <div className="pt-32 pb-20 px-4 min-h-screen flex items-center justify-center">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="max-w-4xl mx-auto text-center"
         >
-          <motion.h1 
-            className="text-5xl md:text-7xl font-bold text-neutral-900 dark:text-white mb-6 leading-tight"
+          <div className="mb-6 text-4xl md:text-6xl font-bold text-neutral-900 dark:text-white leading-tight">
+            <div className="mb-2">
+              <TextType 
+                text={["Visualize Data Structures", "Master Algorithms Faster", "Learn DSA Visually"]}
+                typingSpeed={75}
+                pauseDuration={1500}
+                showCursor={true}
+                cursorCharacter="|"
+              />
+            </div>
+            <div className="text-transparent bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text">
+              Like Never Before
+            </div>
+          </div>
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
+            transition={{ delay: 1, duration: 0.8 }}
           >
-            Visualize <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Data Structures</span> Like Never Before
-          </motion.h1>
-          <motion.p 
-            className="text-lg md:text-xl text-neutral-700 dark:text-neutral-300 mb-8 max-w-2xl mx-auto"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-          >
-            Master algorithms with interactive visualizations. Step through code, understand complexity, and solve problems faster.
-          </motion.p>
+            <ShinyText
+              text="Master algorithms with interactive visualizations. Step through code, understand complexity, and solve problems faster."
+              disabled={false}
+              speed={3}
+              className="text-lg md:text-xl text-neutral-700 dark:text-neutral-300 mb-8 max-w-2xl mx-auto block"
+            />
+          </motion.div>
           <motion.div 
             className="flex flex-col sm:flex-row gap-4 justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.6, duration: 0.8 }}
+            transition={{ delay: 1.2, duration: 0.8 }}
           >
             <motion.button
               whileHover={{ scale: 1.05 }}
