@@ -1,565 +1,555 @@
-import { useEffect, useRef } from 'react';
-import * as THREE from 'three';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { AuroraBackground } from "../components/ui/aurora-background";
+import TextType from "../components/TextType";
+import ShinyText from "../components/ShinyText.jsx";
 
-const VERT = `
-precision highp float;
-attribute vec3 position;
-void main(){
-  gl_Position = vec4(position, 1.0);
-}
-`;
+// Navbar Component
+const Navbar = () => {
+  const [isDark, setIsDark] = useState(false);
 
-const FRAG = `
-#ifdef GL_ES
-#extension GL_OES_standard_derivatives : enable
-#endif
-precision highp float;
-precision mediump int;
-
-uniform float iTime;
-uniform vec3 iResolution;
-uniform vec4 iMouse;
-uniform float uWispDensity;
-uniform float uTiltScale;
-uniform float uFlowTime;
-uniform float uFogTime;
-uniform float uBeamXFrac;
-uniform float uBeamYFrac;
-uniform float uFlowSpeed;
-uniform float uVLenFactor;
-uniform float uHLenFactor;
-uniform float uFogIntensity;
-uniform float uFogScale;
-uniform float uWSpeed;
-uniform float uWIntensity;
-uniform float uFlowStrength;
-uniform float uDecay;
-uniform float uFalloffStart;
-uniform float uFogFallSpeed;
-uniform vec3 uColor;
-uniform float uFade;
-
-// Core beam/flare shaping and dynamics
-#define PI 3.14159265359
-#define TWO_PI 6.28318530718
-#define EPS 1e-6
-#define EDGE_SOFT (DT_LOCAL*4.0)
-#define DT_LOCAL 0.0038
-#define TAP_RADIUS 6
-#define R_H 150.0
-#define R_V 150.0
-#define FLARE_HEIGHT 16.0
-#define FLARE_AMOUNT 8.0
-#define FLARE_EXP 2.0
-#define TOP_FADE_START 0.1
-#define TOP_FADE_EXP 1.0
-#define FLOW_PERIOD 0.5
-#define FLOW_SHARPNESS 1.5
-
-// Wisps (animated micro-streaks) that travel along the beam
-#define W_BASE_X 1.5
-#define W_LAYER_GAP 0.25
-#define W_LANES 10
-#define W_SIDE_DECAY 0.5
-#define W_HALF 0.01
-#define W_AA 0.15
-#define W_CELL 20.0
-#define W_SEG_MIN 0.01
-#define W_SEG_MAX 0.55
-#define W_CURVE_AMOUNT 15.0
-#define W_CURVE_RANGE (FLARE_HEIGHT - 3.0)
-#define W_BOTTOM_EXP 10.0
-
-// Volumetric fog controls
-#define FOG_ON 1
-#define FOG_CONTRAST 1.2
-#define FOG_SPEED_U 0.1
-#define FOG_SPEED_V -0.1
-#define FOG_OCTAVES 5
-#define FOG_BOTTOM_BIAS 0.8
-#define FOG_TILT_TO_MOUSE 0.05
-#define FOG_TILT_DEADZONE 0.01
-#define FOG_TILT_MAX_X 0.35
-#define FOG_TILT_SHAPE 1.5
-#define FOG_BEAM_MIN 0.0
-#define FOG_BEAM_MAX 0.75
-#define FOG_MASK_GAMMA 0.5
-#define FOG_EXPAND_SHAPE 12.2
-#define FOG_EDGE_MIX 0.5
-
-// Horizontal vignette for the fog volume
-#define HFOG_EDGE_START 0.20
-#define HFOG_EDGE_END 0.98
-#define HFOG_EDGE_GAMMA 1.4
-#define HFOG_Y_RADIUS 25.0
-#define HFOG_Y_SOFT 60.0
-
-// Beam extents and edge masking
-#define EDGE_X0 0.22
-#define EDGE_X1 0.995
-#define EDGE_X_GAMMA 1.25
-#define EDGE_LUMA_T0 0.0
-#define EDGE_LUMA_T1 2.0
-#define DITHER_STRENGTH 1.0
-
-    float g(float x){return x<=0.00031308?12.92*x:1.055*pow(x,1.0/2.4)-0.055;}
-    float bs(vec2 p,vec2 q,float powr){
-        float d=distance(p,q),f=powr*uFalloffStart,r=(f*f)/(d*d+EPS);
-        return powr*min(1.0,r);
-    }
-    float bsa(vec2 p,vec2 q,float powr,vec2 s){
-        vec2 d=p-q; float dd=(d.x*d.x)/(s.x*s.x)+(d.y*d.y)/(s.y*s.y),f=powr*uFalloffStart,r=(f*f)/(dd+EPS);
-        return powr*min(1.0,r);
-    }
-    float tri01(float x){float f=fract(x);return 1.0-abs(f*2.0-1.0);}
-    float tauWf(float t,float tmin,float tmax){float a=smoothstep(tmin,tmin+EDGE_SOFT,t),b=1.0-smoothstep(tmax-EDGE_SOFT,tmax,t);return max(0.0,a*b);} 
-    float h21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+34.123);return fract(p.x*p.y);}
-    float vnoise(vec2 p){
-        vec2 i=floor(p),f=fract(p);
-        float a=h21(i),b=h21(i+vec2(1,0)),c=h21(i+vec2(0,1)),d=h21(i+vec2(1,1));
-        vec2 u=f*f*(3.0-2.0*f);
-        return mix(mix(a,b,u.x),mix(c,d,u.x),u.y);
-    }
-    float fbm2(vec2 p){
-        float v=0.0,amp=0.6; mat2 m=mat2(0.86,0.5,-0.5,0.86);
-        for(int i=0;i<FOG_OCTAVES;++i){v+=amp*vnoise(p); p=m*p*2.03+17.1; amp*=0.52;}
-        return v;
-    }
-    float rGate(float x,float l){float a=smoothstep(0.0,W_AA,x),b=1.0-smoothstep(l,l+W_AA,x);return max(0.0,a*b);}
-    float flareY(float y){float t=clamp(1.0-(clamp(y,0.0,FLARE_HEIGHT)/max(FLARE_HEIGHT,EPS)),0.0,1.0);return pow(t,FLARE_EXP);}
-
-    float vWisps(vec2 uv,float topF){
-    float y=uv.y,yf=(y+uFlowTime*uWSpeed)/W_CELL;
-    float dRaw=clamp(uWispDensity,0.0,2.0),d=dRaw<=0.0?1.0:dRaw;
-    float lanesF=floor(float(W_LANES)*min(d,1.0)+0.5); // WebGL1-safe
-    int lanes=int(max(1.0,lanesF));
-    float sp=min(d,1.0),ep=max(d-1.0,0.0);
-    float fm=flareY(max(y,0.0)),rm=clamp(1.0-(y/max(W_CURVE_RANGE,EPS)),0.0,1.0),cm=fm*rm;
-    const float G=0.05; float xS=1.0+(FLARE_AMOUNT*W_CURVE_AMOUNT*G)*cm;
-    float sPix=clamp(y/R_V,0.0,1.0),bGain=pow(1.0-sPix,W_BOTTOM_EXP),sum=0.0;
-    for(int s=0;s<2;++s){
-        float sgn=s==0?-1.0:1.0;
-        for(int i=0;i<W_LANES;++i){
-            if(i>=lanes) break;
-            float off=W_BASE_X+float(i)*W_LAYER_GAP,xc=sgn*(off*xS);
-            float dx=abs(uv.x-xc),lat=1.0-smoothstep(W_HALF,W_HALF+W_AA,dx),amp=exp(-off*W_SIDE_DECAY);
-            float seed=h21(vec2(off,sgn*17.0)),yf2=yf+seed*7.0,ci=floor(yf2),fy=fract(yf2);
-            float seg=mix(W_SEG_MIN,W_SEG_MAX,h21(vec2(ci,off*2.3)));
-            float spR=h21(vec2(ci,off+sgn*31.0)),seg1=rGate(fy,seg)*step(spR,sp);
-            if(ep>0.0){float spR2=h21(vec2(ci*3.1+7.0,off*5.3+sgn*13.0)); float f2=fract(fy+0.5); seg1+=rGate(f2,seg*0.9)*step(spR2,ep);}
-            sum+=amp*lat*seg1;
-        }
-    }
-    float span=smoothstep(-3.0,0.0,y)*(1.0-smoothstep(R_V-6.0,R_V,y));
-    return uWIntensity*sum*topF*bGain*span;
-}
-
-void mainImage(out vec4 fc,in vec2 frag){
-    vec2 C=iResolution.xy*.5; float invW=1.0/max(C.x,1.0);
-    float sc=512.0/iResolution.x*.4;
-    vec2 uv=(frag-C)*sc,off=vec2(uBeamXFrac*iResolution.x*sc,uBeamYFrac*iResolution.y*sc);
-    vec2 uvc = uv - off;
-    float a=0.0,b=0.0;
-    float basePhase=1.5*PI+uDecay*.5; float tauMin=basePhase-uDecay; float tauMax=basePhase;
-    float cx=clamp(uvc.x/(R_H*uHLenFactor),-1.0,1.0),tH=clamp(TWO_PI-acos(cx),tauMin,tauMax);
-    for(int k=-TAP_RADIUS;k<=TAP_RADIUS;++k){
-        float tu=tH+float(k)*DT_LOCAL,wt=tauWf(tu,tauMin,tauMax); if(wt<=0.0) continue;
-        float spd=max(abs(sin(tu)),0.02),u=clamp((basePhase-tu)/max(uDecay,EPS),0.0,1.0),env=pow(1.0-abs(u*2.0-1.0),0.8);
-        vec2 p=vec2((R_H*uHLenFactor)*cos(tu),0.0);
-        a+=wt*bs(uvc,p,env*spd);
-    }
-    float yPix=uvc.y,cy=clamp(-yPix/(R_V*uVLenFactor),-1.0,1.0),tV=clamp(TWO_PI-acos(cy),tauMin,tauMax);
-    for(int k=-TAP_RADIUS;k<=TAP_RADIUS;++k){
-        float tu=tV+float(k)*DT_LOCAL,wt=tauWf(tu,tauMin,tauMax); if(wt<=0.0) continue;
-        float yb=(-R_V)*cos(tu),s=clamp(yb/R_V,0.0,1.0),spd=max(abs(sin(tu)),0.02);
-        float env=pow(1.0-s,0.6)*spd;
-        float cap=1.0-smoothstep(TOP_FADE_START,1.0,s); cap=pow(cap,TOP_FADE_EXP); env*=cap;
-        float ph=s/max(FLOW_PERIOD,EPS)+uFlowTime*uFlowSpeed;
-        float fl=pow(tri01(ph),FLOW_SHARPNESS);
-        env*=mix(1.0-uFlowStrength,1.0,fl);
-        float yp=(-R_V*uVLenFactor)*cos(tu),m=pow(smoothstep(FLARE_HEIGHT,0.0,yp),FLARE_EXP),wx=1.0+FLARE_AMOUNT*m;
-        vec2 sig=vec2(wx,1.0),p=vec2(0.0,yp);
-        float mask=step(0.0,yp);
-        b+=wt*bsa(uvc,p,mask*env,sig);
-    }
-    float sPix=clamp(yPix/R_V,0.0,1.0),topA=pow(1.0-smoothstep(TOP_FADE_START,1.0,sPix),TOP_FADE_EXP);
-    float L=a+b*topA;
-    float w=vWisps(vec2(uvc.x,yPix),topA);
-    float fog=0.0;
-#if FOG_ON
-    vec2 fuv=uvc*uFogScale;
-    float mAct=step(1.0,length(iMouse.xy)),nx=((iMouse.x-C.x)*invW)*mAct;
-    float ax = abs(nx);
-    float stMag = mix(ax, pow(ax, FOG_TILT_SHAPE), 0.35);
-    float st = sign(nx) * stMag * uTiltScale;
-    st = clamp(st, -FOG_TILT_MAX_X, FOG_TILT_MAX_X);
-    vec2 dir=normalize(vec2(st,1.0));
-    fuv+=uFogTime*uFogFallSpeed*dir;
-    vec2 prp=vec2(-dir.y,dir.x);
-    fuv+=prp*(0.08*sin(dot(uvc,prp)*0.08+uFogTime*0.9));
-    float n=fbm2(fuv+vec2(fbm2(fuv+vec2(7.3,2.1)),fbm2(fuv+vec2(-3.7,5.9)))*0.6);
-    n=pow(clamp(n,0.0,1.0),FOG_CONTRAST);
-    float pixW = 1.0 / max(iResolution.y, 1.0);
-#ifdef GL_OES_standard_derivatives
-    float wL = max(fwidth(L), pixW);
-#else
-    float wL = pixW;
-#endif
-    float m0=pow(smoothstep(FOG_BEAM_MIN - wL, FOG_BEAM_MAX + wL, L),FOG_MASK_GAMMA);
-    float bm=1.0-pow(1.0-m0,FOG_EXPAND_SHAPE); bm=mix(bm*m0,bm,FOG_EDGE_MIX);
-    float yP=1.0-smoothstep(HFOG_Y_RADIUS,HFOG_Y_RADIUS+HFOG_Y_SOFT,abs(yPix));
-    float nxF=abs((frag.x-C.x)*invW),hE=1.0-smoothstep(HFOG_EDGE_START,HFOG_EDGE_END,nxF); hE=pow(clamp(hE,0.0,1.0),HFOG_EDGE_GAMMA);
-    float hW=mix(1.0,hE,clamp(yP,0.0,1.0));
-    float bBias=mix(1.0,1.0-sPix,FOG_BOTTOM_BIAS);
-    float browserFogIntensity = uFogIntensity;
-    browserFogIntensity *= 1.8;
-    float radialFade = 1.0 - smoothstep(0.0, 0.7, length(uvc) / 120.0);
-    float safariFog = n * browserFogIntensity * bBias * bm * hW * radialFade;
-    fog = safariFog;
-#endif
-    float LF=L+fog;
-    float dith=(h21(frag)-0.5)*(DITHER_STRENGTH/255.0);
-    float tone=g(LF+w);
-    vec3 col=tone*uColor+dith;
-    float alpha=clamp(g(L+w*0.6)+dith*0.6,0.0,1.0);
-    float nxE=abs((frag.x-C.x)*invW),xF=pow(clamp(1.0-smoothstep(EDGE_X0,EDGE_X1,nxE),0.0,1.0),EDGE_X_GAMMA);
-    float scene=LF+max(0.0,w)*0.5,hi=smoothstep(EDGE_LUMA_T0,EDGE_LUMA_T1,scene);
-    float eM=mix(xF,1.0,hi);
-    col*=eM; alpha*=eM;
-    col*=uFade; alpha*=uFade;
-    fc=vec4(col,alpha);
-}
-
-void main(){
-  vec4 fc;
-  mainImage(fc, gl_FragCoord.xy);
-  gl_FragColor = fc;
-}
-`;
-
-export const Home = ({
-  className,
-  style,
-  wispDensity = 1,
-  dpr,
-  mouseSmoothTime = 0.0,
-  mouseTiltStrength = 0.01,
-  horizontalBeamOffset = 0.1,
-  verticalBeamOffset = 0.0,
-  flowSpeed = 0.35,
-  verticalSizing = 2.0,
-  horizontalSizing = 0.5,
-  fogIntensity = 0.45,
-  fogScale = 0.3,
-  wispSpeed = 15.0,
-  wispIntensity = 5.0,
-  flowStrength = 0.25,
-  decay = 1.1,
-  falloffStart = 1.2,
-  fogFallSpeed = 0.6,
-  color = '#FF79C6'
-}) => {
-  const mountRef = useRef(null);
-  const rendererRef = useRef(null);
-  const uniformsRef = useRef(null);
-  const hasFadedRef = useRef(false);
-  const rectRef = useRef(null);
-  const baseDprRef = useRef(1);
-  const currentDprRef = useRef(1);
-  const fpsSamplesRef = useRef([]);
-  const lastFpsCheckRef = useRef(performance.now());
-  const emaDtRef = useRef(16.7);
-  const pausedRef = useRef(false);
-  const inViewRef = useRef(true);
-
-  const hexToRGB = hex => {
-    let c = hex.trim();
-    if (c[0] === '#') c = c.slice(1);
-    if (c.length === 3)
-      c = c
-        .split('')
-        .map(x => x + x)
-        .join('');
-    const n = parseInt(c, 16) || 0xffffff;
-    return { r: ((n >> 16) & 255) / 255, g: ((n >> 8) & 255) / 255, b: (n & 255) / 255 };
+  const handleToggle = () => {
+    setIsDark(!isDark);
+    document.documentElement.classList.toggle("dark");
   };
 
-  useEffect(() => {
-    const mount = mountRef.current;
-    const renderer = new THREE.WebGLRenderer({
-      antialias: false,
-      alpha: false,
-      depth: false,
-      stencil: false,
-      powerPreference: 'high-performance',
-      premultipliedAlpha: false,
-      preserveDrawingBuffer: false,
-      failIfMajorPerformanceCaveat: false,
-      logarithmicDepthBuffer: false
-    });
-    rendererRef.current = renderer;
+  return (
+    <nav className="fixed top-0 left-0 w-full z-50 bg-transparent transition-colors duration-300 px-8 py-4">
+      <div className="w-full max-w-7xl mx-auto backdrop-blur-md bg-white/40 dark:bg-neutral-900/40 rounded-full shadow-lg dark:shadow-black/30 px-6 py-3 transition-all duration-300 border border-white/30 dark:border-neutral-700/40">
+        <div className="flex justify-between items-center">
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-md">
+              <span className="text-white font-bold text-sm">AT</span>
+            </div>
+            <span className="font-semibold text-neutral-800 dark:text-white hidden sm:inline">Algo Trace X</span>
+          </div>
 
-    baseDprRef.current = Math.min(dpr ?? (window.devicePixelRatio || 1), 2);
-    currentDprRef.current = baseDprRef.current;
+          {/* Nav Links */}
+          <div className="hidden md:flex items-center gap-8">
+            <a href="#features" className="text-neutral-700 dark:text-neutral-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors text-sm font-medium">
+              Features
+            </a>
+            <a href="#how-it-works" className="text-neutral-700 dark:text-neutral-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors text-sm font-medium">
+              How It Works
+            </a>
+            <a href="#pricing" className="text-neutral-700 dark:text-neutral-300 hover:text-purple-600 dark:hover:text-purple-400 transition-colors text-sm font-medium">
+              Pricing
+            </a>
+          </div>
 
-    renderer.setPixelRatio(currentDprRef.current);
-    renderer.shadowMap.enabled = false;
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.setClearColor(0x000000, 1);
-    const canvas = renderer.domElement;
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
-    canvas.style.display = 'block';
-    mount.appendChild(canvas);
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array([-1, -1, 0, 3, -1, 0, -1, 3, 0]), 3));
-
-    const uniforms = {
-      iTime: { value: 0 },
-      iResolution: { value: new THREE.Vector3(1, 1, 1) },
-      iMouse: { value: new THREE.Vector4(0, 0, 0, 0) },
-      uWispDensity: { value: wispDensity },
-      uTiltScale: { value: mouseTiltStrength },
-      uFlowTime: { value: 0 },
-      uFogTime: { value: 0 },
-      uBeamXFrac: { value: horizontalBeamOffset },
-      uBeamYFrac: { value: verticalBeamOffset },
-      uFlowSpeed: { value: flowSpeed },
-      uVLenFactor: { value: verticalSizing },
-      uHLenFactor: { value: horizontalSizing },
-      uFogIntensity: { value: fogIntensity },
-      uFogScale: { value: fogScale },
-      uWSpeed: { value: wispSpeed },
-      uWIntensity: { value: wispIntensity },
-      uFlowStrength: { value: flowStrength },
-      uDecay: { value: decay },
-      uFalloffStart: { value: falloffStart },
-      uFogFallSpeed: { value: fogFallSpeed },
-      uColor: { value: new THREE.Vector3(1, 1, 1) },
-      uFade: { value: hasFadedRef.current ? 1 : 0 }
-    };
-    uniformsRef.current = uniforms;
-
-    const material = new THREE.RawShaderMaterial({
-      vertexShader: VERT,
-      fragmentShader: FRAG,
-      uniforms,
-      transparent: false,
-      depthTest: false,
-      depthWrite: false,
-      blending: THREE.NormalBlending
-    });
-
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.frustumCulled = false;
-    scene.add(mesh);
-
-    const clock = new THREE.Clock();
-    let prevTime = 0;
-    let fade = hasFadedRef.current ? 1 : 0;
-
-    const mouseTarget = new THREE.Vector2(0, 0);
-    const mouseSmooth = new THREE.Vector2(0, 0);
-
-    const setSizeNow = () => {
-      const w = mount.clientWidth || 1;
-      const h = mount.clientHeight || 1;
-      const pr = currentDprRef.current;
-      renderer.setPixelRatio(pr);
-      renderer.setSize(w, h, false);
-      uniforms.iResolution.value.set(w * pr, h * pr, pr);
-      rectRef.current = canvas.getBoundingClientRect();
-    };
-
-    let resizeRaf = 0;
-    const scheduleResize = () => {
-      if (resizeRaf) cancelAnimationFrame(resizeRaf);
-      resizeRaf = requestAnimationFrame(setSizeNow);
-    };
-
-    setSizeNow();
-    const ro = new ResizeObserver(scheduleResize);
-    ro.observe(mount);
-
-    const io = new IntersectionObserver(
-      entries => {
-        inViewRef.current = entries[0]?.isIntersecting ?? true;
-      },
-      { root: null, threshold: 0 }
-    );
-    io.observe(mount);
-
-    const onVis = () => {
-      pausedRef.current = document.hidden;
-    };
-    document.addEventListener('visibilitychange', onVis, { passive: true });
-
-    const updateMouse = (clientX, clientY) => {
-      const rect = rectRef.current;
-      if (!rect) return;
-      const x = clientX - rect.left;
-      const y = clientY - rect.top;
-      const ratio = currentDprRef.current;
-      const hb = rect.height * ratio;
-      mouseTarget.set(x * ratio, hb - y * ratio);
-    };
-    const onMove = ev => updateMouse(ev.clientX, ev.clientY);
-    const onLeave = () => mouseTarget.set(0, 0);
-    canvas.addEventListener('pointermove', onMove, { passive: true });
-    canvas.addEventListener('pointerdown', onMove, { passive: true });
-    canvas.addEventListener('pointerenter', onMove, { passive: true });
-    canvas.addEventListener('pointerleave', onLeave, { passive: true });
-
-    const onCtxLost = e => {
-      e.preventDefault();
-      pausedRef.current = true;
-    };
-    const onCtxRestored = () => {
-      pausedRef.current = false;
-      scheduleResize();
-    };
-    canvas.addEventListener('webglcontextlost', onCtxLost, false);
-    canvas.addEventListener('webglcontextrestored', onCtxRestored, false);
-
-    let raf = 0;
-
-    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-    const dprFloor = 0.6;
-    const lowerThresh = 50;
-    const upperThresh = 58;
-
-    const adjustDprIfNeeded = now => {
-      const elapsed = now - lastFpsCheckRef.current;
-      if (elapsed < 750) return;
-
-      const samples = fpsSamplesRef.current;
-      if (samples.length === 0) {
-        lastFpsCheckRef.current = now;
-        return;
-      }
-      const avgFps = samples.reduce((a, b) => a + b, 0) / samples.length;
-
-      let next = currentDprRef.current;
-      const base = baseDprRef.current;
-
-      if (avgFps < lowerThresh) {
-        next = clamp(currentDprRef.current * 0.9, dprFloor, base);
-      } else if (avgFps > upperThresh && currentDprRef.current < base) {
-        next = clamp(currentDprRef.current * 1.05, dprFloor, base);
-      }
-
-      if (Math.abs(next - currentDprRef.current) > 0.01) {
-        currentDprRef.current = next;
-        setSizeNow();
-      }
-
-      fpsSamplesRef.current = [];
-      lastFpsCheckRef.current = now;
-    };
-
-    const animate = () => {
-      raf = requestAnimationFrame(animate);
-      if (pausedRef.current || !inViewRef.current) return;
-
-      const t = clock.getElapsedTime();
-      const dt = Math.max(0, t - prevTime);
-      prevTime = t;
-
-      const dtMs = dt * 1000;
-      emaDtRef.current = emaDtRef.current * 0.9 + dtMs * 0.1;
-      const instFps = 1000 / Math.max(1, emaDtRef.current);
-      fpsSamplesRef.current.push(instFps);
-
-      uniforms.iTime.value = t;
-
-      const cdt = Math.min(0.033, Math.max(0.001, dt));
-      uniforms.uFlowTime.value += cdt;
-      uniforms.uFogTime.value += cdt;
-
-      if (!hasFadedRef.current) {
-        const fadeDur = 1.0;
-        fade = Math.min(1, fade + cdt / fadeDur);
-        uniforms.uFade.value = fade;
-        if (fade >= 1) hasFadedRef.current = true;
-      }
-
-      const tau = Math.max(1e-3, mouseSmoothTime);
-      const alpha = 1 - Math.exp(-cdt / tau);
-      mouseSmooth.lerp(mouseTarget, alpha);
-      uniforms.iMouse.value.set(mouseSmooth.x, mouseSmooth.y, 0, 0);
-
-      renderer.render(scene, camera);
-
-      adjustDprIfNeeded(performance.now());
-    };
-
-    animate();
-
-    return () => {
-      cancelAnimationFrame(raf);
-      ro.disconnect();
-      io.disconnect();
-      document.removeEventListener('visibilitychange', onVis);
-      canvas.removeEventListener('pointermove', onMove);
-      canvas.removeEventListener('pointerdown', onMove);
-      canvas.removeEventListener('pointerenter', onMove);
-      canvas.removeEventListener('pointerleave', onLeave);
-      canvas.removeEventListener('webglcontextlost', onCtxLost);
-      canvas.removeEventListener('webglcontextrestored', onCtxRestored);
-      geometry.dispose();
-      material.dispose();
-      renderer.dispose();
-      if (mount.contains(canvas)) mount.removeChild(canvas);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dpr]);
-
-  useEffect(() => {
-    const uniforms = uniformsRef.current;
-    if (!uniforms) return;
-
-    uniforms.uWispDensity.value = wispDensity;
-    uniforms.uTiltScale.value = mouseTiltStrength;
-    uniforms.uBeamXFrac.value = horizontalBeamOffset;
-    uniforms.uBeamYFrac.value = verticalBeamOffset;
-    uniforms.uFlowSpeed.value = flowSpeed;
-    uniforms.uVLenFactor.value = verticalSizing;
-    uniforms.uHLenFactor.value = horizontalSizing;
-    uniforms.uFogIntensity.value = fogIntensity;
-    uniforms.uFogScale.value = fogScale;
-    uniforms.uWSpeed.value = wispSpeed;
-    uniforms.uWIntensity.value = wispIntensity;
-    uniforms.uFlowStrength.value = flowStrength;
-    uniforms.uDecay.value = decay;
-    uniforms.uFalloffStart.value = falloffStart;
-    uniforms.uFogFallSpeed.value = fogFallSpeed;
-
-    const { r, g, b } = hexToRGB(color || '#FFFFFF');
-    uniforms.uColor.value.set(r, g, b);
-  }, [
-    wispDensity,
-    mouseTiltStrength,
-    horizontalBeamOffset,
-    verticalBeamOffset,
-    flowSpeed,
-    verticalSizing,
-    horizontalSizing,
-    fogIntensity,
-    fogScale,
-    wispSpeed,
-    wispIntensity,
-    flowStrength,
-    decay,
-    falloffStart,
-    fogFallSpeed,
-    color
-  ]);
-
-  return <div ref={mountRef} className={`w-full h-full relative ${className || ''}`} style={style} />;
+          {/* CTA and Theme Toggle */}
+          <div className="flex items-center gap-3">
+            <motion.button 
+              onClick={handleToggle}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-2 rounded-full hover:bg-white/20 dark:hover:bg-neutral-800/60 transition-all shadow-sm"
+            >
+              <motion.div
+                key={isDark ? "dark" : "light"}
+                initial={{ rotate: -180, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 180, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {isDark ? (
+                  <svg className="w-5 h-5 text-neutral-200" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5 text-neutral-800" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zM4.22 4.22a1 1 0 011.414 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 010-1.414zm11.314 0a1 1 0 011.414 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707zM4 10a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm12 0a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm-8 6a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm-4.22-1.78a1 1 0 011.414 0l.707.707a1 1 0 11-1.414 1.414l-.707-.707a1 1 0 010-1.414zm11.314 0a1 1 0 011.414 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707zM10 5a5 5 0 100 10 5 5 0 000-10z" />
+                  </svg>
+                )}
+              </motion.div>
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-5 py-2 rounded-full text-sm font-medium shadow-lg hover:shadow-xl transition-shadow hidden sm:block"
+            >
+              Get Started
+            </motion.button>
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
 };
 
-export default Home;
+// Hero Section
+const HeroSection = () => {
+  return (
+    <AuroraBackground>
+      <div className="pt-32 pb-20 px-4 min-h-screen flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="max-w-4xl mx-auto text-center"
+        >
+          <div className="mb-6 text-4xl md:text-6xl font-bold text-neutral-900 dark:text-white leading-tight">
+            <div className="mb-2">
+              <TextType 
+                text={["Visualize Data Structures", "Master Algorithms Faster", "Learn DSA Visually"]}
+                typingSpeed={75}
+                pauseDuration={1500}
+                showCursor={true}
+                cursorCharacter="|"
+              />
+            </div>
+            <div className="text-transparent bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text">
+              Like Never Before
+            </div>
+          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1, duration: 0.8 }}
+          >
+            <ShinyText
+              text="Master algorithms with interactive visualizations. Step through code, understand complexity, and solve problems faster."
+              disabled={false}
+              speed={3}
+              className="text-lg md:text-xl text-neutral-700 dark:text-neutral-300 mb-8 max-w-2xl mx-auto block"
+            />
+          </motion.div>
+          <motion.div 
+            className="flex flex-col sm:flex-row gap-4 justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2, duration: 0.8 }}
+          >
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-full font-semibold shadow-lg hover:shadow-xl transition-shadow"
+            >
+              Start Learning
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="border border-neutral-800 dark:border-neutral-200 text-neutral-900 dark:text-white px-8 py-4 rounded-full font-semibold hover:bg-white/10 dark:hover:bg-neutral-800/50 transition-all shadow-sm"
+            >
+              View Demo
+            </motion.button>
+          </motion.div>
+        </motion.div>
+      </div>
+    </AuroraBackground>
+  );
+};
+
+// Features Section
+const FeaturesSection = () => {
+  const features = [
+    { icon: "▶️", title: "Step-by-Step Execution", desc: "Execute code line by line and see variable states in real time" },
+    { icon: "📊", title: "Visual Complexity Analysis", desc: "Understand time and space complexity with interactive graphs" },
+    { icon: "💡", title: "Curated Algorithms", desc: "Learn from a comprehensive library of sorted and annotated algorithms" },
+    { icon: "🚀", title: "Performance Tracking", desc: "Benchmark your solutions and track your progress" },
+  ];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
+  };
+
+  return (
+    <section id="features" className="py-20 px-4 bg-white dark:bg-black">
+      <div className="max-w-6xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16"
+        >
+          <motion.h2 
+            className="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-white mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            Powerful Features
+          </motion.h2>
+          <motion.p 
+            className="text-neutral-600 dark:text-neutral-400 text-lg"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+          >
+            Everything you need to master data structures and algorithms
+          </motion.p>
+        </motion.div>
+
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          {features.map((feature, i) => (
+            <motion.div
+              key={i}
+              variants={itemVariants}
+              whileHover={{ y: -5 }}
+              className="p-6 bg-neutral-50 dark:bg-neutral-900/50 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <motion.div 
+                className="text-4xl mb-3"
+                whileHover={{ scale: 1.1 }}
+                transition={{ duration: 0.2 }}
+              >
+                {feature.icon}
+              </motion.div>
+              <h3 className="text-xl font-semibold text-neutral-900 dark:text-white mb-2">
+                {feature.title}
+              </h3>
+              <p className="text-neutral-600 dark:text-neutral-400">
+                {feature.desc}
+              </p>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
+// How It Works Section
+const HowItWorksSection = () => {
+  const steps = [
+    { num: "01", title: "Choose an Algorithm", desc: "Select from sorting, searching, graphs, and more" },
+    { num: "02", title: "Visualize the Process", desc: "Watch the algorithm execute with color-coded steps" },
+    { num: "03", title: "Understand Complexity", desc: "Learn time/space complexity and optimization techniques" },
+    { num: "04", title: "Practice & Master", desc: "Solve problems and track your improvement" },
+  ];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
+  };
+
+  return (
+    <section id="how-it-works" className="py-20 px-4 bg-neutral-50 dark:bg-neutral-950">
+      <div className="max-w-6xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16"
+        >
+          <motion.h2 
+            className="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-white mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            How It Works
+          </motion.h2>
+          <motion.p 
+            className="text-neutral-600 dark:text-neutral-400 text-lg"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+          >
+            Simple, intuitive, and incredibly effective
+          </motion.p>
+        </motion.div>
+
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-4 gap-6"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          {steps.map((step, i) => (
+            <motion.div
+              key={i}
+              variants={itemVariants}
+              whileHover={{ y: -5 }}
+              className="relative"
+            >
+              <div className="p-6 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm h-full hover:shadow-md transition-shadow">
+                <motion.div 
+                  className="text-5xl font-bold text-purple-600 dark:text-purple-400 mb-4"
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.1 + 0.3, duration: 0.5 }}
+                >
+                  {step.num}
+                </motion.div>
+                <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
+                  {step.title}
+                </h3>
+                <p className="text-neutral-600 dark:text-neutral-400 text-sm">
+                  {step.desc}
+                </p>
+              </div>
+              {i < 3 && (
+                <motion.div 
+                  className="hidden md:block absolute -right-3 top-1/2 transform -translate-y-1/2"
+                  initial={{ opacity: 0, scale: 0 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.1 + 0.5, duration: 0.4 }}
+                >
+                  <div className="w-6 h-6 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full shadow-md" />
+                </motion.div>
+              )}
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
+// Pricing Section
+const PricingSection = () => {
+  const plans = [
+    { name: "Starter", price: "$0", features: ["Basic algorithms", "Limited visualizations", "Community support"], cta: "Start Free" },
+    { name: "Pro", price: "$29", features: ["All algorithms", "Advanced visualizations", "Priority support", "Progress tracking"], cta: "Get Pro", popular: true },
+    { name: "Enterprise", price: "Custom", features: ["Everything in Pro", "Custom algorithms", "API access", "Dedicated support"], cta: "Contact Sales" },
+  ];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
+  };
+
+  return (
+    <section id="pricing" className="py-20 px-4 bg-white dark:bg-black">
+      <div className="max-w-6xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16"
+        >
+          <motion.h2 
+            className="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-white mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            Simple Pricing
+          </motion.h2>
+          <motion.p 
+            className="text-neutral-600 dark:text-neutral-400 text-lg"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+          >
+            Choose the plan that works for you
+          </motion.p>
+        </motion.div>
+
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          {plans.map((plan, i) => (
+            <motion.div
+              key={i}
+              variants={itemVariants}
+              whileHover={{ y: -8 }}
+              className={`p-8 rounded-2xl border transition-all ${
+                plan.popular
+                  ? "bg-gradient-to-br from-purple-600/10 to-pink-600/10 border-purple-400 dark:border-purple-500 shadow-lg"
+                  : "bg-neutral-50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-800 shadow-sm hover:shadow-md"
+              }`}
+            >
+              {plan.popular && (
+                <motion.div 
+                  className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 rounded-full text-xs font-semibold mb-4"
+                  initial={{ opacity: 0, scale: 0 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.1 + 0.4, duration: 0.4 }}
+                >
+                  Most Popular
+                </motion.div>
+              )}
+              <h3 className="text-2xl font-semibold text-neutral-900 dark:text-white mb-2">
+                {plan.name}
+              </h3>
+              <motion.div 
+                className="text-4xl font-bold text-neutral-900 dark:text-white mb-6"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ delay: i * 0.1 + 0.2, duration: 0.5 }}
+              >
+                {plan.price}
+                {plan.price !== "Custom" && <span className="text-lg text-neutral-600 dark:text-neutral-400">/month</span>}
+              </motion.div>
+              <motion.ul 
+                className="space-y-3 mb-8"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ delay: i * 0.1 + 0.3, duration: 0.5 }}
+              >
+                {plan.features.map((feature, j) => (
+                  <li key={j} className="flex items-center text-neutral-700 dark:text-neutral-300">
+                    <motion.span 
+                      className="mr-3 text-purple-600 dark:text-purple-400"
+                      initial={{ opacity: 0, x: -10 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.1 + 0.4 + j * 0.05, duration: 0.3 }}
+                    >
+                      ✓
+                    </motion.span>
+                    {feature}
+                  </li>
+                ))}
+              </motion.ul>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`w-full py-3 rounded-lg font-semibold transition-all shadow-sm ${
+                  plan.popular
+                    ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
+                    : "bg-neutral-200 dark:bg-neutral-800 text-neutral-900 dark:text-white hover:bg-neutral-300 dark:hover:bg-neutral-700"
+                }`}
+              >
+                {plan.cta}
+              </motion.button>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
+// Footer Section
+const FooterSection = () => {
+  return (
+    <footer className="bg-neutral-900 dark:bg-black text-white py-12 px-4">
+      <div className="max-w-6xl mx-auto">
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <h3 className="font-semibold mb-4">Algo Trace X</h3>
+            <p className="text-neutral-400 text-sm">Master DSA with interactive visualizations.</p>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+          >
+            <h4 className="font-semibold mb-4">Product</h4>
+            <ul className="space-y-2 text-sm text-neutral-400">
+              <li><a href="#" className="hover:text-white transition-colors">Visualize</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Learn</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Practice</a></li>
+            </ul>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.4 }}
+          >
+            <h4 className="font-semibold mb-4">Resources</h4>
+            <ul className="space-y-2 text-sm text-neutral-400">
+              <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Docs</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Community</a></li>
+            </ul>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+          >
+            <h4 className="font-semibold mb-4">Legal</h4>
+            <ul className="space-y-2 text-sm text-neutral-400">
+              <li><a href="#" className="hover:text-white transition-colors">Privacy</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Terms</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
+            </ul>
+          </motion.div>
+        </motion.div>
+        <motion.div 
+          className="border-t border-neutral-800 pt-8 text-center text-neutral-400 text-sm"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+        >
+          <p>&copy; 2025 Algo Trace X. All rights reserved.</p>
+        </motion.div>
+      </div>
+    </footer>
+  );
+};
+
+// Main App
+export default function App() {
+  return (
+    <div className="min-h-screen bg-white dark:bg-black">
+      <Navbar />
+      <HeroSection />
+      <FeaturesSection />
+      <HowItWorksSection />
+      <PricingSection />
+      <FooterSection />
+    </div>
+  );
+}
