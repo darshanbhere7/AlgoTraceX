@@ -164,8 +164,8 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="w-full bg-neutral-50 dark:bg-neutral-950 transition-colors duration-300 px-8 py-4">
-      <div className="w-full max-w-5xl mx-auto bg-white dark:bg-neutral-900 rounded-full shadow-md dark:shadow-xl dark:shadow-black/30 px-5 py-2.5 transition-all duration-300">
+    <nav className="fixed top-0 left-0 w-full z-50 bg-transparent transition-colors duration-300 px-8 py-4">
+      <div className="w-full max-w-5xl mx-auto backdrop-blur-md bg-white/30 dark:bg-neutral-900/30 rounded-full shadow-sm dark:shadow-black/40 px-5 py-2.5 transition-all duration-300 border border-white/20 dark:border-neutral-800/40">
         <div className="flex justify-between items-center">
           {/* Logo Section */}
           <div className="flex items-center">
@@ -200,9 +200,9 @@ const Navbar = () => {
             </div>
 
             {/* Mobile Menu Button */}
-            <button className="md:hidden p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+            <button className="md:hidden p-2 rounded-full hover:bg-white/20 dark:hover:bg-neutral-800/60 transition-colors">
               <svg
-                className="w-5 h-5 text-neutral-700 dark:text-neutral-300"
+                className="w-5 h-5 text-neutral-800 dark:text-neutral-200"
                 fill="none"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -217,6 +217,8 @@ const Navbar = () => {
         </div>
       </div>
     </nav>
+
+
   );
 };
 

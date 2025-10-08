@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+
+import AlgoTraceXLanding from './pages/Home.jsx';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import Dashboard from './pages/User/Dashboard';
@@ -69,6 +71,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="home" element={<AlgoTraceXLanding />} />
 
           {/* Protected user routes */}
           <Route element={<ProtectedRoute />}>
