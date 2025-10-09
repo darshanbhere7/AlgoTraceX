@@ -32,10 +32,10 @@ const AIRecommendations = () => {
   const [language, setLanguage] = useState('English');
   const [isListening, setIsListening] = useState(false);
   
+  // State for reliable audio playback
   const [audioPlayer, setAudioPlayer] = useState({
     player: null,
     messageId: null,
-    isLoading: false,
   });
 
   const [userProfile, setUserProfile] = useState({
@@ -62,11 +62,11 @@ const AIRecommendations = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversations, isTyping]);
   
+  // Effect to clean up the audio player
   useEffect(() => {
     return () => {
       if (audioPlayer.player) {
         audioPlayer.player.pause();
-        URL.revokeObjectURL(audioPlayer.player.src);
       }
     };
   }, [audioPlayer.player]);
@@ -92,18 +92,25 @@ const AIRecommendations = () => {
   const toggleListening = () => {
     if (isListening) {
       recognition.stop();
+      setIsListening(false);
     } else {
       if (!recognition) return;
       recognition.lang = languageCodes[language] || 'en-US';
-      recognition.start();
+      try {
+        recognition.start();
+        setIsListening(true);
+      } catch (error) {
+        console.error("SpeechRecognition start error:", error);
+        setIsListening(false);
+      }
     }
-    setIsListening(!isListening);
   };
   
+  // **UPDATED toggleSpeak function to use the backend proxy**
   const toggleSpeak = async (message) => {
     if (audioPlayer.player && audioPlayer.messageId === message.id) {
       audioPlayer.player.pause();
-      setAudioPlayer({ player: null, messageId: null, isLoading: false });
+      setAudioPlayer({ player: null, messageId: null });
       return;
     }
 
@@ -112,28 +119,48 @@ const AIRecommendations = () => {
     }
 
     try {
-      setAudioPlayer({ player: null, messageId: message.id, isLoading: true });
+      const langCode = languageCodes[language]?.split('-')[0] || 'en';
+      
+      // Split text into chunks to avoid hitting any URL length limits
+      const chunks = message.content.match(/[\s\S]{1,200}/g) || [];
+      let currentChunk = 0;
+      let players = []; // Store all audio players to manage them
 
-      const audioUrl = await chatService.textToSpeech(message.content);
-      const newPlayer = new Audio(audioUrl);
+      const playNextChunk = () => {
+        if (currentChunk >= chunks.length) {
+          setAudioPlayer({ player: null, messageId: null });
+          return;
+        }
 
-      const cleanup = () => {
-        setAudioPlayer({ player: null, messageId: null, isLoading: false });
-        URL.revokeObjectURL(audioUrl);
+        const playCurrentChunk = async () => {
+          const audioUrl = await chatService.textToSpeech(chunks[currentChunk], langCode);
+          const newPlayer = new Audio(audioUrl);
+          players[currentChunk] = newPlayer;
+
+          newPlayer.onended = () => {
+            URL.revokeObjectURL(audioUrl); // Clean up memory
+            currentChunk++;
+            playNextChunk();
+          };
+
+          newPlayer.onerror = () => {
+            console.error("Error playing audio chunk.");
+            setError("Could not play audio.");
+            setAudioPlayer({ player: null, messageId: null });
+          };
+          
+          newPlayer.play();
+          setAudioPlayer({ player: newPlayer, messageId: message.id });
+        };
+        
+        playCurrentChunk();
       };
       
-      newPlayer.onended = cleanup;
-      newPlayer.onerror = () => {
-        console.error("Error playing audio.");
-        cleanup();
-      };
-
-      newPlayer.play();
-      setAudioPlayer({ player: newPlayer, messageId: message.id, isLoading: false });
+      playNextChunk();
 
     } catch (error) {
       setError('Failed to generate or play audio.');
-      setAudioPlayer({ player: null, messageId: null, isLoading: false });
+      setAudioPlayer({ player: null, messageId: null });
     }
   };
 
@@ -317,7 +344,6 @@ const AIRecommendations = () => {
     }
   };
   const copyMessage = (content) => { navigator.clipboard.writeText(content); };
-  const regenerateResponse = async () => { /* This function's logic was not provided */ };
   
   const handleGetRecommendations = async () => {
     setLoading(true);
@@ -364,8 +390,6 @@ const AIRecommendations = () => {
 
   const renderConversation = () => {
     const conv = getCurrentConv();
-    const lastMessage = conv?.messages[conv.messages.length - 1];
-    const canRegenerate = lastMessage?.type === 'assistant' && !loading;
 
     return (
       <div className="flex h-[600px] border rounded-lg">
@@ -413,11 +437,8 @@ const AIRecommendations = () => {
                      <span>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                      <button className="p-1 hover:opacity-100 opacity-70" onClick={() => copyMessage(msg.content)}><Copy className="h-3 w-3" /></button>
                      {msg.type === 'assistant' && (
-                       <button className="p-1 hover:opacity-100 opacity-70" onClick={() => toggleSpeak(msg)} disabled={audioPlayer.isLoading && audioPlayer.messageId === msg.id}>
-                         { audioPlayer.messageId === msg.id ? 
-                            (audioPlayer.isLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <VolumeX className="h-3.5 w-3.5 text-blue-500" />) :
-                            <Volume2 className="h-3.5 w-3.5" />
-                         }
+                       <button className="p-1 hover:opacity-100 opacity-70" onClick={() => toggleSpeak(msg)}>
+                         { audioPlayer.messageId === msg.id ? <VolumeX className="h-3.5 w-3.5 text-blue-500" /> : <Volume2 className="h-3.5 w-3.5" /> }
                        </button>
                      )}
                    </div>
@@ -439,11 +460,6 @@ const AIRecommendations = () => {
             )}
             <div ref={messagesEndRef} />
           </div>
-          {canRegenerate && (
-            <div className='px-4 pb-2 flex justify-center'>
-                <Button variant="outline" size="sm" onClick={regenerateResponse} disabled={loading}><RefreshCw className="h-3 w-3 mr-2" /> Regenerate</Button>
-            </div>
-          )}
           <div className="border-t p-3">
             <div className="relative flex items-center gap-2">
               <Textarea

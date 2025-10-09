@@ -206,50 +206,25 @@ ${levelInstructions}
   }
 };
 
+// **RE-ADD a textToSpeech function, but now as a proxy**
 const textToSpeech = async (req, res) => {
-  const { text } = req.body;
-  if (!text) {
-    return res.status(400).json({ error: 'Text is required' });
-  }
-
-  const apiKey = process.env.ELEVENLABS_API_KEY;
-  if (!apiKey) {
-    console.error('ElevenLabs API key is missing from .env file');
-    return res.status(500).json({ error: 'TTS service is not configured on the server.' });
-  }
-
-  const voiceId = '21m00Tcm4TlvDq8ikWAM'; 
-  const modelId = 'eleven_multilingual_v2';
-  const apiUrl = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`;
-
   try {
-    const response = await axios.post(apiUrl, {
-      text: text,
-      model_id: modelId,
-      voice_settings: {
-        stability: 0.5,
-        similarity_boost: 0.75,
-      },
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-        'xi-api-key': apiKey,
-        'Accept': 'audio/mpeg',
-      },
-      responseType: 'stream', 
-    });
+    const { text, lang } = req.body;
+    if (!text || !lang) {
+      return res.status(400).json({ error: 'Text and language code are required' });
+    }
 
-    res.setHeader('Content-Type', 'audio/mpeg');
+    const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=${lang}&client=tw-ob`;
+
+    const response = await axios.get(url, { responseType: 'stream' });
     
+    res.setHeader('Content-Type', 'audio/mpeg');
     response.data.pipe(res);
-
   } catch (error) {
-    const errorMsg = error.response?.data ? Buffer.from(error.response.data).toString() : error.message;
-    console.error('ElevenLabs API Error:', errorMsg);
-    res.status(500).json({ error: 'Failed to generate speech' });
+    console.error('Error proxying Google TTS:', error.message);
+    res.status(500).json({ error: 'Failed to fetch speech audio' });
   }
 };
-
 
 /**
  * Get user's chat conversations

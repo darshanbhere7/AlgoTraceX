@@ -92,7 +92,8 @@ export const chatService = {
     }
   },
 
-  async textToSpeech(text) {
+  // **UPDATED** to call the backend proxy
+  async textToSpeech(text, lang) {
     try {
       const token = getAuthToken();
       const response = await fetch(`${API_BASE_URL}/ai/text-to-speech`, {
@@ -101,7 +102,7 @@ export const chatService = {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, lang }),
       });
 
       if (!response.ok) {

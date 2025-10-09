@@ -10,7 +10,7 @@ const {
   getConversationMessages,
   deleteConversation,
   updateConversationTitle,
-  textToSpeech // **Import the new function**
+  textToSpeech // **Re-add the import**
 } = require('../controllers/aiController');
 
 // AI learning recommendations
@@ -22,7 +22,7 @@ router.post('/ask', protect, askQuestion);
 // AI algorithm explanation
 router.post('/explain', explainAlgorithm);
 
-// **NEW ROUTE FOR TEXT-TO-SPEECH**
+// **RE-ADD THE ROUTE FOR TEXT-TO-SPEECH PROXY**
 router.post('/text-to-speech', protect, textToSpeech);
 
 // Chat conversation management routes
