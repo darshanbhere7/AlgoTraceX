@@ -33,49 +33,28 @@ const ThemeToggleButton = ({ isDark, onToggle }) => {
         className="absolute inset-0 bg-neutral-800 dark:bg-neutral-200 rounded-full"
       />
 
-      <svg
+      <motion.svg
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
-        fill="currentColor"
+        fill="none"
+        stroke="currentColor"
         strokeLinecap="round"
-        viewBox="0 0 32 32"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        viewBox="0 0 24 24"
         className="w-5 h-5 text-neutral-700 dark:text-neutral-200 relative z-10"
+        animate={{ rotate: isDark ? 0 : 180 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-        <clipPath id="theme-toggle-clip">
-          <motion.path
-            animate={{ y: isDark ? 10 : 0, x: isDark ? -12 : 0 }}
-            transition={{ ease: "easeInOut", duration: 0.35 }}
-            d="M0-5h30a1 1 0 0 0 9 13v24H0Z"
-          />
-        </clipPath>
-        <g clipPath="url(#theme-toggle-clip)">
-          <motion.circle
-            animate={{ r: isDark ? 10 : 8 }}
-            transition={{ ease: "easeInOut", duration: 0.35 }}
-            cx="16"
-            cy="16"
-          />
-          <motion.g
-            animate={{
-              rotate: isDark ? -100 : 0,
-              scale: isDark ? 0.5 : 1,
-              opacity: isDark ? 0 : 1,
-            }}
-            transition={{ ease: "easeInOut", duration: 0.35 }}
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <path d="M16 5.5v-4" />
-            <path d="M16 30.5v-4" />
-            <path d="M1.5 16h4" />
-            <path d="M26.5 16h4" />
-            <path d="m23.4 8.6 2.8-2.8" />
-            <path d="m5.7 26.3 2.9-2.9" />
-            <path d="m5.8 5.8 2.8 2.8" />
-            <path d="m23.4 23.4 2.9 2.9" />
-          </motion.g>
-        </g>
-      </svg>
+        {isDark ? (
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        ) : (
+          <g>
+            <circle cx="12" cy="12" r="5" />
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+          </g>
+        )}
+      </motion.svg>
     </motion.button>
   );
 };

@@ -1,4 +1,3 @@
-"use client";
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -23,81 +22,6 @@ import { cn } from "@/lib/utils";
 import logo from "../assets/logo.png";
 import logoDark from "../assets/logo_dark.png";
 
-const ThemeToggleButton = ({ isDark, onToggle }) => {
-  const [isPressed, setIsPressed] = useState(false);
-
-  const handleToggle = () => {
-    onToggle();
-    setIsPressed(true);
-    setTimeout(() => setIsPressed(false), 600);
-  };
-
-  return (
-    <motion.button
-      type="button"
-      className="relative rounded-full bg-neutral-200 dark:bg-neutral-700 p-2 transition-all duration-300 overflow-hidden"
-      onClick={handleToggle}
-      whileHover={{ rotate: isDark ? -15 : 180 }}
-      whileTap={{ scale: 0.9 }}
-      transition={{ duration: 0.3 }}
-    >
-      {/* Fill animation on press */}
-      <motion.div
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{
-          scale: isPressed ? 3 : 0,
-          opacity: isPressed ? [0, 0.3, 0] : 0
-        }}
-        transition={{ duration: 0.6 }}
-        className="absolute inset-0 bg-neutral-800 dark:bg-neutral-200 rounded-full"
-      />
-
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-        fill="currentColor"
-        strokeLinecap="round"
-        viewBox="0 0 32 32"
-        className="w-5 h-5 text-neutral-700 dark:text-neutral-200 relative z-10"
-      >
-        <clipPath id="theme-toggle-clip">
-          <motion.path
-            animate={{ y: isDark ? 10 : 0, x: isDark ? -12 : 0 }}
-            transition={{ ease: "easeInOut", duration: 0.35 }}
-            d="M0-5h30a1 1 0 0 0 9 13v24H0Z"
-          />
-        </clipPath>
-        <g clipPath="url(#theme-toggle-clip)">
-          <motion.circle
-            animate={{ r: isDark ? 10 : 8 }}
-            transition={{ ease: "easeInOut", duration: 0.35 }}
-            cx="16"
-            cy="16"
-          />
-          <motion.g
-            animate={{
-              rotate: isDark ? -100 : 0,
-              scale: isDark ? 0.5 : 1,
-              opacity: isDark ? 0 : 1,
-            }}
-            transition={{ ease: "easeInOut", duration: 0.35 }}
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <path d="M16 5.5v-4" />
-            <path d="M16 30.5v-4" />
-            <path d="M1.5 16h4" />
-            <path d="M26.5 16h4" />
-            <path d="m23.4 8.6 2.8-2.8" />
-            <path d="m5.7 26.3 2.9-2.9" />
-            <path d="m5.8 5.8 2.8 2.8" />
-            <path d="m23.4 23.4 2.9 2.9" />
-          </motion.g>
-        </g>
-      </svg>
-    </motion.button>
-  );
-};
 
 const SidebarUserProfile = ({ user, onViewProfile, open }) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -152,10 +76,28 @@ const SidebarUserProfile = ({ user, onViewProfile, open }) => {
   );
 };
 
-const SidebarEnhanced = ({ admin = false }) => {
+const SidebarEnhanced = ({ admin = false, children }) => {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
+
+  // Check for dark mode on component mount and when it changes
+  React.useEffect(() => {
+    const checkDarkMode = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    
+    checkDarkMode();
+    
+    // Listen for changes to the dark class
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    
+    return () => observer.disconnect();
+  }, []);
 
   const userLinks = [
     {
@@ -243,87 +185,137 @@ const SidebarEnhanced = ({ admin = false }) => {
     console.log("View profile clicked", user);
   };
 
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle("dark");
-  };
+
+  // Calculate sidebar width - collapsed: 72px, expanded: 200px (reduced for better space usage)
+  const collapsedWidth = 72;
+  const expandedWidth = 200;
 
   return (
-    <div
-      className="fixed left-0 top-0 h-screen z-40"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
-      <Sidebar open={open} setOpen={setOpen}>
-        <SidebarBody 
-          className="justify-between gap-10 bg-neutral-50 dark:bg-neutral-950 h-full shadow-lg dark:shadow-2xl dark:shadow-black/50"
-        >
-        <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
-          <div className="z-20 flex items-center justify-between py-1 text-sm font-normal">
-            <div className="flex-shrink-0">
-              <img
-                src={isDark ? logoDark : logo}
-                alt="Logo"
-                className="w-9 h-9 rounded-full shadow-sm object-cover"
-              />
-            </div>
-            <div className="ml-2">
-              <ThemeToggleButton isDark={isDark} onToggle={toggleTheme} />
-            </div>
-          </div>
+    <div className="flex h-screen overflow-hidden">
+      {/* Sidebar */}
+      <div
+        className="fixed left-0 top-0 h-screen z-40"
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+      >
+        <Sidebar open={open} setOpen={setOpen}>
+          <SidebarBody 
+            className="justify-between gap-6 bg-neutral-50 dark:bg-neutral-950 h-full shadow-lg dark:shadow-2xl dark:shadow-black/50"
+          >
+            <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
+              <div className="z-20 flex items-center justify-between py-1 text-sm font-normal">
+                <div className="flex-shrink-0 relative">
+                  <motion.img
+                    src={isDark ? logoDark : logo}
+                    alt="Logo"
+                    className="w-9 h-9 rounded-full shadow-sm object-cover"
+                    key={isDark ? 'dark' : 'light'}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                  />
+                </div>
+              </div>
 
-          <div className="mt-8 flex flex-col gap-2">
-            {links.map((link) => (
+              <div className="mt-6 flex flex-col gap-2">
+                {links.map((link) => (
+                  <NavLink
+                    key={link.to}
+                    to={link.to}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center py-1.5 px-3 rounded text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors whitespace-nowrap min-h-[36px]",
+                        isActive &&
+                          "bg-neutral-200 dark:bg-neutral-800 font-medium"
+                      )
+                    }
+                  >
+                    <span className="text-neutral-700 dark:text-neutral-300 flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                      {link.icon}
+                    </span>
+                    <motion.span 
+                      className="ml-2"
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ 
+                        opacity: open ? 1 : 0, 
+                        width: open ? "auto" : 0 
+                      }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    >
+                      {link.label}
+                    </motion.span>
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
               <NavLink
-                key={link.to}
-                to={link.to}
+                to={admin ? "/admin/settings" : "/user/settings"}
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center py-2 px-4 rounded text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors whitespace-nowrap",
-                    isActive &&
-                      "bg-neutral-200 dark:bg-neutral-800 font-medium"
+                    "flex items-center py-1.5 px-3 rounded text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors whitespace-nowrap min-h-[36px]",
+                    isActive && "bg-neutral-200 dark:bg-neutral-800 font-medium"
                   )
                 }
               >
-                <span className="text-neutral-700 dark:text-neutral-300 flex-shrink-0">
-                  {link.icon}
-                </span>
-                {open && <span className="ml-2">{link.label}</span>}
+                <Settings size={18} className="flex-shrink-0 w-5 h-5 flex items-center justify-center" />
+                <motion.span 
+                  className="ml-2"
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ 
+                    opacity: open ? 1 : 0, 
+                    width: open ? "auto" : 0 
+                  }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                >
+                  Settings
+                </motion.span>
               </NavLink>
-            ))}
-          </div>
+
+              <button
+                onClick={handleLogout}
+                className="flex items-center w-full text-left py-1.5 px-3 rounded text-red-600 dark:text-red-400 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors whitespace-nowrap min-h-[36px]"
+              >
+                <LogOut size={18} className="flex-shrink-0 w-5 h-5 flex items-center justify-center" />
+                <motion.span 
+                  className="ml-2"
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ 
+                    opacity: open ? 1 : 0, 
+                    width: open ? "auto" : 0 
+                  }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                >
+                  Logout
+                </motion.span>
+              </button>
+
+              <SidebarUserProfile
+                user={user}
+                onViewProfile={handleViewProfile}
+                open={open}
+              />
+            </div>
+          </SidebarBody>
+        </Sidebar>
+      </div>
+
+      {/* Main content area with animated margin */}
+      <motion.div
+        className="flex-1 h-screen overflow-auto"
+        animate={{
+          marginLeft: open ? expandedWidth : collapsedWidth
+        }}
+        transition={{
+          duration: 0.3,
+          ease: "easeInOut"
+        }}
+      >
+        <div className="p-6">
+          {children}
         </div>
-
-        <div className="flex flex-col gap-2">
-          <NavLink
-            to={admin ? "/admin/settings" : "/user/settings"}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center py-2 px-4 rounded text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors whitespace-nowrap",
-                isActive && "bg-neutral-200 dark:bg-neutral-800 font-medium"
-              )
-            }
-          >
-            <Settings size={18} className="flex-shrink-0" />
-            {open && <span className="ml-2">Settings</span>}
-          </NavLink>
-
-          <button
-            onClick={handleLogout}
-            className="flex items-center w-full text-left py-2 px-4 rounded text-red-600 dark:text-red-400 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors whitespace-nowrap"
-          >
-            <LogOut size={18} className="flex-shrink-0" />
-            {open && <span className="ml-2">Logout</span>}
-          </button>
-
-          <SidebarUserProfile
-            user={user}
-            onViewProfile={handleViewProfile}
-            open={open}
-          />
-        </div>
-      </SidebarBody>
-    </Sidebar>
+      </motion.div>
     </div>
   );
 };
