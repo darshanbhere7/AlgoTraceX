@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -81,24 +82,31 @@ const ManageUsers = () => {
 
   if (loading && users.length === 0) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl text-gray-600">Loading users...</div>
+      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-neutral-950">
+        <div className="text-xl text-gray-600 dark:text-gray-400">Loading users...</div>
       </div>
     );
   }
 
   if (error && users.length === 0) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl text-red-600">{error}</div>
+      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-neutral-950">
+        <div className="text-xl text-red-600 dark:text-red-400">{error}</div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Manage Users</h1>
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
+      {/* Add padding-top to account for fixed navbar */}
+      <div className="p-6 pt-24 space-y-6">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="flex justify-between items-center"
+        >
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage Users</h1>
         <div className="flex items-center space-x-4">
           <Input
             type="text"
@@ -107,53 +115,73 @@ const ManageUsers = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-64"
           />
-          <button 
+          <motion.button 
             onClick={fetchUsers}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="px-4 py-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white rounded hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 transition-colors shadow-sm"
           >
             Refresh Users
-          </button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
-      <Card>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+      >
+      <Card className="bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 shadow-sm">
         <CardContent className="p-6">
           <div className="space-y-4">
-            {filteredUsers.map((user) => (
-              <div key={user._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            {filteredUsers.map((user, index) => (
+              <motion.div 
+                key={user._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                whileHover={{ y: -4 }}
+                className="flex items-center justify-between p-4 bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 shadow-sm"
+              >
                 <div>
-                  <h3 className="font-medium">{user.name}</h3>
-                  <p className="text-sm text-gray-600">{user.email}</p>
+                  <h3 className="font-medium text-gray-900 dark:text-white">{user.name}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{user.email}</p>
                   <div className="flex items-center space-x-2 mt-1">
                     <span className={`text-xs px-2 py-1 rounded-full ${
-                      user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                      user.role === 'admin' ? 'bg-gray-200 dark:bg-neutral-800 text-gray-800 dark:text-gray-300' : 'bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300'
                     }`}>
                       {user.role}
                     </span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
                       Joined: {new Date(user.createdAt).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
+                  <motion.button
                     onClick={() => handleToggleRole(user._id, user.role)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-4 py-2 rounded transition-colors bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 shadow-sm"
                   >
                     {user.role === 'admin' ? 'Make User' : 'Make Admin'}
-                  </Button>
-                  <Button
-                    variant="destructive"
+                  </motion.button>
+                  <motion.button
                     onClick={() => handleDeleteUser(user._id)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-4 py-2 rounded transition-colors bg-white dark:bg-neutral-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-gray-300 dark:border-neutral-700 shadow-sm"
                   >
                     Delete
-                  </Button>
+                  </motion.button>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </CardContent>
       </Card>
+      </motion.div>
+      </div>
     </div>
   );
 };
