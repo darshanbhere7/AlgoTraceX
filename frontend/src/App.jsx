@@ -22,6 +22,7 @@ import PracticeQuestions from './pages/User/PracticeQuestions';
 import ManagePracticeQuestions from './pages/Admin/ManagePracticeQuestions';
 
 import VisualizerHome from './pages/User/VisualizerHome';
+import Profile from './pages/User/Profile';
 import BubbleSort from "@/components/sorting/BubbleSort";
 import MergeSort from "./components/sorting/MergeSort";
 import QuickSort from "./components/sorting/QuickSort";
@@ -70,7 +71,7 @@ function App() {
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="home" element={<AlgoTraceXLanding />} />
 
           {/* Protected user routes */}
@@ -87,6 +88,7 @@ function App() {
               </div>
             }>
               <Route path="dashboard" element={<Dashboard />} />
+              <Route path="profile" element={<Profile />} />
               <Route path="topics" element={<Topics />} />
               <Route path="progress" element={<Progress />} />
               <Route path="weekly-test" element={<WeeklyTest />} />

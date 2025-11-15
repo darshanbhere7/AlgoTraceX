@@ -13,12 +13,20 @@ import {
   Play,
   BookOpen,
   Code,
-  Activity
+  Activity,
+  Sun,
+  Moon
 } from "lucide-react";
 
 export default function VisualizerHome() {
   const [expandedCategories, setExpandedCategories] = useState(new Set());
   const [selectedItem, setSelectedItem] = useState(null);
+  const [isDarkMode, setIsDarkMode] = useState(false); // Force light mode by default
+
+  // Manual theme toggle function
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+  };
 
   // Your original navigation function - keeping this intact
   const handleNavigate = (path) => {
@@ -139,6 +147,26 @@ export default function VisualizerHome() {
       {/* Hero Section */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
+          {/* Theme Toggle Button */}
+          <div className="flex justify-end mb-8">
+            <div className="flex items-center gap-4">
+              <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                Current: {isDarkMode ? 'Dark' : 'Light'} Mode
+              </span>
+              <button
+                onClick={toggleTheme}
+                className={`p-2 rounded-lg ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-100 hover:bg-gray-200'} transition-colors duration-200`}
+                title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              >
+                {isDarkMode ? (
+                  <Sun className="w-5 h-5 text-yellow-500" />
+                ) : (
+                  <Moon className="w-5 h-5 text-gray-700" />
+                )}
+              </button>
+            </div>
+          </div>
+          
           <div className="text-center">
             <div className="flex items-center justify-center mb-6">
               <div className="p-3 bg-gray-900 rounded-xl shadow-lg">
@@ -153,17 +181,17 @@ export default function VisualizerHome() {
               Watch algorithms come to life with step-by-step animations and real-time complexity analysis.
             </p>
             <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-500">
-              <div className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full">
-                <BookOpen className="w-4 h-4" />
-                <span>Interactive Learning</span>
+              <div className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full border border-gray-200">
+                <BookOpen className="w-4 h-4 text-gray-600" />
+                <span className="text-gray-700">Interactive Learning</span>
               </div>
-              <div className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full">
-                <Code className="w-4 h-4" />
-                <span>Code Examples</span>
+              <div className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full border border-gray-200">
+                <Code className="w-4 h-4 text-gray-600" />
+                <span className="text-gray-700">Code Examples</span>
               </div>
-              <div className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full">
-                <Activity className="w-4 h-4" />
-                <span>Real-time Visualization</span>
+              <div className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full border border-gray-200">
+                <Activity className="w-4 h-4 text-gray-600" />
+                <span className="text-gray-700">Real-time Visualization</span>
               </div>
             </div>
           </div>
@@ -181,7 +209,7 @@ export default function VisualizerHome() {
               return (
                 <div
                   key={category.id}
-                  className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200"
+                  className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200"
                   style={{
                     animationDelay: `${index * 100}ms`,
                     animation: 'fadeInUp 0.6s ease-out forwards'
@@ -194,14 +222,14 @@ export default function VisualizerHome() {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className="p-2 bg-gray-100 rounded-lg">
+                        <div className="p-2 bg-gray-100 rounded-lg border border-gray-200">
                           <IconComponent className="w-5 h-5 text-gray-700" />
                         </div>
                         <div>
                           <h2 className="text-xl font-semibold text-gray-900">
                             {category.title}
                           </h2>
-                          <p className="text-gray-600 text-sm mt-1">
+                          <p className="text-sm mt-1 text-gray-600">
                             {category.description}
                           </p>
                         </div>
@@ -211,9 +239,9 @@ export default function VisualizerHome() {
                           {category.items.length} items
                         </span>
                         {isExpanded ? (
-                          <ChevronDown className="w-5 h-5 text-gray-400" />
+                          <ChevronDown className="w-5 h-5 text-gray-500" />
                         ) : (
-                          <ChevronRight className="w-5 h-5 text-gray-400" />
+                          <ChevronRight className="w-5 h-5 text-gray-500" />
                         )}
                       </div>
                     </div>
@@ -221,13 +249,15 @@ export default function VisualizerHome() {
 
                   {/* Expandable Content */}
                   {isExpanded && (
-                    <div className="border-t border-gray-100 bg-gray-50">
+                    <div className="border-t border-gray-200 bg-gray-50">
                       <div className="p-4 space-y-2">
                         {category.items.map((item) => (
                           <div
                             key={item.name}
-                            className={`p-4 bg-white rounded-lg border cursor-pointer transition-all duration-200 hover:border-gray-300 hover:shadow-sm ${
-                              selectedItem?.name === item.name ? 'border-gray-900 bg-gray-50' : 'border-gray-200'
+                            className={`p-4 bg-white rounded-lg border cursor-pointer transition-all duration-200 hover:shadow-sm ${
+                              selectedItem?.name === item.name 
+                                ? 'border-gray-900 bg-gray-50'
+                                : 'border-gray-200 hover:border-gray-300'
                             }`}
                             onClick={() => handleItemSelect(item)}
                           >
@@ -235,7 +265,7 @@ export default function VisualizerHome() {
                               <h3 className="font-medium text-gray-900">
                                 {item.name}
                               </h3>
-                              <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded font-mono">
+                              <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded font-mono border border-gray-200">
                                 {item.complexity}
                               </span>
                             </div>
@@ -262,7 +292,7 @@ export default function VisualizerHome() {
                       <h3 className="text-lg font-semibold text-gray-900">
                         {selectedItem.name}
                       </h3>
-                      <span className="text-sm bg-gray-100 text-gray-700 px-3 py-1 rounded-full font-mono">
+                      <span className="text-sm bg-gray-100 text-gray-700 px-3 py-1 rounded-full font-mono border border-gray-200">
                         {selectedItem.complexity}
                       </span>
                     </div>
@@ -271,8 +301,8 @@ export default function VisualizerHome() {
                     </p>
                     
                     {/* Visualization Area */}
-                    <div className="bg-gray-50 rounded-lg p-8 mb-6 text-center">
-                      <div className="text-gray-400 mb-4">
+                    <div className="bg-gray-50 rounded-lg p-8 mb-6 text-center border border-gray-200">
+                      <div className="text-gray-500 mb-4">
                         <Activity className="w-12 h-12 mx-auto" />
                       </div>
                       <p className="text-gray-500 text-sm">
@@ -288,17 +318,17 @@ export default function VisualizerHome() {
                         <Play className="w-4 h-4 mr-2" />
                         Go to {selectedItem.name}
                       </Button>
-                      <Button variant="outline" className="w-full">
+                      <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900">
                         View Code
                       </Button>
-                      <Button variant="outline" className="w-full">
+                      <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900">
                         Step Through
                       </Button>
                     </div>
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <div className="text-gray-400 mb-4">
+                    <div className="text-gray-500 mb-4">
                       <BookOpen className="w-12 h-12 mx-auto" />
                     </div>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -316,23 +346,23 @@ export default function VisualizerHome() {
       </div>
 
       {/* Quick Stats */}
-      <div className="bg-gray-900 text-white">
+      <div className="bg-gray-900 text-white border-t border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div className="space-y-2">
-              <div className="text-3xl font-bold">40+</div>
+              <div className="text-3xl font-bold text-white">40+</div>
               <div className="text-gray-400">Algorithms</div>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl font-bold">7</div>
+              <div className="text-3xl font-bold text-white">7</div>
               <div className="text-gray-400">Categories</div>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl font-bold">∞</div>
+              <div className="text-3xl font-bold text-white">∞</div>
               <div className="text-gray-400">Learning</div>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl font-bold">✨</div>
+              <div className="text-3xl font-bold text-white">✨</div>
               <div className="text-gray-400">Interactive</div>
             </div>
           </div>

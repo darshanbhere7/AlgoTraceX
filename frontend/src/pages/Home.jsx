@@ -1,17 +1,26 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { AuroraBackground } from "../components/ui/aurora-background";
 import TextType from "../components/TextType";
 import ShinyText from "../components/ShinyText.jsx";
+import logoDark from "../assets/logo_dark.png";
 
 // Navbar Component
 const Navbar = () => {
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(true);
+
+  // Initialize dark theme on mount
+  React.useEffect(() => {
+    document.documentElement.classList.add("dark");
+  }, []);
 
   const handleToggle = () => {
     setIsDark(!isDark);
     document.documentElement.classList.toggle("dark");
   };
+
+  const navigate = useNavigate();
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-transparent transition-colors duration-300 px-8 py-4">
@@ -19,9 +28,11 @@ const Navbar = () => {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-md">
-              <span className="text-white font-bold text-sm">AT</span>
-            </div>
+            <img
+              src={logoDark}
+              alt="Algo Trace X"
+              className="w-9 h-9 rounded-lg shadow-md object-cover"
+            />
             <span className="font-semibold text-neutral-800 dark:text-white hidden sm:inline">Algo Trace X</span>
           </div>
 
@@ -40,7 +51,7 @@ const Navbar = () => {
 
           {/* CTA and Theme Toggle */}
           <div className="flex items-center gap-3">
-            <motion.button 
+            <motion.button
               onClick={handleToggle}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
@@ -64,13 +75,14 @@ const Navbar = () => {
                 )}
               </motion.div>
             </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-5 py-2 rounded-full text-sm font-medium shadow-lg hover:shadow-xl transition-shadow hidden sm:block"
-            >
-              Get Started
-            </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-5 py-2 rounded-full text-sm font-medium shadow-lg hover:shadow-xl transition-shadow hidden sm:block"
+                onClick={() => navigate("/register")}
+              >
+                Get Started
+              </motion.button>
           </div>
         </div>
       </div>
@@ -91,7 +103,7 @@ const HeroSection = () => {
         >
           <div className="mb-6 text-4xl md:text-6xl font-bold text-neutral-900 dark:text-white leading-tight">
             <div className="mb-2">
-              <TextType 
+              <TextType
                 text={["Visualize Data Structures", "Master Algorithms Faster", "Learn DSA Visually"]}
                 typingSpeed={75}
                 pauseDuration={1500}
@@ -115,7 +127,7 @@ const HeroSection = () => {
               className="text-lg md:text-xl text-neutral-700 dark:text-neutral-300 mb-8 max-w-2xl mx-auto block"
             />
           </motion.div>
-          <motion.div 
+          <motion.div
             className="flex flex-col sm:flex-row gap-4 justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -180,7 +192,7 @@ const FeaturesSection = () => {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <motion.h2 
+          <motion.h2
             className="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-white mb-4"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -188,7 +200,7 @@ const FeaturesSection = () => {
           >
             Powerful Features
           </motion.h2>
-          <motion.p 
+          <motion.p
             className="text-neutral-600 dark:text-neutral-400 text-lg"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -212,9 +224,8 @@ const FeaturesSection = () => {
               whileHover={{ y: -5 }}
               className="p-6 bg-neutral-50 dark:bg-neutral-900/50 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm hover:shadow-md transition-shadow"
             >
-              <motion.div 
+              <motion.div
                 className="text-4xl mb-3"
-                whileHover={{ scale: 1.1 }}
                 transition={{ duration: 0.2 }}
               >
                 {feature.icon}
@@ -271,7 +282,7 @@ const HowItWorksSection = () => {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <motion.h2 
+          <motion.h2
             className="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-white mb-4"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -279,7 +290,7 @@ const HowItWorksSection = () => {
           >
             How It Works
           </motion.h2>
-          <motion.p 
+          <motion.p
             className="text-neutral-600 dark:text-neutral-400 text-lg"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -304,7 +315,7 @@ const HowItWorksSection = () => {
               className="relative"
             >
               <div className="p-6 bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm h-full hover:shadow-md transition-shadow">
-                <motion.div 
+                <motion.div
                   className="text-5xl font-bold text-purple-600 dark:text-purple-400 mb-4"
                   initial={{ opacity: 0, scale: 0.5 }}
                   whileInView={{ opacity: 1, scale: 1 }}
@@ -320,7 +331,7 @@ const HowItWorksSection = () => {
                 </p>
               </div>
               {i < 3 && (
-                <motion.div 
+                <motion.div
                   className="hidden md:block absolute -right-3 top-1/2 transform -translate-y-1/2"
                   initial={{ opacity: 0, scale: 0 }}
                   whileInView={{ opacity: 1, scale: 1 }}
@@ -374,7 +385,7 @@ const PricingSection = () => {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <motion.h2 
+          <motion.h2
             className="text-4xl md:text-5xl font-bold text-neutral-900 dark:text-white mb-4"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -382,7 +393,7 @@ const PricingSection = () => {
           >
             Simple Pricing
           </motion.h2>
-          <motion.p 
+          <motion.p
             className="text-neutral-600 dark:text-neutral-400 text-lg"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -404,14 +415,13 @@ const PricingSection = () => {
               key={i}
               variants={itemVariants}
               whileHover={{ y: -8 }}
-              className={`p-8 rounded-2xl border transition-all ${
-                plan.popular
+              className={`p-8 rounded-2xl border transition-all ${plan.popular
                   ? "bg-gradient-to-br from-purple-600/10 to-pink-600/10 border-purple-400 dark:border-purple-500 shadow-lg"
                   : "bg-neutral-50 dark:bg-neutral-900/50 border-neutral-200 dark:border-neutral-800 shadow-sm hover:shadow-md"
-              }`}
+                }`}
             >
               {plan.popular && (
-                <motion.div 
+                <motion.div
                   className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 rounded-full text-xs font-semibold mb-4"
                   initial={{ opacity: 0, scale: 0 }}
                   whileInView={{ opacity: 1, scale: 1 }}
@@ -423,7 +433,7 @@ const PricingSection = () => {
               <h3 className="text-2xl font-semibold text-neutral-900 dark:text-white mb-2">
                 {plan.name}
               </h3>
-              <motion.div 
+              <motion.div
                 className="text-4xl font-bold text-neutral-900 dark:text-white mb-6"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
@@ -432,7 +442,7 @@ const PricingSection = () => {
                 {plan.price}
                 {plan.price !== "Custom" && <span className="text-lg text-neutral-600 dark:text-neutral-400">/month</span>}
               </motion.div>
-              <motion.ul 
+              <motion.ul
                 className="space-y-3 mb-8"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
@@ -440,7 +450,7 @@ const PricingSection = () => {
               >
                 {plan.features.map((feature, j) => (
                   <li key={j} className="flex items-center text-neutral-700 dark:text-neutral-300">
-                    <motion.span 
+                    <motion.span
                       className="mr-3 text-purple-600 dark:text-purple-400"
                       initial={{ opacity: 0, x: -10 }}
                       whileInView={{ opacity: 1, x: 0 }}
@@ -455,11 +465,10 @@ const PricingSection = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`w-full py-3 rounded-lg font-semibold transition-all shadow-sm ${
-                  plan.popular
+                className={`w-full py-3 rounded-lg font-semibold transition-all shadow-sm ${plan.popular
                     ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
                     : "bg-neutral-200 dark:bg-neutral-800 text-neutral-900 dark:text-white hover:bg-neutral-300 dark:hover:bg-neutral-700"
-                }`}
+                  }`}
               >
                 {plan.cta}
               </motion.button>
@@ -476,7 +485,7 @@ const FooterSection = () => {
   return (
     <footer className="bg-neutral-900 dark:bg-black text-white py-12 px-4">
       <div className="max-w-6xl mx-auto">
-        <motion.div 
+        <motion.div
           className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -527,7 +536,7 @@ const FooterSection = () => {
             </ul>
           </motion.div>
         </motion.div>
-        <motion.div 
+        <motion.div
           className="border-t border-neutral-800 pt-8 text-center text-neutral-400 text-sm"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
