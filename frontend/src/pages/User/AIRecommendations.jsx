@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Brain, MessageSquare, BookOpen, Plus, Send, User, Bot, Trash2, Copy, RefreshCw } from 'lucide-react';
+import { Loader2, Brain, MessageSquare, BookOpen, Send, User, Bot, Trash2, Copy, RefreshCw } from 'lucide-react';
 import chatService from '@/services/chatService';
 
 const AIRecommendations = () => {
@@ -37,9 +38,23 @@ const AIRecommendations = () => {
   const commonTopics = ['Arrays', 'Linked Lists', 'Trees', 'Graphs', 'Dynamic Programming', 'Sorting', 'Searching', 'Hash Tables', 'Greedy', 'Backtracking'];
   const commonSkills = ['Problem Analysis', 'Time Complexity', 'Space Complexity', 'Implementation', 'Debugging', 'Pattern Recognition'];
 
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 12 },
+    visible: { opacity: 1, y: 0 }
+  };
+
+  const subtleScale = {
+    hidden: { opacity: 0, scale: 0.98 },
+    visible: { opacity: 1, scale: 1 }
+  };
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversations, isTyping]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, []);
 
   // Load conversations from database on component mount
   useEffect(() => {
@@ -65,10 +80,11 @@ const AIRecommendations = () => {
     loadConversations();
   }, []);
 
-  const createNewConversation = () => {
-    const newConv = { id: `temp_${Date.now()}`, title: 'New Chat', messages: [] };
-    setConversations([newConv, ...conversations]);
+  const createNewConversation = (initialTitle = 'New Chat') => {
+    const newConv = { id: `temp_${Date.now()}`, title: initialTitle, messages: [] };
+    setConversations(prev => [newConv, ...prev]);
     setCurrentConvId(newConv.id);
+    return newConv;
   };
 
   // Load messages for a conversation when it's selected
@@ -103,6 +119,12 @@ const AIRecommendations = () => {
   };
 
   const getCurrentConv = () => conversations.find(c => c.id === currentConvId);
+
+  const ensureActiveConversation = () => {
+    const existing = getCurrentConv();
+    if (existing) return existing;
+    return createNewConversation();
+  };
 
   // A single function to update conversations in state
   const updateConversationState = (convId, updates) => {
@@ -241,17 +263,8 @@ const AIRecommendations = () => {
     const messageToSend = currentMessage;
     setCurrentMessage(''); // Clear input immediately for better UX
 
-    let activeConvId = currentConvId;
-    let activeConv = getCurrentConv();
-
-    // If no conversation is selected, create a new one
-    if (!activeConv) {
-      const newConv = { id: Date.now().toString(), title: 'New Chat', messages: [] };
-      setConversations(prev => [newConv, ...prev]);
-      setCurrentConvId(newConv.id);
-      activeConv = newConv;
-      activeConvId = newConv.id;
-    }
+    let activeConv = ensureActiveConversation();
+    let activeConvId = activeConv.id;
 
     // Add user message to UI immediately
     const userMsg = { id: Date.now().toString(), type: 'user', content: messageToSend, timestamp: new Date() };
@@ -312,6 +325,10 @@ const AIRecommendations = () => {
       e.preventDefault();
       sendMessage();
     }
+  };
+
+  const handleInputFocus = () => {
+    ensureActiveConversation();
   };
 
   const clearConv = () => {
@@ -466,113 +483,160 @@ const AIRecommendations = () => {
     const canRegenerate = lastMessage?.type === 'assistant' && !loading;
 
     return (
-      <div className="flex h-[600px] border rounded-lg">
-        <div className="w-1/4 border-r p-3 overflow-y-auto bg-muted/30">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="font-semibold text-sm">Conversations</h3>
-            <Button size="icon" variant="ghost" onClick={createNewConversation} className="h-7 w-7">
-              <Plus className="h-4 w-4" />
-            </Button>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={subtleScale}
+        transition={{ duration: 0.4 }}
+        className="flex h-[620px] border rounded-2xl overflow-hidden bg-background/70"
+      >
+        <div className="w-full md:w-1/4 border-r p-4 space-y-4 overflow-y-auto bg-muted/20">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-xs tracking-[0.2em] uppercase text-muted-foreground">Chats</h3>
+            <span className="text-[11px] text-muted-foreground">auto</span>
           </div>
           <div className="space-y-2">
-            {conversations.map((c) => (
-              <div
+            {conversations.map((c, index) => (
+              <motion.div
                 key={c.id}
-                className={`p-2 rounded cursor-pointer text-sm transition-colors relative group ${ c.id === currentConvId ? 'bg-primary text-primary-foreground' : 'hover:bg-muted' }`}
+                variants={fadeInUp}
+                initial="hidden"
+                animate="visible"
+                transition={{ duration: 0.2, delay: index * 0.05 }}
+                className={`p-3 rounded-lg cursor-pointer text-sm transition-all border ${
+                  c.id === currentConvId ? 'bg-background border-border shadow-sm' : 'hover:bg-muted/60 border-transparent'
+                }`}
                 onClick={() => selectConversation(c.id)}
               >
-                <p className="truncate pr-8">{c.title}</p>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-6 w-6 p-0 absolute top-1/2 right-1 -translate-y-1/2 opacity-0 group-hover:opacity-100"
-                  onClick={(e) => { e.stopPropagation(); deleteConv(c.id); }}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </div>
+                <div className="flex justify-between items-center gap-3">
+                  <p className="truncate">{c.title}</p>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                    onClick={(e) => { e.stopPropagation(); deleteConv(c.id); }}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </motion.div>
             ))}
+            {conversations.length === 0 && (
+              <p className="text-xs text-muted-foreground">Start typing to spin up a new chat.</p>
+            )}
           </div>
         </div>
         <div className="flex-1 flex flex-col bg-background">
-          <div className="border-b p-3 flex justify-between items-center">
-            <h3 className="font-semibold text-sm">{conv?.title || 'Select a conversation'}</h3>
+          <div className="border-b px-4 py-3 flex justify-between items-center">
+            <h3 className="font-semibold text-sm">{conv?.title || 'Your assistant is ready'}</h3>
             {conv && conv.messages.length > 0 && (
-              <Button variant="outline" size="sm" onClick={clearConv} className="h-7 text-xs">
-                <Trash2 className="h-3 w-3 mr-1" />Clear
+              <Button variant="ghost" size="sm" onClick={clearConv} className="h-8 text-xs text-muted-foreground hover:text-foreground">
+                <Trash2 className="h-3 w-3 mr-2" />Clear
               </Button>
             )}
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-secondary/10">
             {!conv && (
-              <div className="text-center text-muted-foreground h-full flex flex-col justify-center items-center">
-                <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="text-sm mb-3">Select a chat or start a new one</p>
-                <Button size="sm" onClick={createNewConversation}>New Chat</Button>
-              </div>
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={fadeInUp}
+                transition={{ duration: 0.35 }}
+                className="text-center text-muted-foreground h-full flex flex-col justify-center items-center gap-3"
+              >
+                <div className="rounded-full border border-dashed w-16 h-16 flex items-center justify-center">
+                  <MessageSquare className="h-7 w-7" />
+                </div>
+                <div>
+                  <p className="text-base font-semibold">Hi Shivam 👋</p>
+                  <p className="text-sm">Ask anything about DSA to start a fresh chat.</p>
+                </div>
+              </motion.div>
             )}
             {conv?.messages.map((msg, idx) => (
-              <div key={msg.id} className={`flex items-start gap-3 ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                {msg.type === 'assistant' && <Bot className="h-5 w-5 mt-2 flex-shrink-0" />}
-                <div className={`max-w-[85%] rounded-lg p-3 text-sm ${ msg.type === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted' }`}>
-                  <div className="break-words">{formatText(msg.content)}</div>
-                   <div className="flex items-center gap-2 mt-2 text-xs opacity-60">
-                     <span>{msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                     <button className="p-1 hover:opacity-100 opacity-70" onClick={() => copyMessage(msg.content)}><Copy className="h-3 w-3" /></button>
-                   </div>
+              <motion.div
+                key={msg.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: idx * 0.02 }}
+                className={`flex items-start gap-3 ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                {msg.type === 'assistant' && <Bot className="h-5 w-5 mt-2 flex-shrink-0 text-muted-foreground" />}
+                <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm border ${
+                  msg.type === 'user' ? 'bg-background border-border shadow-sm' : 'bg-muted border-transparent'
+                }`}>
+                  <div className="break-words leading-relaxed">{formatText(msg.content)}</div>
+                  <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                    <span>{msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    <button className="p-1 hover:text-foreground transition-colors" onClick={() => copyMessage(msg.content)}>
+                      <Copy className="h-3 w-3" />
+                    </button>
+                  </div>
                 </div>
-                {msg.type === 'user' && <User className="h-5 w-5 mt-2 flex-shrink-0" />}
-              </div>
+                {msg.type === 'user' && <User className="h-5 w-5 mt-2 flex-shrink-0 text-muted-foreground" />}
+              </motion.div>
             ))}
             {isTyping && (
-              <div className="flex items-start gap-3 justify-start">
-                  <Bot className="h-5 w-5 mt-2 flex-shrink-0" />
-                  <div className="bg-muted rounded-lg p-3 flex items-center">
-                    <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                    </div>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-start gap-3 justify-start"
+              >
+                <Bot className="h-5 w-5 mt-2 flex-shrink-0 text-muted-foreground" />
+                <div className="bg-muted rounded-2xl px-4 py-3 flex items-center">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
-              </div>
+                </div>
+              </motion.div>
             )}
             <div ref={messagesEndRef} />
           </div>
           {canRegenerate && (
-            <div className='px-4 pb-2 flex justify-center'>
-                <Button variant="outline" size="sm" onClick={regenerateResponse} disabled={loading}>
-                    <RefreshCw className="h-3 w-3 mr-2" /> Regenerate
-                </Button>
+            <div className="px-4 pb-3 flex justify-center">
+              <Button variant="ghost" size="sm" onClick={regenerateResponse} disabled={loading} className="text-muted-foreground hover:text-foreground">
+                <RefreshCw className="h-3 w-3 mr-2" /> Regenerate
+              </Button>
             </div>
           )}
-          <div className="border-t p-3">
+          <div className="border-t p-4">
             <div className="relative">
               <Textarea
                 placeholder="Ask about DSA... (Enter to send, Shift+Enter for new line)"
                 value={currentMessage}
                 onChange={(e) => setCurrentMessage(e.target.value)}
                 onKeyDown={handleKeyPress}
+                onFocus={handleInputFocus}
                 rows={1}
-                className="resize-none pr-12 py-3 text-sm"
-                disabled={loading || !currentConvId}
+                className="resize-none pr-12 py-3 text-sm bg-background border-muted focus-visible:ring-0 focus-visible:border-foreground"
+                disabled={loading}
               />
-              <Button onClick={sendMessage} disabled={loading || !currentMessage.trim()} size="icon" className="absolute right-2 bottom-1.5 h-8 w-8">
+              <Button
+                variant="ghost"
+                onClick={sendMessage}
+                disabled={loading || !currentMessage.trim()}
+                size="icon"
+                className="absolute right-2 bottom-2 h-9 w-9 border border-border rounded-full text-foreground"
+              >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   };
   
-    return (
-    <div className="p-4 md:p-6 lg:p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold mb-2">AI DSA Assistant</h1>
+  return (
+    <motion.div className="pt-25 pb-8 px-4 md:px-8 lg:px-12" initial="hidden" animate="visible" variants={subtleScale} transition={{ duration: 0.4 }}>
+      <motion.div className="max-w-6xl mx-auto space-y-6" initial="hidden" animate="visible" variants={fadeInUp} transition={{ duration: 0.4 }}>
+        <motion.div className="text-center space-y-2" initial="hidden" animate="visible" variants={fadeInUp} transition={{ duration: 0.3 }}>
+          <h1 className="text-3xl font-bold tracking-tight">AI DSA Assistant</h1>
           <p className="text-muted-foreground">Your context-aware DSA learning companion</p>
-        </div>
+        </motion.div>
         
         {error && (
           <Alert variant="destructive" className="mb-4">
@@ -581,18 +645,18 @@ const AIRecommendations = () => {
         )}
         
         <Tabs defaultValue="chat" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-4">
+          <TabsList className="grid w-full grid-cols-3 mb-6 bg-muted/40 p-1 rounded-xl">
             <TabsTrigger value="chat"><MessageSquare className="h-4 w-4 mr-2" />Chat</TabsTrigger>
             <TabsTrigger value="recommendations"><Brain className="h-4 w-4 mr-2" />Recommendations</TabsTrigger>
             <TabsTrigger value="explanations"><BookOpen className="h-4 w-4 mr-2" />Explain</TabsTrigger>
           </TabsList>
           <TabsContent value="chat">
-            <Card>
+            <Card className="border-muted">
               <CardContent className="p-0">{renderConversation()}</CardContent>
             </Card>
           </TabsContent>
           <TabsContent value="recommendations">
-             <Card>
+             <Card className="border-muted pt-5 pb-5">
                <CardHeader>
                  <CardTitle>Personalized Recommendations</CardTitle>
                  <CardDescription>Get tailored learning suggestions based on your profile.</CardDescription>
@@ -657,12 +721,17 @@ const AIRecommendations = () => {
                      ))}
                    </div>
                  </div>
-                 <Button onClick={handleGetRecommendations} disabled={loading} className="w-full">
+                 <Button
+                   onClick={handleGetRecommendations}
+                   disabled={loading}
+                   variant="ghost"
+                   className="w-full border border-border text-foreground hover:bg-muted"
+                 >
                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                    Get Recommendations
                  </Button>
                  {recommendations && (
-                   <Card className="bg-muted/50">
+                   <Card className="bg-muted/30 border-none">
                      <CardHeader><CardTitle>Your Learning Plan</CardTitle></CardHeader>
                      <CardContent className="text-sm">{formatText(recommendations)}</CardContent>
                    </Card>
@@ -671,7 +740,7 @@ const AIRecommendations = () => {
              </Card>
            </TabsContent>
            <TabsContent value="explanations">
-             <Card>
+             <Card className="border-muted pt-5 pb-5">
                <CardHeader>
                  <CardTitle>Quick Algorithm Explanation</CardTitle>
                  <CardDescription>Get an instant explanation tailored to your skill level.</CardDescription>
@@ -694,12 +763,17 @@ const AIRecommendations = () => {
                      </Select>
                    </div>
                  </div>
-                 <Button onClick={handleExplainAlgorithm} disabled={loading || !algorithm.trim()} className="w-full">
+                 <Button
+                   onClick={handleExplainAlgorithm}
+                   disabled={loading || !algorithm.trim()}
+                   variant="ghost"
+                   className="w-full border border-border text-foreground hover:bg-muted"
+                 >
                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                    Explain Algorithm
                  </Button>
                  {explanation && (
-                   <Card className="bg-muted/50">
+                   <Card className="bg-muted/30 border-none">
                      <CardHeader><CardTitle>{algorithm}</CardTitle></CardHeader>
                      <CardContent className="text-sm">{formatText(explanation)}</CardContent>
                    </Card>
@@ -708,8 +782,8 @@ const AIRecommendations = () => {
              </Card>
            </TabsContent>
         </Tabs>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
