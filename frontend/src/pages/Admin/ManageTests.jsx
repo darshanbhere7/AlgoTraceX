@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import axios from 'axios';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -160,16 +161,16 @@ const ManageTests = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl text-gray-600">Loading tests...</div>
+      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-neutral-950">
+        <div className="text-xl text-gray-600 dark:text-gray-400">Loading tests...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen">
-        <div className="text-xl text-red-600 mb-4">{error}</div>
+      <div className="flex flex-col justify-center items-center min-h-screen bg-gray-50 dark:bg-neutral-950">
+        <div className="text-xl text-red-600 dark:text-red-400 mb-4">{error}</div>
         <Button onClick={fetchData} variant="outline">
           Try Again
         </Button>
@@ -178,21 +179,38 @@ const ManageTests = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Manage Tests</h1>
-        <Button onClick={fetchData} variant="outline">
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
+      {/* Add padding-top to account for fixed navbar */}
+      <div className="p-6 pt-24 space-y-6">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="flex justify-between items-center"
+        >
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage Tests</h1>
+        <motion.button 
+          onClick={fetchData}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="px-4 py-2 rounded transition-colors bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 shadow-sm"
+        >
           Refresh Data
-        </Button>
-      </div>
+        </motion.button>
+      </motion.div>
 
-      <Card>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+      >
+      <Card className="bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 shadow-sm">
         <CardContent className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Add New Test</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Add New Test</h2>
           <form onSubmit={handleAddTest} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Test Title</label>
+                <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Test Title</label>
                 <Input
                   value={newTest.title}
                   onChange={(e) => setNewTest(prev => ({ ...prev, title: e.target.value }))}
@@ -201,7 +219,7 @@ const ManageTests = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Topic</label>
+                <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Topic</label>
                 <Select
                   value={newTest.topic}
                   onValueChange={(value) => setNewTest(prev => ({ ...prev, topic: value }))}
@@ -219,7 +237,7 @@ const ManageTests = () => {
                 </Select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Week Number</label>
+                <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Week Number</label>
                 <Input
                   type="number"
                   value={newTest.weekNumber}
@@ -229,7 +247,7 @@ const ManageTests = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Time Limit (minutes)</label>
+                <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Time Limit (minutes)</label>
                 <Input
                   type="number"
                   min="1"
@@ -243,9 +261,15 @@ const ManageTests = () => {
 
             <div className="space-y-4">
               {newTest.questions.map((question, qIndex) => (
-                <div key={qIndex} className="p-4 border rounded-lg space-y-4">
+                <motion.div 
+                  key={qIndex}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: qIndex * 0.1 }}
+                  className="p-4 border border-gray-200 dark:border-neutral-700 rounded-lg space-y-4 bg-white dark:bg-neutral-900"
+                >
                   <div>
-                    <label className="block text-sm font-medium mb-1">Question {qIndex + 1}</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Question {qIndex + 1}</label>
                     <Input
                       value={question.question}
                       onChange={(e) => handleQuestionChange(qIndex, 'question', e.target.value)}
@@ -256,7 +280,7 @@ const ManageTests = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {question.options.map((option, oIndex) => (
                       <div key={oIndex}>
-                        <label className="block text-sm font-medium mb-1">Option {oIndex + 1}</label>
+                        <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Option {oIndex + 1}</label>
                         <Input
                           value={option}
                           onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
@@ -267,7 +291,7 @@ const ManageTests = () => {
                     ))}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Correct Answer</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Correct Answer</label>
                     <Select
                       value={question.correctAnswer.toString()}
                       onValueChange={(value) => handleQuestionChange(qIndex, 'correctAnswer', parseInt(value))}
@@ -284,51 +308,79 @@ const ManageTests = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
+                </motion.div>
               ))}
-              <Button type="button" onClick={handleAddQuestion} variant="outline">
+              <motion.button 
+                type="button" 
+                onClick={handleAddQuestion}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="px-4 py-2 rounded transition-colors bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 shadow-sm"
+              >
                 Add Question
-              </Button>
+              </motion.button>
             </div>
 
-            <Button type="submit">Add Test</Button>
+            <motion.button 
+              type="submit"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-4 py-2 rounded transition-colors bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 shadow-sm font-medium"
+            >
+              Add Test
+            </motion.button>
           </form>
         </CardContent>
       </Card>
+      </motion.div>
 
-      <Card>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+      >
+      <Card className="bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 shadow-sm">
         <CardContent className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Available Tests</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Available Tests</h2>
           <div className="space-y-4">
-            {tests.map((test) => (
-              <div key={test._id} className="p-4 border rounded-lg">
+            {tests.map((test, index) => (
+              <motion.div 
+                key={test._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                whileHover={{ y: -4 }}
+                className="p-4 border border-gray-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 shadow-sm"
+              >
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold">{test.title}</h3>
-                    <p className="text-sm text-gray-600">Week {test.weekNumber}</p>
-                    <p className="text-sm text-gray-600">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{test.title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Week {test.weekNumber}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       Topic: {topics.find(t => t._id === test.topic)?.title || 'Unknown Topic'}
                     </p>
                   </div>
-                  <Button
-                    variant="destructive"
+                  <motion.button
                     onClick={() => handleDeleteTest(test._id)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-4 py-2 rounded transition-colors bg-white dark:bg-neutral-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-gray-300 dark:border-neutral-700 shadow-sm"
                   >
                     Delete
-                  </Button>
+                  </motion.button>
                 </div>
                 <div className="space-y-2">
                   {test.questions.map((question, index) => (
-                    <div key={index} className="p-3 bg-gray-50 rounded">
-                      <p className="font-medium">Q{index + 1}: {question.question}</p>
+                    <div key={index} className="p-3 bg-gray-50 dark:bg-neutral-800 rounded">
+                      <p className="font-medium text-gray-900 dark:text-white">Q{index + 1}: {question.question}</p>
                       <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
                         {question.options.map((option, oIndex) => (
                           <div
                             key={oIndex}
                             className={`p-2 rounded ${
                               oIndex === question.correctAnswer
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100'
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                                : 'bg-gray-100 dark:bg-neutral-700 text-gray-900 dark:text-gray-300'
                             }`}
                           >
                             {option}
@@ -338,11 +390,13 @@ const ManageTests = () => {
                     </div>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </CardContent>
       </Card>
+      </motion.div>
+      </div>
     </div>
   );
 };

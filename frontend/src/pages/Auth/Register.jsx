@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronRight, Mail, Lock, User, Loader2 } from 'lucide-react';
+import { ChevronRight, Mail, Lock, User, Loader2, Home } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import DarkVeil from '../../components/DarkVeil';
 
@@ -186,6 +186,16 @@ const Register = () => {
                 Login
               </Link>
             </motion.div>
+          </div>
+
+          <div className="mt-4 text-center">
+            <Link 
+              to="/home"
+              className="inline-flex items-center gap-2 text-xs text-gray-400 hover:text-gray-300 transition-colors duration-200 group"
+            >
+              <Home className="h-3.5 w-3.5 group-hover:scale-110 transition-transform duration-200" />
+              <span className="hover:underline">Back to Home</span>
+            </Link>
           </div>
         </div>
       </motion.div>

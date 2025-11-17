@@ -6,6 +6,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Timer } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const Tests = () => {
   const [tests, setTests] = useState([]);
@@ -189,86 +190,135 @@ const Tests = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl text-gray-600">Loading tests...</div>
+      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-neutral-950 text-gray-900 dark:text-white">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+          className="text-center"
+        >
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-gray-300 dark:border-gray-700 border-t-gray-900 dark:border-t-white mx-auto mb-4"></div>
+          <p className="text-lg">Loading tests...</p>
+        </motion.div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-screen">
-        <div className="text-xl text-red-600 mb-4">{error}</div>
-        <Button onClick={fetchTests} variant="outline">
-          Try Again
-        </Button>
+      <div className="flex flex-col justify-center items-center min-h-screen bg-gray-50 dark:bg-neutral-950 text-gray-900 dark:text-white">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="text-center"
+        >
+          <p className="text-xl text-red-600 dark:text-red-400 mb-4">{error}</p>
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <Button onClick={fetchTests} variant="outline" className="bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700">
+              Try Again
+            </Button>
+          </motion.div>
+        </motion.div>
       </div>
     );
   }
 
   if (selectedTest) {
-    console.log('Rendering selected test view. selectedTest:', selectedTest);
     return (
-      <div className="p-6 max-w-4xl mx-auto">
-        <Card className="mb-6" key={selectedTest._id}> {/* Added key for robust re-rendering */}
-          <CardContent className="p-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-3xl font-bold">{selectedTest.title}</h1>
-                <p className="text-gray-600 mt-2">Week {selectedTest.weekNumber}</p>
-              </div>
-              <div className="flex items-center gap-4">
-                {/* Timer Display */}
-                {console.log('Rendering Timer. timeLeft:', timeLeft, 'Type:', typeof timeLeft)} {/* Added console log for debugging */}
-                {typeof timeLeft === 'number' && ( // Only show timer if timeLeft is a number
-                  <div className={`flex items-center gap-2 text-lg font-semibold px-4 py-2 rounded-lg ${timeLeft <= 10 ? 'bg-red-100 text-red-800' : 'bg-gray-100'}`}>
-                    <Timer className="h-5 w-5" />
-                    <span className={timeLeft <= 10 ? 'font-bold' : ''}>
-                      {formatTime(timeLeft)}
-                    </span>
-                  </div>
-                )}
-                <Button onClick={() => setSelectedTest(null)} variant="outline">
-                  Back to Tests
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="space-y-6">
-          {selectedTest.questions.map((question, qIndex) => (
-            <Card key={qIndex}>
+      <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
+        <div className="p-6 pt-24 pb-12 max-w-4xl mx-auto space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-sm" key={selectedTest._id}>
               <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-4">
-                  Question {qIndex + 1}: {question.question}
-                </h3>
-                <RadioGroup
-                  value={answers[qIndex]?.toString()}
-                  onValueChange={(value) => handleAnswerChange(qIndex, value)}
-                  className="space-y-3"
-                >
-                  {question.options.map((option, oIndex) => (
-                    <div key={oIndex} className="flex items-center space-x-2">
-                      <RadioGroupItem value={oIndex.toString()} id={`q${qIndex}-o${oIndex}`} />
-                      <Label htmlFor={`q${qIndex}-o${oIndex}`}>{option}</Label>
-                    </div>
-                  ))}
-                </RadioGroup>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{selectedTest.title}</h1>
+                    <p className="text-gray-600 dark:text-gray-400 mt-2">Week {selectedTest.weekNumber}</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    {typeof timeLeft === 'number' && (
+                      <motion.div
+                        animate={{ scale: timeLeft <= 10 ? [1, 1.05, 1] : 1 }}
+                        transition={{ repeat: timeLeft <= 10 ? Infinity : 0, duration: 0.5 }}
+                        className={`flex items-center gap-2 text-lg font-semibold px-4 py-2 rounded-lg ${timeLeft <= 10 ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400' : 'bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-white'}`}
+                      >
+                        <Timer className="h-5 w-5" />
+                        <span className={timeLeft <= 10 ? 'font-bold' : ''}>
+                          {formatTime(timeLeft)}
+                        </span>
+                      </motion.div>
+                    )}
+                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <Button onClick={() => setSelectedTest(null)} variant="outline" className="bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700">
+                        Back to Tests
+                      </Button>
+                    </motion.div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
-          ))}
+          </motion.div>
 
-          <div className="flex justify-end space-x-4">
-            <Button onClick={() => setSelectedTest(null)} variant="outline">
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSubmitTest}
-              disabled={submitting || Object.keys(answers).length !== selectedTest.questions.length}
+          <div className="space-y-6">
+            {selectedTest.questions.map((question, qIndex) => (
+              <motion.div
+                key={qIndex}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: qIndex * 0.1 }}
+              >
+                <Card className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-sm">
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+                      Question {qIndex + 1}: {question.question}
+                    </h3>
+                    <RadioGroup
+                      value={answers[qIndex]?.toString()}
+                      onValueChange={(value) => handleAnswerChange(qIndex, value)}
+                      className="space-y-3"
+                    >
+                      {question.options.map((option, oIndex) => (
+                        <motion.div
+                          key={oIndex}
+                          whileHover={{ scale: 1.02 }}
+                          className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-800"
+                        >
+                          <RadioGroupItem value={oIndex.toString()} id={`q${qIndex}-o${oIndex}`} />
+                          <Label htmlFor={`q${qIndex}-o${oIndex}`} className="text-gray-900 dark:text-white cursor-pointer">{option}</Label>
+                        </motion.div>
+                      ))}
+                    </RadioGroup>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="flex justify-end space-x-4"
             >
-              {submitting ? 'Submitting...' : 'Submit Test'}
-            </Button>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button onClick={() => setSelectedTest(null)} variant="outline" className="bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700">
+                  Cancel
+                </Button>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button
+                  onClick={handleSubmitTest}
+                  disabled={submitting || Object.keys(answers).length !== selectedTest.questions.length}
+                  className="bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700"
+                >
+                  {submitting ? 'Submitting...' : 'Submit Test'}
+                </Button>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
       </div>
@@ -276,59 +326,80 @@ const Tests = () => {
   }
 
   return (
-    <div className="p-6">
-      {console.log('Tests component is rendering.')}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Available Tests</h1>
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
+      <div className="p-6 pt-24 pb-12 space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">Available Tests</h1>
+          <p className="text-gray-600 dark:text-gray-400">Test your knowledge with available assessments</p>
+        </motion.div>
+        
         {Object.keys(scores).length > 0 && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-lg font-semibold">Your Scores:</span>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="flex items-center gap-2 flex-wrap"
+          >
+            <span className="text-lg font-semibold text-gray-900 dark:text-white">Your Scores:</span>
             {tests.map(test => scores[test._id] && (
-              <div key={test._id} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full flex items-center gap-2">
+              <div key={test._id} className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full flex items-center gap-2 border border-blue-200 dark:border-blue-800">
                 <span>{test.title}</span>
                 <span className="font-bold">{scores[test._id].score}%</span>
                 <span className="text-sm">({formatTime(scores[test._id].timeSpent)})</span>
               </div>
             ))}
-          </div>
+          </motion.div>
         )}
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {tests.map((test) => (
-          <Card key={test._id} className="hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-semibold mb-2">{test.title}</h3>
-              <p className="text-gray-600 mb-4">Week {test.weekNumber}</p>
-              <p className="text-gray-600 mb-4">{test.questions.length} questions</p>
-              <p className="text-gray-600 mb-4">Time Limit: {test.timeLimit} minutes</p>
-              {scores[test._id] && (
-                <div className="bg-green-50 p-3 rounded-lg mb-4">
-                  <p className="text-green-700 font-semibold">
-                    Score: {scores[test._id].score}%
-                  </p>
-                  <p className="text-green-600 text-sm">
-                    Correct Answers: {scores[test._id].correctAnswers}/{scores[test._id].totalQuestions}
-                  </p>
-                  <p className="text-green-600 text-sm">
-                    Time Taken: {formatTime(scores[test._id].timeSpent)}
-                  </p>
-                  <p className="text-green-600 text-sm">
-                    Date: {new Date(scores[test._id].date).toLocaleDateString()}
-                  </p>
-                </div>
-              )}
-              {console.log(`Test ID: ${test._id}, Scores[test._id]:`, scores[test._id], `Button disabled: ${scores[test._id] !== undefined}`)}
-              <Button 
-                onClick={() => handleStartTest(test)}
-                className="w-full"
-                disabled={scores[test._id] !== undefined}
-              >
-                {scores[test._id] ? 'Test Completed' : 'Start Test'}
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {tests.map((test, index) => (
+            <motion.div
+              key={test._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+              whileHover={{ y: -4 }}
+            >
+              <Card className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-sm">
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">{test.title}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">Week {test.weekNumber}</p>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">{test.questions.length} questions</p>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">Time Limit: {test.timeLimit} minutes</p>
+                  {scores[test._id] && (
+                    <div className="bg-green-50 dark:bg-green-900/30 p-3 rounded-lg mb-4 border border-green-200 dark:border-green-800">
+                      <p className="text-green-700 dark:text-green-300 font-semibold">
+                        Score: {scores[test._id].score}%
+                      </p>
+                      <p className="text-green-600 dark:text-green-400 text-sm">
+                        Correct Answers: {scores[test._id].correctAnswers}/{scores[test._id].totalQuestions}
+                      </p>
+                      <p className="text-green-600 dark:text-green-400 text-sm">
+                        Time Taken: {formatTime(scores[test._id].timeSpent)}
+                      </p>
+                      <p className="text-green-600 dark:text-green-400 text-sm">
+                        Date: {new Date(scores[test._id].date).toLocaleDateString()}
+                      </p>
+                    </div>
+                  )}
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Button 
+                      onClick={() => handleStartTest(test)}
+                      className="w-full bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700"
+                      disabled={scores[test._id] !== undefined}
+                    >
+                      {scores[test._id] ? 'Test Completed' : 'Start Test'}
+                    </Button>
+                  </motion.div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -1,182 +1,356 @@
 const axios = require('axios');
+const ChatConversation = require('../models/ChatConversation');
+const ChatMessage = require('../models/ChatMessage');
 
-const callGeminiAPI = async (prompt) => {
+/**
+ * Handles the actual call to the Gemini API
+ */
+const callGeminiAPI = async (contents) => {
   const apiKey = process.env.GEMINI_API_KEY;
-  const apiUrl = process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
-  
+  const apiUrl = `${process.env.GEMINI_API_URL}?key=${apiKey}`;
+
   try {
     const response = await axios.post(
-      `${apiUrl}?key=${apiKey}`,
-      {
-        contents: [
-          {
-            parts: [
-              {
-                text: prompt
-              }
-            ]
-          }
-        ]
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
+      apiUrl,
+      { contents },
+      { headers: { 'Content-Type': 'application/json' } }
     );
 
-    return response.data.candidates[0].content.parts[0].text;
+    if (
+      response.data &&
+      response.data.candidates &&
+      response.data.candidates.length > 0 &&
+      response.data.candidates[0].content?.parts?.length > 0
+    ) {
+      return response.data.candidates[0].content.parts[0].text;
+    } else {
+      console.error('Invalid response structure from Gemini API:', response.data);
+      throw new Error('Received an invalid response from the AI model.');
+    }
   } catch (error) {
     console.error('Error calling Gemini API:', error.response?.data || error.message);
     throw new Error('Failed to get AI response');
   }
 };
 
-const getRecommendations = async (req, res) => {
-  try {
-    const { userLevel, currentTopic, strengths, weaknesses } = req.body;
-
-    const prompt = `You are an expert DSA (Data Structures and Algorithms) tutor. Provide personalized learning recommendations for a student with the following profile:
-    
-    Level: ${userLevel || 'beginner'}
-    Current Topic: ${currentTopic || 'general DSA'}
-    Strengths: ${strengths || 'none specified'}
-    Weaknesses: ${weaknesses || 'none specified'}
-    
-    Please provide a detailed, structured response in markdown format that includes:
-
-    ## Learning Path
-    - A personalized learning path based on their current level and topic
-    - 3-5 specific topics they should focus on next, with brief explanations of why
-
-    ## Practice Problems
-    - Recommended practice problems (easy to medium difficulty) with links to platforms like LeetCode or GeeksforGeeks
-    - Key concepts they should review, especially in their weak areas
-
-    ## Study Strategy
-    - A practical study strategy with time allocation
-    - Resources (books, websites, courses) that match their level
-    - Tips for effective practice and common pitfalls to avoid
-
-    Format the response in a clear, organized way with proper markdown headings, lists, and emphasis. Make it actionable and specific to their profile.`;
-
-    const aiResponse = await callGeminiAPI(prompt);
-
-    res.json({
-      success: true,
-      recommendations: aiResponse
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-};
-
+/**
+ * Ask Question (multi-turn with context + profile + language) - Now with database persistence
+ */
 const askQuestion = async (req, res) => {
   try {
-    const { question, context } = req.body;
+    const { question, conversationHistory = [], userProfile = {}, conversationId, language = 'English' } = req.body;
+    const userId = req.user?.id;
 
     if (!question) {
-      return res.status(400).json({
-        success: false,
-        error: 'Question is required'
+      return res.status(400).json({ success: false, error: 'Question is required' });
+    }
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'User authentication required' });
+    }
+
+    let conversation;
+    
+    if (conversationId) {
+      conversation = await ChatConversation.findOne({ 
+        _id: conversationId, 
+        user: userId 
+      });
+      
+      if (!conversation) {
+        return res.status(404).json({ success: false, error: 'Conversation not found' });
+      }
+    } else {
+      const title = question.substring(0, 50) + (question.length > 50 ? '...' : '');
+      conversation = await ChatConversation.create({
+        user: userId,
+        title: title
       });
     }
 
-    const prompt = `You are an expert DSA tutor. Answer the following question about data structures and algorithms:
+    const userMessage = await ChatMessage.create({
+      conversation: conversation._id,
+      user: userId,
+      type: 'user',
+      content: question
+    });
 
-    Question: ${question}
-    ${context ? `Context: ${context}` : ''}
-    
-    Please provide a comprehensive answer in markdown format that includes:
+    conversation.lastMessageAt = new Date();
+    await conversation.save();
 
-    ## Explanation
-    - A clear explanation of the concept
-    - Relevant examples with code snippets if applicable
+    const systemPrompt = `You are an expert DSA assistant named AlgoBot.
+**Your Directives:**
+1. **Persona:** Helpful, encouraging tutor. Simplify complex topics.
+2. **Context:** Review conversation history & user profile before answering.
+3. **Language:** YOU MUST RESPOND IN THE FOLLOWING LANGUAGE: **${language}**.
+4. **User Profile:** Tailor explanation to level '${userProfile?.level || 'beginner'}'.`;
 
-    ## Analysis
-    - Time and space complexity analysis
-    - Common variations or edge cases
+    let historyToUse = conversationHistory;
+    if (historyToUse.length === 0) {
+      const dbMessages = await ChatMessage.find({ conversation: conversation._id })
+        .sort({ timestamp: 1 })
+        .limit(10);
+      
+      historyToUse = dbMessages.map(msg => ({
+        role: msg.type === 'assistant' ? 'assistant' : 'user',
+        content: msg.content
+      }));
+    }
 
-    ## Implementation
-    - Best practices and implementation tips
-    - Related concepts or algorithms they should know
+    const formattedHistory = historyToUse.map(msg => ({
+      role: msg.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: msg.content }]
+    }));
 
-    ## Practice
-    - Practice problems to reinforce understanding
-    - Visual explanations or analogies if helpful
+    const contents = [
+      ...formattedHistory,
+      { role: 'user', parts: [{ text: `${systemPrompt}\n\nQuestion: ${question}` }] }
+    ];
 
-    Format the response with proper markdown headings, code blocks, and lists. Make the explanation educational and easy to understand.`;
+    const aiResponse = await callGeminiAPI(contents);
 
-    const aiResponse = await callGeminiAPI(prompt);
+    const aiMessage = await ChatMessage.create({
+      conversation: conversation._id,
+      user: userId,
+      type: 'assistant',
+      content: aiResponse
+    });
 
-    res.json({
-      success: true,
-      answer: aiResponse
+    if (conversation.messages && conversation.messages.length === 0) {
+      conversation.title = question.substring(0, 50) + (question.length > 50 ? '...' : '');
+      await conversation.save();
+    }
+
+    res.json({ 
+      success: true, 
+      answer: aiResponse,
+      conversationId: conversation._id,
+      messageId: aiMessage._id
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
+    console.error('Error in askQuestion:', error);
+    res.status(500).json({ success: false, error: error.message });
   }
 };
 
+/**
+ * Personalized learning recommendations (Refined for concise output)
+ */
+const getRecommendations = async (req, res) => {
+  try {
+    const { userLevel, currentTopics, strengths, weaknesses } = req.body;
+
+    const prompt = `You are an expert DSA tutor. Provide a **crisp, actionable, and easy-to-understand** learning plan for this student. Use markdown, bullet points, and bold keywords. Be encouraging but direct.
+
+- **Level:** ${userLevel || 'beginner'}
+- **Current Topics:** ${currentTopics || 'general DSA'}
+- **Strengths:** ${strengths || 'none specified'}
+- **Weaknesses:** ${weaknesses || 'none specified'}
+
+**Your output must be structured as follows:**
+1.  **Top 3 Focus Areas:** List the 3 most important topics to master next.
+2.  **Practice Problems:** Suggest 2-3 specific LeetCode problems (with links) for their level.
+3.  **Key Strategy:** Give one practical, powerful tip for their study approach.
+4.  **Quick Encouragement:** A single sentence to motivate them.`;
+
+    const contents = [{ role: 'user', parts: [{ text: prompt }] }];
+    const aiResponse = await callGeminiAPI(contents);
+
+    res.json({ success: true, recommendations: aiResponse });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * Explain Algorithm (Refined for level-specific, concise output)
+ */
 const explainAlgorithm = async (req, res) => {
   try {
     const { algorithm, level } = req.body;
 
     if (!algorithm) {
-      return res.status(400).json({
-        success: false,
-        error: 'Algorithm name is required'
-      });
+      return res.status(400).json({ success: false, error: 'Algorithm name is required' });
     }
 
-    const prompt = `You are an expert DSA tutor. Explain the ${algorithm} algorithm for a ${level || 'beginner'} level student.
+    let levelInstructions;
+    switch(level) {
+      case 'advanced':
+        levelInstructions = "Focus on nuance. Compare it to other algorithms, discuss optimized implementations, edge cases, and advanced use-cases. Keep the explanation dense and professional.";
+        break;
+      case 'intermediate':
+        levelInstructions = "Assume basic data structures are known. Provide a clear code example (JS or Python), and explain the 'why' behind the steps. The complexity analysis should be detailed.";
+        break;
+      default: // beginner
+        levelInstructions = "Use a very simple analogy. Explain the core idea in 1-2 sentences. Show a simple code example with clear comments. The complexity explanation should be high-level and intuitive.";
+        break;
+    }
 
-    Please provide a comprehensive explanation in markdown format that includes:
+    const prompt = `You are an expert DSA tutor. Explain the **"${algorithm}"** algorithm. Your response must be **concise, clear, and strictly tailored** to the target level.
 
-    ## Overview
-    - A clear overview of what the algorithm does and its purpose
-    - Step-by-step explanation of how it works
+**Target Level: ${level || 'beginner'}**
+${levelInstructions}
 
-    ## Analysis
-    - Time and space complexity analysis with explanations
-    - Implementation details with code examples
+**Required Markdown Format:**
+- **Analogy:** A simple, one-sentence analogy.
+- **Core Idea:** A brief explanation of the steps.
+- **Code Example:** A short, well-commented code block in Python or JavaScript.
+- **Complexity:** Time & Space complexity (e.g., O(n log n)) with a brief justification.`;
 
-    ## Understanding
-    - Visual explanation or analogy to help understand the concept
-    - Common variations and optimizations
+    const contents = [{ role: 'user', parts: [{ text: prompt }] }];
+    const aiResponse = await callGeminiAPI(contents);
 
-    ## Applications
-    - Real-world applications and use cases
-    - Common pitfalls and how to avoid them
-
-    ## Practice
-    - Practice problems to master the algorithm
-    - Related algorithms they should learn next
-
-    Format the response with proper markdown headings, code blocks, and lists. Make the explanation appropriate for a ${level} level student. Use clear language and provide examples that match their understanding level.`;
-
-    const aiResponse = await callGeminiAPI(prompt);
-
-    res.json({
-      success: true,
-      explanation: aiResponse
-    });
+    res.json({ success: true, explanation: aiResponse });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// **RE-ADD a textToSpeech function, but now as a proxy**
+const textToSpeech = async (req, res) => {
+  try {
+    const { text, lang } = req.body;
+    if (!text || !lang) {
+      return res.status(400).json({ error: 'Text and language code are required' });
+    }
+
+    const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=${lang}&client=tw-ob`;
+
+    const response = await axios.get(url, { responseType: 'stream' });
+    
+    res.setHeader('Content-Type', 'audio/mpeg');
+    response.data.pipe(res);
+  } catch (error) {
+    console.error('Error proxying Google TTS:', error.message);
+    res.status(500).json({ error: 'Failed to fetch speech audio' });
+  }
+};
+
+/**
+ * Get user's chat conversations
+ */
+const getConversations = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'User authentication required' });
+    }
+
+    const conversations = await ChatConversation.find({ user: userId })
+      .sort({ lastMessageAt: -1 })
+      .limit(50);
+
+    res.json({ success: true, conversations });
+  } catch (error) {
+    console.error('Error getting conversations:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * Get messages for a specific conversation
+ */
+const getConversationMessages = async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'User authentication required' });
+    }
+
+    const conversation = await ChatConversation.findOne({ 
+      _id: conversationId, 
+      user: userId 
     });
+
+    if (!conversation) {
+      return res.status(404).json({ success: false, error: 'Conversation not found' });
+    }
+
+    const messages = await ChatMessage.find({ conversation: conversationId })
+      .sort({ timestamp: 1 });
+
+    res.json({ success: true, messages, conversation });
+  } catch (error) {
+    console.error('Error getting conversation messages:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * Delete a conversation
+ */
+const deleteConversation = async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'User authentication required' });
+    }
+
+    const conversation = await ChatConversation.findOne({ 
+      _id: conversationId, 
+      user: userId 
+    });
+
+    if (!conversation) {
+      return res.status(404).json({ success: false, error: 'Conversation not found' });
+    }
+
+    await ChatMessage.deleteMany({ conversation: conversationId });
+    await ChatConversation.findByIdAndDelete(conversationId);
+
+    res.json({ success: true, message: 'Conversation deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting conversation:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+/**
+ * Update conversation title
+ */
+const updateConversationTitle = async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const { title } = req.body;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: 'User authentication required' });
+    }
+
+    if (!title || title.trim().length === 0) {
+      return res.status(400).json({ success: false, error: 'Title is required' });
+    }
+
+    const conversation = await ChatConversation.findOneAndUpdate(
+      { _id: conversationId, user: userId },
+      { title: title.trim() },
+      { new: true }
+    );
+
+    if (!conversation) {
+      return res.status(404).json({ success: false, error: 'Conversation not found' });
+    }
+
+    res.json({ success: true, conversation });
+  } catch (error) {
+    console.error('Error updating conversation title:', error);
+    res.status(500).json({ success: false, error: error.message });
   }
 };
 
 module.exports = {
   getRecommendations,
   askQuestion,
-  explainAlgorithm
+  explainAlgorithm,
+  getConversations,
+  getConversationMessages,
+  deleteConversation,
+  updateConversationTitle,
+  textToSpeech
 };

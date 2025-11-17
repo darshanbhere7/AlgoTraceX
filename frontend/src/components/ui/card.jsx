@@ -5,7 +5,10 @@ import { cn } from "@/lib/utils"
 export const Card = ({ children, className = '', ...props }) => {
   return (
     <div
-      className={`bg-white rounded-lg shadow-md overflow-hidden ${className}`}
+      className={cn(
+        "bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 rounded-lg shadow-md border border-gray-200 dark:border-neutral-800 overflow-hidden transition-colors",
+        className
+      )}
       {...props}
     >
       {children}

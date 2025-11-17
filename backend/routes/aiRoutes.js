@@ -1,16 +1,34 @@
 const express = require('express');
 const router = express.Router();
+const { protect } = require('../middleware/authMiddleware');
 
-// Import controller functions directly to avoid potential export issues
-const { getRecommendations, askQuestion, explainAlgorithm } = require('../controllers/aiController');
+const {
+  getRecommendations,
+  askQuestion,
+  explainAlgorithm,
+  getConversations,
+  getConversationMessages,
+  deleteConversation,
+  updateConversationTitle,
+  textToSpeech // **Re-add the import**
+} = require('../controllers/aiController');
 
-// Route for getting AI recommendations
+// AI learning recommendations
 router.post('/recommendations', getRecommendations);
 
-// Route for asking AI questions about DSA concepts
-router.post('/ask', askQuestion);
+// AI Q&A about DSA - Now with authentication
+router.post('/ask', protect, askQuestion);
 
-// Route for getting algorithm explanations
+// AI algorithm explanation
 router.post('/explain', explainAlgorithm);
+
+// **RE-ADD THE ROUTE FOR TEXT-TO-SPEECH PROXY**
+router.post('/text-to-speech', protect, textToSpeech);
+
+// Chat conversation management routes
+router.get('/conversations', protect, getConversations);
+router.get('/conversations/:conversationId/messages', protect, getConversationMessages);
+router.delete('/conversations/:conversationId', protect, deleteConversation);
+router.put('/conversations/:conversationId/title', protect, updateConversationTitle);
 
 module.exports = router;
