@@ -3,7 +3,6 @@ import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { FaUser, FaEnvelope, FaEdit, FaSave, FaTimes, FaCamera, FaCheck } from 'react-icons/fa';
-import Aurora from '../../components/Aurora';
 
 const Profile = () => {
   const { user, loading: userLoading } = useAuth();
@@ -140,127 +139,105 @@ const Profile = () => {
 
   if (userLoading || loading) {
     return (
-      <div className="relative min-h-screen bg-white dark:bg-black overflow-hidden">
-        <Aurora
-          colorStops={["#053D70", "#1D0764", "#471494"]}
-          blend={1}
-          amplitude={2.0}
-          speed={0.3}
-        />
-        <div className="relative z-10 flex justify-center items-center min-h-screen">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center"
-          >
-            <div className="animate-spin rounded-full h-12 w-12 border-2 border-gray-300 dark:border-gray-700 border-t-black dark:border-t-white mx-auto mb-4"></div>
-            <p className="text-lg text-gray-800 dark:text-white">Loading Profile...</p>
-          </motion.div>
-        </div>
+      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-neutral-950 text-gray-900 dark:text-white">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+          className="text-center"
+        >
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-gray-300 dark:border-gray-700 border-t-gray-900 dark:border-t-white mx-auto mb-4"></div>
+          <p className="text-lg">Loading Profile...</p>
+        </motion.div>
       </div>
     );
   }
 
   if (error && !profileData) {
     return (
-      <div className="relative min-h-screen bg-white dark:bg-black overflow-hidden">
-        <Aurora
-          colorStops={["#053D70", "#1D0764", "#471494"]}
-          blend={1}
-          amplitude={2.0}
-          speed={0.3}
-        />
-        <div className="relative z-10 flex flex-col justify-center items-center min-h-screen p-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white/80 dark:bg-black/80 backdrop-blur-xl border border-gray-200 dark:border-gray-800 rounded-2xl p-8 max-w-md shadow-lg"
+      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-neutral-950 text-gray-900 dark:text-white">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg p-8 max-w-md shadow-sm"
+        >
+          <p className="text-red-600 dark:text-red-400 mb-6">{error}</p>
+          <motion.button
+            onClick={() => window.location.reload()}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="flex items-center gap-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 py-2.5 px-5 rounded-lg transition-colors shadow-sm"
           >
-            <p className="text-gray-800 dark:text-gray-200 mb-6">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="flex items-center gap-2 bg-black dark:bg-white text-white dark:text-black py-2.5 px-5 rounded-lg transition-all hover:scale-105 shadow-md"
-            >
-              <FaUser /> Retry
-            </button>
-          </motion.div>
-        </div>
+            <FaUser /> Retry
+          </motion.button>
+        </motion.div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="relative min-h-screen bg-white dark:bg-black overflow-hidden">
-        <Aurora
-          colorStops={["#053D70", "#1D0764", "#471494"]}
-          blend={1}
-          amplitude={2.0}
-          speed={0.3}
-        />
-        <div className="relative z-10 flex justify-center items-center min-h-screen">
-          <p className="text-gray-800 dark:text-white text-lg">Please login to view this page.</p>
-        </div>
+      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-neutral-950 text-gray-900 dark:text-white">
+        <p className="text-lg">Please login to view this page.</p>
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen bg-white dark:bg-black overflow-hidden">
-      <Aurora
-        colorStops={["#053D70", "#1D0764", "#471494"]}
-        blend={1}
-        amplitude={2.0}
-        speed={0.3}
-      />
-
-      <motion.div
-        className="relative z-10 container mx-auto px-6 py-12 max-w-4xl"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {/* Header */}
-        <motion.div variants={itemVariants} className="mb-12 text-center">
-          <h1 className="text-4xl font-light text-gray-900 dark:text-white mb-2">
-            Profile Settings
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">Manage your account information</p>
-        </motion.div>
-
-        {/* Success Message */}
-        {successMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-xl p-4 flex items-center gap-3"
-          >
-            <FaCheck className="text-green-600 dark:text-green-400" />
-            <p className="text-green-800 dark:text-green-200">{successMessage}</p>
-          </motion.div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl p-4"
-          >
-            <p className="text-red-800 dark:text-red-200">{error}</p>
-          </motion.div>
-        )}
-
-        {/* Profile Card */}
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
+      <div className="p-6 pt-24 pb-12 space-y-6">
         <motion.div
-          variants={itemVariants}
-          whileHover={{ y: -4 }}
-          className="bg-white/60 dark:bg-black/60 backdrop-blur-xl border border-gray-200 dark:border-gray-800 rounded-2xl p-8 shadow-sm"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="max-w-4xl mx-auto"
         >
+          {/* Header */}
+          <div className="mb-8 text-center">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Profile Settings
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">Manage your account information</p>
+          </div>
+
+          {/* Success Message */}
+          {successMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="mb-6 bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center gap-3"
+            >
+              <FaCheck className="text-green-600 dark:text-green-400" />
+              <p className="text-green-800 dark:text-green-200">{successMessage}</p>
+            </motion.div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="mb-6 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4"
+            >
+              <p className="text-red-800 dark:text-red-200">{error}</p>
+            </motion.div>
+          )}
+
+          {/* Profile Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            whileHover={{ y: -4 }}
+            className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg p-8 shadow-sm"
+          >
           <div className="flex flex-col items-center">
             {/* Profile Image */}
             <div className="relative mb-6">
-              <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-900 flex items-center justify-center shadow-lg">
+              <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 dark:bg-neutral-800 flex items-center justify-center shadow-sm">
                 {isEditing && editData.avatar ? (
                   <img
                     src={editData.avatar}
@@ -281,7 +258,11 @@ const Profile = () => {
               </div>
               
               {isEditing && (
-                <label className="absolute bottom-0 right-0 bg-black dark:bg-white text-white dark:text-black p-2 rounded-full cursor-pointer hover:scale-110 transition-transform shadow-lg">
+                <motion.label
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="absolute bottom-0 right-0 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 p-2 rounded-full cursor-pointer shadow-sm hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors"
+                >
                   <FaCamera className="text-sm" />
                   <input
                     type="file"
@@ -289,7 +270,7 @@ const Profile = () => {
                     onChange={handleImageUpload}
                     className="hidden"
                   />
-                </label>
+                </motion.label>
               )}
             </div>
 
@@ -306,7 +287,7 @@ const Profile = () => {
                     type="text"
                     value={editData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
-                    className="w-full px-4 py-3 bg-white/80 dark:bg-black/80 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white text-gray-900 dark:text-white"
+                    className="w-full px-4 py-3 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white text-gray-900 dark:text-white"
                     placeholder="Enter your name"
                   />
                 ) : (
@@ -325,7 +306,7 @@ const Profile = () => {
                     type="email"
                     value={editData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="w-full px-4 py-3 bg-white/80 dark:bg-black/80 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white text-gray-900 dark:text-white"
+                    className="w-full px-4 py-3 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white text-gray-900 dark:text-white"
                     placeholder="Enter your email"
                   />
                 ) : (
@@ -343,7 +324,7 @@ const Profile = () => {
                     value={editData.bio}
                     onChange={(e) => handleInputChange('bio', e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-3 bg-white/80 dark:bg-black/80 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white text-gray-900 dark:text-white resize-none"
+                    className="w-full px-4 py-3 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white text-gray-900 dark:text-white resize-none"
                     placeholder="Tell us about yourself..."
                   />
                 ) : (
@@ -358,7 +339,7 @@ const Profile = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Role
                 </label>
-                <span className="inline-block bg-gray-100 dark:bg-gray-900 px-4 py-2 rounded-full text-sm font-medium text-gray-900 dark:text-white">
+                <span className="inline-block bg-gray-100 dark:bg-neutral-800 px-4 py-2 rounded-full text-sm font-medium text-gray-900 dark:text-white">
                   {profileData?.role}
                 </span>
               </div>
@@ -367,10 +348,12 @@ const Profile = () => {
               <div className="flex gap-4 pt-6">
                 {isEditing ? (
                   <>
-                    <button
+                    <motion.button
                       onClick={handleSave}
                       disabled={saving}
-                      className="flex-1 flex items-center justify-center gap-2 bg-black dark:bg-white text-white dark:text-black py-3 px-6 rounded-xl transition-all hover:scale-105 shadow-sm font-medium disabled:opacity-50"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex-1 flex items-center justify-center gap-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 py-3 px-6 rounded-lg transition-colors shadow-sm font-medium disabled:opacity-50"
                     >
                       {saving ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
@@ -378,36 +361,42 @@ const Profile = () => {
                         <FaSave />
                       )}
                       {saving ? 'Saving...' : 'Save Changes'}
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
                       onClick={handleCancel}
-                      className="flex-1 flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white py-3 px-6 rounded-xl transition-all hover:scale-105 shadow-sm font-medium"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="flex-1 flex items-center justify-center gap-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 py-3 px-6 rounded-lg transition-colors shadow-sm font-medium"
                     >
                       <FaTimes />
                       Cancel
-                    </button>
+                    </motion.button>
                   </>
                 ) : (
-                  <button
+                  <motion.button
                     onClick={handleEdit}
-                    className="w-full flex items-center justify-center gap-2 bg-black dark:bg-white text-white dark:text-black py-3 px-6 rounded-xl transition-all hover:scale-105 shadow-sm font-medium"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full flex items-center justify-center gap-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 py-3 px-6 rounded-lg transition-colors shadow-sm font-medium"
                   >
                     <FaEdit />
                     Edit Profile
-                  </button>
+                  </motion.button>
                 )}
               </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Additional Info Card */}
-        <motion.div
-          variants={itemVariants}
-          whileHover={{ y: -4 }}
-          className="mt-6 bg-white/60 dark:bg-black/60 backdrop-blur-xl border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm"
-        >
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Account Information</h3>
+          {/* Additional Info Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            whileHover={{ y: -4 }}
+            className="mt-6 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg p-6 shadow-sm"
+          >
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Account Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Member Since</p>
@@ -422,8 +411,9 @@ const Profile = () => {
               </p>
             </div>
           </div>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      </div>
     </div>
   );
 };

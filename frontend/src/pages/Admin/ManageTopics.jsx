@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -80,38 +81,52 @@ const ManageTopics = () => {
 
   if (loading && topics.length === 0) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl text-gray-600">Loading topics...</div>
+      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-neutral-950">
+        <div className="text-xl text-gray-600 dark:text-gray-400">Loading topics...</div>
       </div>
     );
   }
 
   if (error && topics.length === 0) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl text-red-600">{error}</div>
+      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-neutral-950">
+        <div className="text-xl text-red-600 dark:text-red-400">{error}</div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-      <h1 className="text-3xl font-bold">Manage Topics</h1>
-        <button 
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
+      {/* Add padding-top to account for fixed navbar */}
+      <div className="p-6 pt-24 space-y-6">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="flex justify-between items-center"
+        >
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage Topics</h1>
+        <motion.button 
           onClick={fetchTopics}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="px-4 py-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white rounded hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 transition-colors shadow-sm"
         >
           Refresh Topics
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
-      <Card>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+      >
+      <Card className="bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 shadow-sm">
         <CardContent className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Add New Topic</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Add New Topic</h2>
           <form onSubmit={handleAddTopic} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Title</label>
+              <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Title</label>
               <Input
                 type="text"
                 value={newTopic.title}
@@ -121,7 +136,7 @@ const ManageTopics = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Description</label>
+              <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Description</label>
               <Textarea
                 value={newTopic.description}
                 onChange={(e) => setNewTopic({ ...newTopic, description: e.target.value })}
@@ -139,16 +154,16 @@ LinearSearch(A, n, key)
                 rows={10}
                 required
               />
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Use the format above with Input, Output, and Algorithm sections. Use monospace font for better readability.
               </p>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Difficulty</label>
+              <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Difficulty</label>
               <select
                 value={newTopic.difficulty}
                 onChange={(e) => setNewTopic({ ...newTopic, difficulty: e.target.value })}
-                className="w-full p-2 border rounded"
+                className="w-full p-2 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900 text-gray-900 dark:text-white"
                 required
               >
                 <option value="beginner">Beginner</option>
@@ -156,36 +171,59 @@ LinearSearch(A, n, key)
                 <option value="advanced">Advanced</option>
               </select>
             </div>
-            <Button type="submit">Add Topic</Button>
+            <motion.button 
+              type="submit"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-4 py-2 rounded transition-colors bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 shadow-sm font-medium"
+            >
+              Add Topic
+            </motion.button>
           </form>
         </CardContent>
       </Card>
+      </motion.div>
 
-      <Card>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+      >
+      <Card className="bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 shadow-sm">
         <CardContent className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Available Topics</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Available Topics</h2>
           <div className="space-y-4">
-            {topics.map((topic) => (
-              <div key={topic._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            {topics.map((topic, index) => (
+              <motion.div 
+                key={topic._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                whileHover={{ y: -4 }}
+                className="flex items-center justify-between p-4 bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 shadow-sm"
+              >
                 <div className="flex-1">
-                  <h3 className="font-medium">{topic.title}</h3>
-                  <pre className="text-sm text-gray-600 font-mono whitespace-pre-wrap mt-2">{topic.description}</pre>
-                  <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800 mt-2 inline-block">
+                  <h3 className="font-medium text-gray-900 dark:text-white">{topic.title}</h3>
+                  <pre className="text-sm text-gray-600 dark:text-gray-400 font-mono whitespace-pre-wrap mt-2">{topic.description}</pre>
+                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-neutral-800 text-gray-800 dark:text-gray-300 mt-2 inline-block">
                     {topic.difficulty}
                   </span>
                 </div>
-                <Button
-                  variant="destructive"
+                <motion.button
                   onClick={() => handleDeleteTopic(topic._id)}
-                  className="ml-4"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="ml-4 px-4 py-2 rounded transition-colors bg-white dark:bg-neutral-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-gray-300 dark:border-neutral-700 shadow-sm"
                 >
                   Delete
-                </Button>
-              </div>
+                </motion.button>
+              </motion.div>
             ))}
           </div>
         </CardContent>
       </Card>
+      </motion.div>
+      </div>
     </div>
   );
 };

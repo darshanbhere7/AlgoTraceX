@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 import axios from 'axios';
 import { Card, Button, Input, Textarea, Select, toast } from '@/components/ui';
 import { FaPlus, FaTrash, FaSync, FaLink, FaExternalLinkAlt, FaCheck, FaTimes, FaEdit, FaChevronDown } from 'react-icons/fa';
@@ -23,16 +24,18 @@ const CustomDropdown = ({ label, value, onChange, options, className = '' }) => 
 
   return (
     <div className={`relative custom-dropdown ${className}`} ref={dropdownRef}>
-      <label className="block text-sm font-medium mb-1">{label}</label>
-      <button
+      <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">{label}</label>
+      <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-2.5 bg-white border border-gray-300 rounded-lg flex justify-between items-center hover:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        whileHover={{ scale: 1.01 }}
+        whileTap={{ scale: 0.99 }}
+        className="w-full p-2.5 bg-white dark:bg-neutral-900 border border-gray-300 dark:border-neutral-700 rounded-lg flex justify-between items-center hover:border-gray-400 dark:hover:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-neutral-600 transition-colors"
       >
-        <span className="text-gray-700">{value === '' ? `Select ${label}` : value}</span>
-        <FaChevronDown className={`transform transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
+        <span className="text-gray-700 dark:text-gray-300">{value === '' ? `Select ${label}` : value}</span>
+        <FaChevronDown className={`transform transition-transform text-gray-700 dark:text-gray-300 ${isOpen ? 'rotate-180' : ''}`} />
+      </motion.button>
       {isOpen && (
-        <div className="absolute z-[9999] w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+        <div className="absolute z-[9999] w-full mt-1 bg-white dark:bg-neutral-900 border border-gray-300 dark:border-neutral-700 rounded-lg shadow-lg dark:shadow-black/50 max-h-60 overflow-auto">
           {options.map((option) => (
             <button
               key={option.value}
@@ -40,8 +43,8 @@ const CustomDropdown = ({ label, value, onChange, options, className = '' }) => 
                 onChange(option.value);
                 setIsOpen(false);
               }}
-              className={`w-full px-4 py-2 text-left hover:bg-blue-50 ${
-                value === option.value ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+              className={`w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors ${
+                value === option.value ? 'bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-white font-medium' : 'text-gray-700 dark:text-gray-300'
               }`}
             >
               {option.label}
@@ -257,10 +260,10 @@ const ManagePracticeQuestions = () => {
 
   if (loading || trackingLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-neutral-950">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-lg text-gray-600">Loading questions and tracking data...</p>
+          <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">Loading questions and tracking data...</p>
         </div>
       </div>
     );
@@ -268,9 +271,9 @@ const ManagePracticeQuestions = () => {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-neutral-950">
         <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
+          <p className="text-red-500 dark:text-red-400 mb-4">{error}</p>
           <Button onClick={fetchQuestions}>
             <FaSync className="mr-2" /> Retry
           </Button>
@@ -323,25 +326,47 @@ const TopicBadge = ({ topic }) => {
 };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Manage DSA Practice Questions</h1>
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
+      {/* Add padding-top to account for fixed navbar */}
+      <div className="container mx-auto p-6 pt-24 space-y-6">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="flex justify-between items-center mb-8"
+        >
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage DSA Practice Questions</h1>
         <div className="flex items-center gap-4">
-          <Button onClick={fetchQuestions} variant="outline">
+          <motion.button 
+            onClick={fetchQuestions}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="px-4 py-2 rounded transition-colors bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 shadow-sm"
+          >
             Refresh
-          </Button>
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+      >
         <div className="lg:col-span-1">
-          <Card className="p-6 mb-8 shadow-lg overflow-visible">
-            <h2 className="text-2xl font-semibold mb-4">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+          >
+          <Card className="p-6 mb-8 shadow-lg overflow-visible bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800">
+            <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">
               {editingQuestion ? 'Edit Question' : 'Add New Question'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Title</label>
+                <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Title</label>
                 <Input
                   name="title"
                   value={formData.title}
@@ -352,7 +377,7 @@ const TopicBadge = ({ topic }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
+                <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Description</label>
                 <Textarea
                   name="description"
                   value={formData.description}
@@ -388,7 +413,7 @@ const TopicBadge = ({ topic }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Source URL</label>
+                <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Source URL</label>
                 <Input
                   name="sourceUrl"
                   value={formData.sourceUrl}
@@ -412,7 +437,7 @@ const TopicBadge = ({ topic }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Hints</label>
+                <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Hints</label>
                 {formData.hints.map((hint, index) => (
                   <div key={index} className="flex gap-2 mb-2">
                     <Input
@@ -420,28 +445,30 @@ const TopicBadge = ({ topic }) => {
                       onChange={(e) => handleHintChange(index, e.target.value)}
                       placeholder={`Hint ${index + 1}`}
                     />
-                    <Button
+                    <motion.button
                       type="button"
                       onClick={() => removeHint(index)}
-                      variant="outline"
-                      className="px-2"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      className="px-2 py-2 rounded transition-colors bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700"
                     >
                       <FaTimes />
-                    </Button>
+                    </motion.button>
                   </div>
                 ))}
-                <Button
+                <motion.button
                   type="button"
                   onClick={addHint}
-                  variant="outline"
-                  className="w-full mt-2"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full mt-2 px-4 py-2 rounded transition-colors bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 shadow-sm flex items-center justify-center"
                 >
                   <FaPlus className="mr-2" /> Add Hint
-                </Button>
+                </motion.button>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Solution</label>
+                <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Solution</label>
                 <Textarea
                   name="solution"
                   value={formData.solution}
@@ -453,11 +480,16 @@ const TopicBadge = ({ topic }) => {
               </div>
 
               <div className="flex gap-2">
-                <Button type="submit" className="flex-1">
+                <motion.button 
+                  type="submit"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex-1 px-4 py-2 rounded transition-colors bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 shadow-sm font-medium"
+                >
                   {editingQuestion ? 'Update Question' : 'Add Question'}
-                </Button>
+                </motion.button>
                 {editingQuestion && (
-                  <Button
+                  <motion.button
                     type="button"
                     onClick={() => {
                       setEditingQuestion(null);
@@ -474,56 +506,72 @@ const TopicBadge = ({ topic }) => {
                         sheetOrder: 0
                       });
                     }}
-                    variant="outline"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="px-4 py-2 rounded transition-colors bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 shadow-sm"
                   >
                     Cancel
-                  </Button>
+                  </motion.button>
                 )}
               </div>
             </form>
           </Card>
+          </motion.div>
         </div>
 
         <div className="lg:col-span-2">
-          <div className="space-y-4">
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="space-y-4"
+          >
             {questionsToDisplay.length > 0 ? (
-              questionsToDisplay.map((question) => (
-                <Card key={question._id} className="p-4">
+              questionsToDisplay.map((question, index) => (
+                <motion.div
+                  key={question._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  whileHover={{ y: -4 }}
+                >
+                <Card className="p-4 bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 shadow-sm">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-semibold text-lg">{question.title}</h3>
+                      <h3 className="font-semibold text-lg text-gray-900 dark:text-white">{question.title}</h3>
                       <div className="flex flex-wrap gap-2 mt-2">
                         <span className={`px-2 py-1 rounded text-sm ${
-                          question.difficulty === 'Easy' ? 'bg-green-100 text-green-800' :
-                          question.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
+                          question.difficulty === 'Easy' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
+                          question.difficulty === 'Medium' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
+                          'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                         }`}>
                           {question.difficulty}
                         </span>
-                        <span className="px-2 py-1 rounded bg-blue-100 text-blue-800 text-sm">
+                        <span className="px-2 py-1 rounded bg-gray-100 dark:bg-neutral-800 text-gray-800 dark:text-gray-300 text-sm">
                           {question.source}
                         </span>
-                        <span className="px-2 py-1 rounded bg-gray-100 text-gray-800 text-sm">
+                        <span className="px-2 py-1 rounded bg-gray-100 dark:bg-neutral-800 text-gray-800 dark:text-gray-300 text-sm">
                           Order: {question.sheetOrder}
                         </span>
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button
-                        size="sm"
+                      <motion.button
                         onClick={() => handleEdit(question)}
-                        variant="outline"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="p-2 rounded transition-colors bg-white dark:bg-neutral-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700"
                       >
                         <FaEdit />
-                      </Button>
-                      <Button
-                        size="sm"
+                      </motion.button>
+                      <motion.button
                         onClick={() => handleDelete(question._id)}
-                        variant="outline"
-                        className="text-red-600 hover:text-red-700"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="p-2 rounded transition-colors bg-white dark:bg-neutral-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-gray-300 dark:border-neutral-700"
                       >
                         <FaTrash />
-                      </Button>
+                      </motion.button>
                     </div>
                   </div>
                   <div className="mt-4">
@@ -531,18 +579,20 @@ const TopicBadge = ({ topic }) => {
                       href={question.sourceUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline text-sm"
+                      className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:underline text-sm transition-colors"
                     >
                       View on {question.source}
                     </a>
                   </div>
                 </Card>
+                </motion.div>
               ))
             ) : (
-              <p className="text-gray-500">No questions found for the selected sheet/topic.</p>
+              <p className="text-gray-500 dark:text-gray-400">No questions found for the selected sheet/topic.</p>
             )}
-          </div>
+          </motion.div>
         </div>
+      </motion.div>
       </div>
     </div>
   );

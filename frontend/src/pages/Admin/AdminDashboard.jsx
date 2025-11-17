@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
@@ -9,6 +10,7 @@ const AdminDashboard = () => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [darkMode, setDarkMode] = useState(false);
 
   const fetchAnalytics = async () => {
     try {
@@ -35,106 +37,197 @@ const AdminDashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Check for dark mode preference (for chart colors)
+  useEffect(() => {
+    const checkDarkMode = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      setDarkMode(isDark);
+    };
+
+    checkDarkMode();
+
+    // Listen for theme changes
+    const observer = new MutationObserver(checkDarkMode);
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl text-gray-600">Loading dashboard data...</div>
+      <div className="flex justify-center items-center min-h-screen bg-white dark:bg-neutral-950 text-gray-900 dark:text-white">
+        <div className="text-xl">Loading dashboard data...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl text-red-600">{error}</div>
+      <div className="flex justify-center items-center min-h-screen bg-white dark:bg-neutral-950 text-gray-900 dark:text-white">
+        <div className="text-xl text-red-600 dark:text-red-400">{error}</div>
       </div>
     );
   }
 
   if (!analytics) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl text-gray-600">No data available</div>
+      <div className="flex justify-center items-center min-h-screen bg-white dark:bg-neutral-950 text-gray-900 dark:text-white">
+        <div className="text-xl">No data available</div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <button 
-          onClick={fetchAnalytics}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
+      {/* Add padding-top to account for fixed navbar */}
+      <div className="p-6 pt-24 space-y-6">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="flex justify-between items-center"
         >
-          Refresh Data
-        </button>
-      </div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Admin Dashboard
+          </h1>
+          <motion.button 
+            onClick={fetchAnalytics}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="px-4 py-2 rounded transition-colors bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 shadow-sm"
+          >
+            Refresh Data
+          </motion.button>
+        </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardContent className="p-4">
-            <h2 className="text-xl font-semibold">Total Users</h2>
-            <p className="text-2xl">{analytics.totalUsers}</p>
-          </CardContent>
-        </Card>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+        >
+          <motion.div 
+            whileHover={{ y: -4 }}
+            transition={{ duration: 0.2 }}
+            className="rounded-lg p-6 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-sm"
+          >
+            <h2 className="text-lg font-semibold mb-2 text-gray-600 dark:text-gray-400">
+              Total Users
+            </h2>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+              {analytics.totalUsers}
+            </p>
+          </motion.div>
 
-        <Card>
-          <CardContent className="p-4">
-            <h2 className="text-xl font-semibold">Total Tests</h2>
-            <p className="text-2xl">{analytics.totalTests}</p>
-          </CardContent>
-        </Card>
+          <motion.div 
+            whileHover={{ y: -4 }}
+            transition={{ duration: 0.2 }}
+            className="rounded-lg p-6 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-sm"
+          >
+            <h2 className="text-lg font-semibold mb-2 text-gray-600 dark:text-gray-400">
+              Total Tests
+            </h2>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+              {analytics.totalTests}
+            </p>
+          </motion.div>
 
-        {/* <Card>
-          <CardContent className="p-4">
-            <h2 className="text-xl font-semibold">Total Topics</h2>
-            <p className="text-2xl">{analytics.totalTopics}</p>
-          </CardContent>
-        </Card> */}
-      </div>
+          <motion.div 
+            whileHover={{ y: -4 }}
+            transition={{ duration: 0.2 }}
+            className="rounded-lg p-6 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-sm"
+          >
+            <h2 className="text-lg font-semibold mb-2 text-gray-600 dark:text-gray-400">
+              Active Users
+            </h2>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">
+              {analytics.activeUsers || 0}
+            </p>
+          </motion.div>
+        </motion.div>
 
-      <div className="mt-8">
-        <h2 className="text-2xl font-bold mb-4">User Signups (Last 7 Days)</h2>
-        <div className="w-full h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={analytics.weeklySignups}>
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="count" fill="#3b82f6" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className="mt-8"
+        >
+          <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
+            User Signups (Last 7 Days)
+          </h2>
+          <div className="rounded-lg p-6 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-sm">
+            <div className="w-full h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={analytics.weeklySignups}>
+                  <XAxis 
+                    dataKey="date" 
+                    stroke={darkMode ? '#9ca3af' : '#6b7280'}
+                    tick={{ fill: darkMode ? '#9ca3af' : '#6b7280' }}
+                  />
+                  <YAxis 
+                    stroke={darkMode ? '#9ca3af' : '#6b7280'}
+                    tick={{ fill: darkMode ? '#9ca3af' : '#6b7280' }}
+                  />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: darkMode ? '#171717' : '#ffffff',
+                      border: darkMode ? '1px solid #404040' : '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      color: darkMode ? '#ffffff' : '#000000'
+                    }}
+                    labelStyle={{ color: darkMode ? '#ffffff' : '#000000' }}
+                  />
+                  <Bar dataKey="count" fill={darkMode ? '#525252' : '#737373'} radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </motion.div>
 
-      {analytics.recentFeedbacks && analytics.recentFeedbacks.length > 0 && (
-        <div className="mt-8">
-          <h2 className="text-2xl font-bold mb-4">Recent Feedback</h2>
-          <div className="space-y-4">
-            {analytics.recentFeedbacks.map((feedback, index) => (
-              <Card key={index}>
-                <CardContent className="p-4">
+        {analytics.recentFeedbacks && analytics.recentFeedbacks.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+            className="mt-8"
+          >
+            <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
+              Recent Feedback
+            </h2>
+            <div className="space-y-4">
+              {analytics.recentFeedbacks.map((feedback, index) => (
+                <div 
+                  key={index}
+                  className="rounded-lg p-4 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800"
+                >
                   <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-gray-600">{feedback.message}</p>
-                      <p className="text-sm text-gray-500 mt-2">
+                    <div className="flex-1">
+                      <p className="text-gray-700 dark:text-gray-300">
+                        {feedback.message}
+                      </p>
+                      <p className="text-sm mt-2 text-gray-500">
                         {new Date(feedback.createdAt).toLocaleDateString()}
                       </p>
                     </div>
                     {feedback.rating && (
-                      <div className="flex items-center">
+                      <div className="flex items-center ml-4">
                         <span className="text-yellow-500">★</span>
-                        <span className="ml-1">{feedback.rating}</span>
+                        <span className="ml-1 text-gray-900 dark:text-white">
+                          {feedback.rating}
+                        </span>
                       </div>
                     )}
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
+                </div>
+              ))}
+            </div>
+        </motion.div>
+        )}
+      </div>
     </div>
   );
 };
