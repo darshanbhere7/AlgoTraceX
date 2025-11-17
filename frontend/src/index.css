@@ -146,3 +146,67 @@
 
 
 }
+
+.visualizer-route .bg-white,
+.visualizer-route .bg-gray-50,
+.visualizer-route .bg-neutral-50,
+.visualizer-route .bg-neutral-100,
+.visualizer-route .bg-gray-100 {
+  transition: background-color 0.2s ease;
+}
+
+.dark .visualizer-route .bg-white {
+  background-color: #11121d;
+}
+
+.dark .visualizer-route .bg-gray-50,
+.dark .visualizer-route .bg-neutral-50,
+.dark .visualizer-route .bg-neutral-100,
+.dark .visualizer-route .bg-gray-100 {
+  background-color: #171720;
+}
+
+.dark .visualizer-route .text-gray-900,
+.dark .visualizer-route .text-neutral-900,
+.dark .visualizer-route .text-gray-800,
+.dark .visualizer-route .text-neutral-800 {
+  color: #f4f4f5;
+}
+
+.dark .visualizer-route .text-gray-600,
+.dark .visualizer-route .text-gray-500,
+.dark .visualizer-route .text-neutral-600,
+.dark .visualizer-route .text-neutral-500 {
+  color: #c8c8d4;
+}
+
+.dark .visualizer-route .border-gray-200,
+.dark .visualizer-route .border-neutral-200,
+.dark .visualizer-route .border-gray-300,
+.dark .visualizer-route .border-neutral-300 {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.dark .visualizer-route .hover\:bg-neutral-50:hover,
+.dark .visualizer-route .hover\:bg-gray-50:hover,
+.dark .visualizer-route .hover\:bg-gray-100:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.home-page {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.home-page::-webkit-scrollbar {
+  display: none;
+}

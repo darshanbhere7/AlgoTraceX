@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -80,6 +80,7 @@ const SidebarEnhanced = ({ admin = false, children }) => {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
+  const navigate = useNavigate();
 
   // Check for dark mode on component mount and when it changes
   React.useEffect(() => {
@@ -182,7 +183,11 @@ const SidebarEnhanced = ({ admin = false, children }) => {
   };
 
   const handleViewProfile = () => {
-    console.log("View profile clicked", user);
+    if (admin) {
+      navigate("/admin/dashboard");
+      return;
+    }
+    navigate("/user/profile");
   };
 
 

@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Brain, MessageSquare, BookOpen, Plus, Send, User, Bot, Trash2, Copy, RefreshCw } from 'lucide-react';
+import { motion } from 'framer-motion';
 import chatService from '@/services/chatService';
 
 const AIRecommendations = () => {
@@ -36,6 +37,28 @@ const AIRecommendations = () => {
 
   const commonTopics = ['Arrays', 'Linked Lists', 'Trees', 'Graphs', 'Dynamic Programming', 'Sorting', 'Searching', 'Hash Tables', 'Greedy', 'Backtracking'];
   const commonSkills = ['Problem Analysis', 'Time Complexity', 'Space Complexity', 'Implementation', 'Debugging', 'Pattern Recognition'];
+
+  const GlowButton = ({ children, className = '', fullWidth = true, type = 'button', ...props }) => {
+    const widthClasses = fullWidth ? 'w-full px-5 py-3' : 'px-3 py-2';
+    return (
+      <button
+        type={type}
+        {...props}
+        className={`
+          relative group overflow-hidden rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500
+          hover:from-indigo-400 hover:via-purple-400 hover:to-blue-400 text-white font-semibold shadow-lg
+          transition-all duration-300 border border-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+          disabled:opacity-60 disabled:cursor-not-allowed
+          ${!props.disabled ? 'hover:-translate-y-0.5' : ''}
+          ${widthClasses}
+          ${className}
+        `}
+      >
+        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-120%] group-hover:translate-x-[120%] transition-transform duration-700 ease-out" />
+        <span className="relative z-10 flex items-center justify-center gap-2">{children}</span>
+      </button>
+    );
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -466,8 +489,8 @@ const AIRecommendations = () => {
     const canRegenerate = lastMessage?.type === 'assistant' && !loading;
 
     return (
-      <div className="flex h-[600px] border rounded-lg">
-        <div className="w-1/4 border-r p-3 overflow-y-auto bg-muted/30">
+      <div className="flex h-[600px] border border-gray-200 dark:border-neutral-800 rounded-lg bg-white dark:bg-neutral-900">
+        <div className="w-1/4 border-r border-gray-200 dark:border-neutral-800 p-3 overflow-y-auto scrollbar-hide bg-gray-50 dark:bg-neutral-950">
           <div className="flex justify-between items-center mb-3">
             <h3 className="font-semibold text-sm">Conversations</h3>
             <Button size="icon" variant="ghost" onClick={createNewConversation} className="h-7 w-7">
@@ -478,7 +501,7 @@ const AIRecommendations = () => {
             {conversations.map((c) => (
               <div
                 key={c.id}
-                className={`p-2 rounded cursor-pointer text-sm transition-colors relative group ${ c.id === currentConvId ? 'bg-primary text-primary-foreground' : 'hover:bg-muted' }`}
+                className={`p-2 rounded cursor-pointer text-sm transition-colors relative group ${ c.id === currentConvId ? 'bg-gray-900 dark:bg-neutral-800 text-white' : 'hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-900 dark:text-white' }`}
                 onClick={() => selectConversation(c.id)}
               >
                 <p className="truncate pr-8">{c.title}</p>
@@ -494,8 +517,8 @@ const AIRecommendations = () => {
             ))}
           </div>
         </div>
-        <div className="flex-1 flex flex-col bg-background">
-          <div className="border-b p-3 flex justify-between items-center">
+        <div className="flex-1 flex flex-col bg-white dark:bg-neutral-900">
+          <div className="border-b border-gray-200 dark:border-neutral-800 p-3 flex justify-between items-center">
             <h3 className="font-semibold text-sm">{conv?.title || 'Select a conversation'}</h3>
             {conv && conv.messages.length > 0 && (
               <Button variant="outline" size="sm" onClick={clearConv} className="h-7 text-xs">
@@ -503,18 +526,18 @@ const AIRecommendations = () => {
               </Button>
             )}
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto scrollbar-hide p-4 space-y-4">
             {!conv && (
-              <div className="text-center text-muted-foreground h-full flex flex-col justify-center items-center">
+              <div className="text-center text-gray-500 dark:text-gray-400 h-full flex flex-col justify-center items-center">
                 <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-50" />
                 <p className="text-sm mb-3">Select a chat or start a new one</p>
-                <Button size="sm" onClick={createNewConversation}>New Chat</Button>
+                <Button size="sm" variant="outline" onClick={createNewConversation} className="bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700">New Chat</Button>
               </div>
             )}
             {conv?.messages.map((msg, idx) => (
               <div key={msg.id} className={`flex items-start gap-3 ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {msg.type === 'assistant' && <Bot className="h-5 w-5 mt-2 flex-shrink-0" />}
-                <div className={`max-w-[85%] rounded-lg p-3 text-sm ${ msg.type === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted' }`}>
+                <div className={`max-w-[85%] rounded-lg p-3 text-sm ${ msg.type === 'user' ? 'bg-gray-900 dark:bg-neutral-800 text-white' : 'bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-white' }`}>
                   <div className="break-words">{formatText(msg.content)}</div>
                    <div className="flex items-center gap-2 mt-2 text-xs opacity-60">
                      <span>{msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -527,11 +550,11 @@ const AIRecommendations = () => {
             {isTyping && (
               <div className="flex items-start gap-3 justify-start">
                   <Bot className="h-5 w-5 mt-2 flex-shrink-0" />
-                  <div className="bg-muted rounded-lg p-3 flex items-center">
+                  <div className="bg-gray-100 dark:bg-neutral-800 rounded-lg p-3 flex items-center">
                     <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      <div className="w-2 h-2 bg-gray-600 dark:bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-600 dark:bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                      <div className="w-2 h-2 bg-gray-600 dark:bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                     </div>
                   </div>
               </div>
@@ -545,7 +568,7 @@ const AIRecommendations = () => {
                 </Button>
             </div>
           )}
-          <div className="border-t p-3">
+          <div className="border-t border-gray-200 dark:border-neutral-800 p-3">
             <div className="relative">
               <Textarea
                 placeholder="Ask about DSA... (Enter to send, Shift+Enter for new line)"
@@ -556,9 +579,15 @@ const AIRecommendations = () => {
                 className="resize-none pr-12 py-3 text-sm"
                 disabled={loading || !currentConvId}
               />
-              <Button onClick={sendMessage} disabled={loading || !currentMessage.trim()} size="icon" className="absolute right-2 bottom-1.5 h-8 w-8">
+              <GlowButton
+                onClick={sendMessage}
+                disabled={loading || !currentMessage.trim()}
+                fullWidth={false}
+                className="absolute right-2 bottom-1.5 h-10 w-10 p-0 rounded-full"
+                aria-label="Send message"
+              >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              </Button>
+              </GlowButton>
             </div>
           </div>
         </div>
@@ -567,18 +596,30 @@ const AIRecommendations = () => {
   };
   
     return (
-    <div className="p-4 md:p-6 lg:p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold mb-2">AI DSA Assistant</h1>
-          <p className="text-muted-foreground">Your context-aware DSA learning companion</p>
-        </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
+      <div className="p-6 pt-24 pb-12 space-y-6">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="text-center mb-6"
+          >
+            <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">AI DSA Assistant</h1>
+            <p className="text-gray-600 dark:text-gray-400">Your context-aware DSA learning companion</p>
+          </motion.div>
         
-        {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Alert variant="destructive" className="mb-4 bg-red-100 dark:bg-red-900/30 border-red-200 dark:border-red-800">
+                <AlertDescription className="text-red-800 dark:text-red-200">{error}</AlertDescription>
+              </Alert>
+            </motion.div>
+          )}
         
         <Tabs defaultValue="chat" className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-4">
@@ -597,7 +638,7 @@ const AIRecommendations = () => {
                  <CardTitle>Personalized Recommendations</CardTitle>
                  <CardDescription>Get tailored learning suggestions based on your profile.</CardDescription>
                </CardHeader>
-               <CardContent className="space-y-4 max-h-[600px] overflow-y-auto">
+               <CardContent className="space-y-4 max-h-[600px] overflow-y-auto scrollbar-hide">
                  <div className="space-y-2">
                    <Label>Your Level</Label>
                    <Select value={userProfile.level} onValueChange={(v) => setUserProfile({...userProfile, level: v})}>
@@ -657,10 +698,10 @@ const AIRecommendations = () => {
                      ))}
                    </div>
                  </div>
-                 <Button onClick={handleGetRecommendations} disabled={loading} className="w-full">
-                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                   Get Recommendations
-                 </Button>
+                <GlowButton onClick={handleGetRecommendations} disabled={loading}>
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Get Recommendations
+                </GlowButton>
                  {recommendations && (
                    <Card className="bg-muted/50">
                      <CardHeader><CardTitle>Your Learning Plan</CardTitle></CardHeader>
@@ -694,10 +735,10 @@ const AIRecommendations = () => {
                      </Select>
                    </div>
                  </div>
-                 <Button onClick={handleExplainAlgorithm} disabled={loading || !algorithm.trim()} className="w-full">
-                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                   Explain Algorithm
-                 </Button>
+                <GlowButton onClick={handleExplainAlgorithm} disabled={loading || !algorithm.trim()}>
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Explain Algorithm
+                </GlowButton>
                  {explanation && (
                    <Card className="bg-muted/50">
                      <CardHeader><CardTitle>{algorithm}</CardTitle></CardHeader>
@@ -707,7 +748,8 @@ const AIRecommendations = () => {
                </CardContent>
              </Card>
            </TabsContent>
-        </Tabs>
+          </Tabs>
+        </div>
       </div>
     </div>
   );

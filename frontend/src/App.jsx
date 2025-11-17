@@ -45,6 +45,8 @@ import ArrayVisualizer from "./components/linear/Array";
 import LinkedList from './components/linear/LinkedList';
 import Stack from './components/linear/Stack';
 import DoublyLinkedList from './components/linear/DoublyLinkedList';
+import Queue from './components/linear/Queue';
+import VisualizerRoute from './components/VisualizerRoute';
 
 // Create a simple NotFound component
 const NotFound = () => {
@@ -95,28 +97,109 @@ function App() {
               <Route path="visualizer-home" element={<VisualizerHome />} />
               <Route path="practice-questions" element={<PracticeQuestions />} />
 
-              <Route path="bubble-sort" element={<BubbleSort />} />
-              <Route path="merge-sort" element={<MergeSort />} />
-              <Route path="quick-sort" element={<QuickSort />} />
-              <Route path="heap-sort" element={<HeapSort />} />
-              <Route path="insertion-sort" element={<InsertionSort />} />
-              <Route path="selection-sort" element={<SelectionSort />} />
+              <Route path="bubble-sort" element={
+                <VisualizerRoute>
+                  <BubbleSort />
+                </VisualizerRoute>
+              } />
+              <Route path="merge-sort" element={
+                <VisualizerRoute>
+                  <MergeSort />
+                </VisualizerRoute>
+              } />
+              <Route path="quick-sort" element={
+                <VisualizerRoute>
+                  <QuickSort />
+                </VisualizerRoute>
+              } />
+              <Route path="heap-sort" element={
+                <VisualizerRoute>
+                  <HeapSort />
+                </VisualizerRoute>
+              } />
+              <Route path="insertion-sort" element={
+                <VisualizerRoute>
+                  <InsertionSort />
+                </VisualizerRoute>
+              } />
+              <Route path="selection-sort" element={
+                <VisualizerRoute>
+                  <SelectionSort />
+                </VisualizerRoute>
+              } />
 
-              <Route path="linear-search" element={<LinearSearch />} />
-              <Route path="binary-search" element={<BinarySearch />} />
-              <Route path="jump-search" element={<JumpSearch />} />
-              <Route path="interpolation-search" element={<InterpolationSearch />} />
+              <Route path="linear-search" element={
+                <VisualizerRoute>
+                  <LinearSearch />
+                </VisualizerRoute>
+              } />
+              <Route path="binary-search" element={
+                <VisualizerRoute>
+                  <BinarySearch />
+                </VisualizerRoute>
+              } />
+              <Route path="jump-search" element={
+                <VisualizerRoute>
+                  <JumpSearch />
+                </VisualizerRoute>
+              } />
+              <Route path="interpolation-search" element={
+                <VisualizerRoute>
+                  <InterpolationSearch />
+                </VisualizerRoute>
+              } />
 
-              <Route path="binary-tree" element={<BinaryTree />} />
-              <Route path="bst" element={<BinarySearchTree />} />
-              <Route path="avl-tree" element={<AVLTree />} />
-              <Route path="rb-tree" element={<RedBlackTree />} />
-              <Route path="heap-tree" element={<HeapTree />} />
+              <Route path="binary-tree" element={
+                <VisualizerRoute>
+                  <BinaryTree />
+                </VisualizerRoute>
+              } />
+              <Route path="bst" element={
+                <VisualizerRoute>
+                  <BinarySearchTree />
+                </VisualizerRoute>
+              } />
+              <Route path="avl-tree" element={
+                <VisualizerRoute>
+                  <AVLTree />
+                </VisualizerRoute>
+              } />
+              <Route path="rb-tree" element={
+                <VisualizerRoute>
+                  <RedBlackTree />
+                </VisualizerRoute>
+              } />
+              <Route path="heap-tree" element={
+                <VisualizerRoute>
+                  <HeapTree />
+                </VisualizerRoute>
+              } />
 
-              <Route path="array" element={<ArrayVisualizer />} />
-              <Route path="linked-list" element={<LinkedList />} />
-              <Route path="stack" element={<Stack />} />
-              <Route path="doubly-linked-list" element={<DoublyLinkedList />} />
+              <Route path="array" element={
+                <VisualizerRoute>
+                  <ArrayVisualizer />
+                </VisualizerRoute>
+              } />
+              <Route path="linked-list" element={
+                <VisualizerRoute>
+                  <LinkedList />
+                </VisualizerRoute>
+              } />
+              <Route path="stack" element={
+                <VisualizerRoute>
+                  <Stack />
+                </VisualizerRoute>
+              } />
+              <Route path="doubly-linked-list" element={
+                <VisualizerRoute>
+                  <DoublyLinkedList />
+                </VisualizerRoute>
+              } />
+              <Route path="queue" element={
+                <VisualizerRoute>
+                  <Queue />
+                </VisualizerRoute>
+              } />
 
               <Route path="ai-recommendations" element={<AIRecommendations />} />
 

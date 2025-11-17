@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
 import logo from "../assets/logo.png";
 import logoDark from "../assets/logo_dark.png";
@@ -59,12 +60,12 @@ const ThemeToggleButton = ({ isDark, onToggle }) => {
   );
 };
 
-const ScrollRevealLink = ({ href, children }) => {
+const ScrollRevealLink = ({ to, children }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <a
-      href={href}
+    <Link
+      to={to}
       className="relative overflow-hidden block h-6"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -85,7 +86,7 @@ const ScrollRevealLink = ({ href, children }) => {
       >
         {children}
       </motion.div>
-    </a>
+    </Link>
   );
 };
 
@@ -132,9 +133,10 @@ const UserProfile = ({ user, onViewProfile }) => {
 const Navbar = () => {
   const { user } = useAuth();
   const [isDark, setIsDark] = useState(false);
+  const navigate = useNavigate();
 
   const handleViewProfile = () => {
-    console.log("View profile clicked", user);
+    navigate("/user/profile");
   };
 
   const toggleTheme = () => {
@@ -159,9 +161,9 @@ const Navbar = () => {
 
           {/* Navigation Links - Desktop */}
           <div className="hidden md:flex items-center space-x-8">
-            <ScrollRevealLink href="#">Dashboard</ScrollRevealLink>
-            <ScrollRevealLink href="#">Algorithms</ScrollRevealLink>
-            <ScrollRevealLink href="#">Visualizations</ScrollRevealLink>
+            <ScrollRevealLink to="/user/dashboard">Dashboard</ScrollRevealLink>
+            <ScrollRevealLink to="/user/weekly-test">Weekly Tests</ScrollRevealLink>
+            <ScrollRevealLink to="/user/visualizer-home">Visualizations</ScrollRevealLink>
           </div>
 
           {/* User Section */}
