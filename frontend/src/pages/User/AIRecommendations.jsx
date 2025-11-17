@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Brain, MessageSquare, BookOpen, Plus, Send, User, Bot, Trash2, Copy, RefreshCw } from 'lucide-react';
+import { Loader2, Brain, MessageSquare, BookOpen, Plus, Send, User, Bot, Trash2, Copy, RefreshCw, Mic, Volume2, VolumeX } from 'lucide-react'; // Re-added icons
 import { motion } from 'framer-motion';
 import chatService from '@/services/chatService';
 
@@ -52,6 +52,13 @@ const AIRecommendations = () => {
 
   const commonTopics = ['Arrays', 'Linked Lists', 'Trees', 'Graphs', 'Dynamic Programming', 'Sorting', 'Searching', 'Hash Tables', 'Greedy', 'Backtracking'];
   const commonSkills = ['Problem Analysis', 'Time Complexity', 'Space Complexity', 'Implementation', 'Debugging', 'Pattern Recognition'];
+
+  // **FIX: Re-added missing constants**
+  const indianLanguages = ['English', 'Hindi', 'Bengali', 'Telugu', 'Marathi', 'Tamil', 'Gujarati', 'Kannada', 'Malayalam'];
+  const languageCodes = {
+    'English': 'en-US', 'Hindi': 'hi-IN', 'Bengali': 'bn-IN', 'Telugu': 'te-IN', 
+    'Marathi': 'mr-IN', 'Tamil': 'ta-IN', 'Gujarati': 'gu-IN', 'Kannada': 'kn-IN', 'Malayalam': 'ml-IN'
+  };
 
   const GlowButton = ({ children, className = '', fullWidth = true, type = 'button', ...props }) => {
     const widthClasses = fullWidth ? 'w-full px-5 py-3' : 'px-3 py-2';
@@ -138,10 +145,9 @@ const AIRecommendations = () => {
     try {
       const langCode = languageCodes[language]?.split('-')[0] || 'en';
       
-      // Split text into chunks to avoid hitting any URL length limits
       const chunks = message.content.match(/[\s\S]{1,200}/g) || [];
       let currentChunk = 0;
-      let players = []; // Store all audio players to manage them
+      let players = []; 
 
       const playNextChunk = () => {
         if (currentChunk >= chunks.length) {
@@ -362,6 +368,53 @@ const AIRecommendations = () => {
   };
   const copyMessage = (content) => { navigator.clipboard.writeText(content); };
   
+  // **FIX: Restored regenerateResponse function logic**
+  const regenerateResponse = async () => {
+    const conv = getCurrentConv();
+    if (!conv || conv.messages.length < 1) return;
+
+    const lastUserMessageIndex = conv.messages.findLastIndex(m => m.type === 'user');
+    if (lastUserMessageIndex === -1) return;
+
+    const messagesToResubmit = conv.messages.slice(0, lastUserMessageIndex + 1);
+    const lastUserMessage = messagesToResubmit[lastUserMessageIndex];
+    
+    updateConversationState(conv.id, { messages: messagesToResubmit });
+    setLoading(true);
+    setIsTyping(true);
+    setError('');
+
+    try {
+      const conversationHistory = messagesToResubmit.slice(0, -1).map(msg => ({
+        role: msg.type === 'user' ? 'user' : 'assistant',
+        content: msg.content
+      }));
+
+      const result = await chatService.sendMessage(
+        lastUserMessage.content, conversationHistory, userProfile,
+        conv.id.startsWith('temp_') ? null : conv.id,
+        language
+      );
+
+      if (result) {
+        const aiMsg = { 
+          id: result.messageId || (Date.now() + 1).toString(), 
+          type: 'assistant', 
+          content: result.answer, 
+          timestamp: new Date() 
+        };
+        updateConversationState(conv.id, { messages: [...messagesToResubmit, aiMsg] });
+      } else {
+        setError('Failed to regenerate response');
+      }
+    } catch (err) {
+      setError(`Failed to regenerate: ${err.message}`);
+    } finally {
+      setLoading(false);
+      setIsTyping(false);
+    }
+  };
+  
   const handleGetRecommendations = async () => {
     setLoading(true);
     setError('');
@@ -407,6 +460,8 @@ const AIRecommendations = () => {
 
   const renderConversation = () => {
     const conv = getCurrentConv();
+    const lastMessage = conv?.messages[conv.messages.length - 1];
+    const canRegenerate = lastMessage?.type === 'assistant' && !loading;
 
     return (
       <div className="flex h-[600px] border border-gray-200 dark:border-neutral-800 rounded-lg bg-white dark:bg-neutral-900">
@@ -457,6 +512,7 @@ const AIRecommendations = () => {
                    <div className="flex items-center gap-2 mt-2 text-xs opacity-60">
                      <span>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                      <button className="p-1 hover:opacity-100 opacity-70" onClick={() => copyMessage(msg.content)}><Copy className="h-3 w-3" /></button>
+                     {/* **FIX: Re-added the TTS button** */}
                      {msg.type === 'assistant' && (
                        <button className="p-1 hover:opacity-100 opacity-70" onClick={() => toggleSpeak(msg)}>
                          { audioPlayer.messageId === msg.id ? <VolumeX className="h-3.5 w-3.5 text-blue-500" /> : <Volume2 className="h-3.5 w-3.5" /> }
@@ -499,6 +555,14 @@ const AIRecommendations = () => {
                 className="resize-none pr-24 py-3 text-sm"
                 disabled={loading || !currentConvId}
               />
+              {/* **FIX: Re-added the Mic button, wrapping the GlowButton** */}
+              <div className="absolute right-12 bottom-1.5">
+                {recognition && (
+                  <Button onClick={toggleListening} variant="ghost" size="icon" className={`h-10 w-10 ${isListening ? 'text-red-500' : ''}`} disabled={loading || !currentConvId}>
+                    <Mic className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
               <GlowButton
                 onClick={sendMessage}
                 disabled={loading || !currentMessage.trim()}
@@ -515,7 +579,7 @@ const AIRecommendations = () => {
     );
   };
   
-    return (
+  return (
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
       <div className="p-6 pt-24 pb-12 space-y-6">
         <div className="max-w-6xl mx-auto">
