@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Brain, MessageSquare, BookOpen, Send, User, Bot, Trash2, Copy, RefreshCw } from 'lucide-react';
+import { Loader2, Brain, MessageSquare, BookOpen, Send, User, Bot, Trash2, Copy, RefreshCw, Mic, MicOff, Languages } from 'lucide-react';
 import chatService from '@/services/chatService';
 
 const AIRecommendations = () => {
@@ -21,6 +21,9 @@ const AIRecommendations = () => {
   const [currentConvId, setCurrentConvId] = useState(null);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState('English');
+  const [isListening, setIsListening] = useState(false);
+  const speechRecognitionRef = useRef(null);
 
   const [userProfile, setUserProfile] = useState({
     level: 'beginner',
@@ -37,6 +40,91 @@ const AIRecommendations = () => {
 
   const commonTopics = ['Arrays', 'Linked Lists', 'Trees', 'Graphs', 'Dynamic Programming', 'Sorting', 'Searching', 'Hash Tables', 'Greedy', 'Backtracking'];
   const commonSkills = ['Problem Analysis', 'Time Complexity', 'Space Complexity', 'Implementation', 'Debugging', 'Pattern Recognition'];
+  const languageOptions = [
+    { label: 'English', value: 'English', speechCode: 'en-US' },
+    { label: 'Hindi', value: 'Hindi', speechCode: 'hi-IN' },
+    { label: 'Spanish', value: 'Spanish', speechCode: 'es-ES' },
+    { label: 'French', value: 'French', speechCode: 'fr-FR' },
+    { label: 'German', value: 'German', speechCode: 'de-DE' }
+  ];
+
+  const getSpeechLangCode = (language) => {
+    const option = languageOptions.find((opt) => opt.value === language);
+    return option?.speechCode || 'en-US';
+  };
+
+  useEffect(() => {
+    return () => {
+      if (speechRecognitionRef.current) {
+        speechRecognitionRef.current.onresult = null;
+        speechRecognitionRef.current.onerror = null;
+        speechRecognitionRef.current.onend = null;
+        speechRecognitionRef.current.stop();
+      }
+    };
+  }, []);
+
+  const handleLanguageChange = (value) => {
+    setSelectedLanguage(value);
+    if (speechRecognitionRef.current) {
+      speechRecognitionRef.current.lang = getSpeechLangCode(value);
+    }
+  };
+
+  const handleMicClick = () => {
+    if (isListening && speechRecognitionRef.current) {
+      speechRecognitionRef.current.stop();
+      return;
+    }
+
+    if (typeof window === 'undefined') {
+      setError('Speech recognition is not available in this environment.');
+      return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setError('Speech recognition is not supported in this browser.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = getSpeechLangCode(selectedLanguage);
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.continuous = false;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setError('');
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      setIsListening(false);
+      if (event.error !== 'no-speech') {
+        setError('Speech recognition error. Please try again.');
+      }
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      speechRecognitionRef.current = null;
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map((result) => result[0].transcript)
+        .join(' ')
+        .trim();
+      if (transcript) {
+        setCurrentMessage((prev) => (prev ? `${prev.trim()} ${transcript}`.trim() : transcript));
+      }
+    };
+
+    speechRecognitionRef.current = recognition;
+    recognition.start();
+  };
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 12 },
@@ -288,7 +376,8 @@ const AIRecommendations = () => {
         messageToSend,
         conversationHistory,
         userProfile,
-        activeConvId.startsWith('temp_') ? null : activeConvId // Only send conversationId if it's from database
+        activeConvId.startsWith('temp_') ? null : activeConvId, // Only send conversationId if it's from database
+        selectedLanguage
       );
 
       if (result) {
@@ -388,7 +477,8 @@ const AIRecommendations = () => {
             body: JSON.stringify({
                 question: lastUserMessage.content,
                 conversationHistory,
-                userProfile
+                userProfile,
+                language: selectedLanguage
             })
         });
 
@@ -602,7 +692,27 @@ const AIRecommendations = () => {
               </Button>
             </div>
           )}
-          <div className="border-t p-4">
+          <div className="border-t p-4 space-y-3">
+            <div className="flex flex-wrap items-center gap-3 justify-between">
+              <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                <Languages className="h-3.5 w-3.5" />
+                <span>Language</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
+                  <SelectTrigger className="w-40 text-sm h-9">
+                    <SelectValue placeholder="Select language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {languageOptions.map((lang) => (
+                      <SelectItem key={lang.value} value={lang.value}>
+                        {lang.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <div className="relative">
               <Textarea
                 placeholder="Ask about DSA... (Enter to send, Shift+Enter for new line)"
@@ -611,18 +721,30 @@ const AIRecommendations = () => {
                 onKeyDown={handleKeyPress}
                 onFocus={handleInputFocus}
                 rows={1}
-                className="resize-none pr-12 py-3 text-sm bg-background border-muted focus-visible:ring-0 focus-visible:border-foreground"
+                className="resize-none pr-28 py-3 text-sm bg-background border-muted focus-visible:ring-0 focus-visible:border-foreground"
                 disabled={loading}
               />
-              <Button
-                variant="ghost"
-                onClick={sendMessage}
-                disabled={loading || !currentMessage.trim()}
-                size="icon"
-                className="absolute right-2 bottom-2 h-9 w-9 border border-border rounded-full text-foreground"
-              >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              </Button>
+              <div className="absolute right-2 bottom-2 flex gap-2">
+                <Button
+                  variant={isListening ? 'default' : 'outline'}
+                  size="icon"
+                  onClick={handleMicClick}
+                  disabled={loading}
+                  className="h-9 w-9 rounded-full border border-border"
+                  aria-pressed={isListening}
+                >
+                  {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={sendMessage}
+                  disabled={loading || !currentMessage.trim()}
+                  size="icon"
+                  className="h-9 w-9 border border-border rounded-full text-foreground"
+                >
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
