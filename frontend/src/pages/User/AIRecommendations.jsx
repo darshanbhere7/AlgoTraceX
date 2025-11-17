@@ -8,17 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Brain, MessageSquare, BookOpen, Plus, Send, User, Bot, Trash2, Copy, RefreshCw, Mic, Volume2, VolumeX } from 'lucide-react'; // Re-added icons
-import { motion } from 'framer-motion';
+import { Loader2, Brain, MessageSquare, BookOpen, Plus, Send, User, Bot, Trash2, Copy, RefreshCw } from 'lucide-react';
 import chatService from '@/services/chatService';
-
-// SpeechRecognition setup
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const recognition = SpeechRecognition ? new SpeechRecognition() : null;
-if (recognition) {
-  recognition.continuous = true;
-  recognition.interimResults = true;
-}
 
 const AIRecommendations = () => {
   const [loading, setLoading] = useState(false);
@@ -29,15 +20,6 @@ const AIRecommendations = () => {
   const [currentConvId, setCurrentConvId] = useState(null);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  
-  const [language, setLanguage] = useState('English');
-  const [isListening, setIsListening] = useState(false);
-  
-  // State for reliable audio playback
-  const [audioPlayer, setAudioPlayer] = useState({
-    player: null,
-    messageId: null,
-  });
 
   const [userProfile, setUserProfile] = useState({
     level: 'beginner',
@@ -50,157 +32,36 @@ const AIRecommendations = () => {
   const [level, setLevel] = useState('beginner');
   const [explanation, setExplanation] = useState('');
 
+  const API_BASE_URL = 'http://localhost:5000/api';
+
   const commonTopics = ['Arrays', 'Linked Lists', 'Trees', 'Graphs', 'Dynamic Programming', 'Sorting', 'Searching', 'Hash Tables', 'Greedy', 'Backtracking'];
   const commonSkills = ['Problem Analysis', 'Time Complexity', 'Space Complexity', 'Implementation', 'Debugging', 'Pattern Recognition'];
-
-  // **FIX: Re-added missing constants**
-  const indianLanguages = ['English', 'Hindi', 'Bengali', 'Telugu', 'Marathi', 'Tamil', 'Gujarati', 'Kannada', 'Malayalam'];
-  const languageCodes = {
-    'English': 'en-US', 'Hindi': 'hi-IN', 'Bengali': 'bn-IN', 'Telugu': 'te-IN', 
-    'Marathi': 'mr-IN', 'Tamil': 'ta-IN', 'Gujarati': 'gu-IN', 'Kannada': 'kn-IN', 'Malayalam': 'ml-IN'
-  };
-
-  const GlowButton = ({ children, className = '', fullWidth = true, type = 'button', ...props }) => {
-    const widthClasses = fullWidth ? 'w-full px-5 py-3' : 'px-3 py-2';
-    return (
-      <button
-        type={type}
-        {...props}
-        className={`
-          relative group overflow-hidden rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500
-          hover:from-indigo-400 hover:via-purple-400 hover:to-blue-400 text-white font-semibold shadow-lg
-          transition-all duration-300 border border-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
-          disabled:opacity-60 disabled:cursor-not-allowed
-          ${!props.disabled ? 'hover:-translate-y-0.5' : ''}
-          ${widthClasses}
-          ${className}
-        `}
-      >
-        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-120%] group-hover:translate-x-[120%] transition-transform duration-700 ease-out" />
-        <span className="relative z-10 flex items-center justify-center gap-2">{children}</span>
-      </button>
-    );
-  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversations, isTyping]);
-  
-  // Effect to clean up the audio player
-  useEffect(() => {
-    return () => {
-      if (audioPlayer.player) {
-        audioPlayer.player.pause();
-      }
-    };
-  }, [audioPlayer.player]);
 
-  useEffect(() => {
-    if (!recognition) return;
-    recognition.onresult = (event) => {
-      let finalTranscript = '';
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript;
-        }
-      }
-      setCurrentMessage(prev => prev + finalTranscript);
-    };
-    recognition.onend = () => setIsListening(false);
-    recognition.onerror = (event) => {
-      console.error('Speech recognition error', event.error);
-      setIsListening(false);
-    };
-  }, []);
-
-  const toggleListening = () => {
-    if (isListening) {
-      recognition.stop();
-      setIsListening(false);
-    } else {
-      if (!recognition) return;
-      recognition.lang = languageCodes[language] || 'en-US';
-      try {
-        recognition.start();
-        setIsListening(true);
-      } catch (error) {
-        console.error("SpeechRecognition start error:", error);
-        setIsListening(false);
-      }
-    }
-  };
-  
-  // **UPDATED toggleSpeak function to use the backend proxy**
-  const toggleSpeak = async (message) => {
-    if (audioPlayer.player && audioPlayer.messageId === message.id) {
-      audioPlayer.player.pause();
-      setAudioPlayer({ player: null, messageId: null });
-      return;
-    }
-
-    if (audioPlayer.player) {
-      audioPlayer.player.pause();
-    }
-
-    try {
-      const langCode = languageCodes[language]?.split('-')[0] || 'en';
-      
-      const chunks = message.content.match(/[\s\S]{1,200}/g) || [];
-      let currentChunk = 0;
-      let players = []; 
-
-      const playNextChunk = () => {
-        if (currentChunk >= chunks.length) {
-          setAudioPlayer({ player: null, messageId: null });
-          return;
-        }
-
-        const playCurrentChunk = async () => {
-          const audioUrl = await chatService.textToSpeech(chunks[currentChunk], langCode);
-          const newPlayer = new Audio(audioUrl);
-          players[currentChunk] = newPlayer;
-
-          newPlayer.onended = () => {
-            URL.revokeObjectURL(audioUrl); // Clean up memory
-            currentChunk++;
-            playNextChunk();
-          };
-
-          newPlayer.onerror = () => {
-            console.error("Error playing audio chunk.");
-            setError("Could not play audio.");
-            setAudioPlayer({ player: null, messageId: null });
-          };
-          
-          newPlayer.play();
-          setAudioPlayer({ player: newPlayer, messageId: message.id });
-        };
-        
-        playCurrentChunk();
-      };
-      
-      playNextChunk();
-
-    } catch (error) {
-      setError('Failed to generate or play audio.');
-      setAudioPlayer({ player: null, messageId: null });
-    }
-  };
-
+  // Load conversations from database on component mount
   useEffect(() => {
     const loadConversations = async () => {
       try {
         const dbConversations = await chatService.getConversations();
+        // Transform database conversations to match frontend format
         const transformedConversations = dbConversations.map(conv => ({
-          id: conv._id, title: conv.title, messages: [],
-          lastMessageAt: conv.lastMessageAt, createdAt: conv.createdAt
+          id: conv._id,
+          title: conv.title,
+          messages: [], // Messages will be loaded separately when conversation is selected
+          lastMessageAt: conv.lastMessageAt,
+          createdAt: conv.createdAt
         }));
         setConversations(transformedConversations);
       } catch (error) {
         console.error('Error loading conversations:', error);
+        // If there's an error, start with empty conversations
         setConversations([]);
       }
     };
+
     loadConversations();
   }, []);
 
@@ -210,13 +71,19 @@ const AIRecommendations = () => {
     setCurrentConvId(newConv.id);
   };
 
+  // Load messages for a conversation when it's selected
   const loadConversationMessages = async (conversationId) => {
     try {
       const result = await chatService.getConversationMessages(conversationId);
       if (result) {
         const transformedMessages = result.messages.map(msg => ({
-          id: msg._id, type: msg.type, content: msg.content, timestamp: new Date(msg.timestamp)
+          id: msg._id,
+          type: msg.type,
+          content: msg.content,
+          timestamp: new Date(msg.timestamp)
         }));
+        
+        // Update the conversation with loaded messages
         updateConversationState(conversationId, { messages: transformedMessages });
       }
     } catch (error) {
@@ -224,51 +91,99 @@ const AIRecommendations = () => {
     }
   };
 
+  // Handle conversation selection
   const selectConversation = (conversationId) => {
     setCurrentConvId(conversationId);
     const conv = conversations.find(c => c.id === conversationId);
-    if (conv && conv.messages.length === 0 && !conv.id.startsWith('temp_')) {
+    
+    // If conversation has no messages loaded, load them
+    if (conv && conv.messages.length === 0) {
       loadConversationMessages(conversationId);
     }
   };
 
   const getCurrentConv = () => conversations.find(c => c.id === currentConvId);
 
+  // A single function to update conversations in state
   const updateConversationState = (convId, updates) => {
     setConversations(prev =>
       prev.map(c => (c.id === convId ? { ...c, ...updates } : c))
     );
   };
-  
+
+  // Format text with markdown-like syntax
   const formatText = (text) => {
     if (!text) return text;
+    
+    // Split by code blocks first to preserve them
     const parts = text.split(/(```[\s\S]*?```|`[^`]+`)/);
+    
     return parts.map((part, index) => {
+      // Handle code blocks
       if (part.startsWith('```')) {
         const code = part.replace(/```(\w+)?\n?/g, '').replace(/```$/g, '');
-        return ( <pre key={index} className="bg-black/10 dark:bg-white/10 p-3 rounded my-2 overflow-x-auto"><code className="text-xs font-mono">{code}</code></pre> );
+        return (
+          <pre key={index} className="bg-black/10 dark:bg-white/10 p-3 rounded my-2 overflow-x-auto">
+            <code className="text-xs font-mono">{code}</code>
+          </pre>
+        );
       }
+      
+      // Handle inline code
       if (part.startsWith('`') && part.endsWith('`')) {
-        return ( <code key={index} className="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs font-mono">{part.slice(1, -1)}</code> );
+        return (
+          <code key={index} className="bg-black/10 dark:bg-white/10 px-1.5 py-0.5 rounded text-xs font-mono">
+            {part.slice(1, -1)}
+          </code>
+        );
       }
+      
+      // Handle regular text with bold, italic, and lists
       const lines = part.split('\n');
       return (
         <React.Fragment key={index}>
           {lines.map((line, lineIndex) => {
+            // Handle bullet points
             if (line.trim().match(/^[-*•]\s/)) {
               const content = line.replace(/^[-*•]\s/, '');
-              return ( <div key={lineIndex} className="flex gap-2 my-1"><span>•</span><span>{processInlineFormatting(content)}</span></div> );
+              return (
+                <div key={lineIndex} className="flex gap-2 my-1">
+                  <span>•</span>
+                  <span>{processInlineFormatting(content)}</span>
+                </div>
+              );
             }
+            
+            // Handle numbered lists
             if (line.trim().match(/^\d+\.\s/)) {
-              return ( <div key={lineIndex} className="my-1">{processInlineFormatting(line)}</div> );
+              return (
+                <div key={lineIndex} className="my-1">
+                  {processInlineFormatting(line)}
+                </div>
+              );
             }
+            
+            // Handle headers
             if (line.trim().startsWith('#')) {
               const level = line.match(/^#+/)[0].length;
               const content = line.replace(/^#+\s*/, '');
               const fontSize = level === 1 ? 'text-lg' : level === 2 ? 'text-base' : 'text-sm';
-              return ( <div key={lineIndex} className={`font-bold ${fontSize} mt-3 mb-1`}>{processInlineFormatting(content)}</div> );
+              return (
+                <div key={lineIndex} className={`font-bold ${fontSize} mt-3 mb-1`}>
+                  {processInlineFormatting(content)}
+                </div>
+              );
             }
-            return lineIndex < lines.length - 1 ? ( <React.Fragment key={lineIndex}>{processInlineFormatting(line)}<br /></React.Fragment> ) : ( processInlineFormatting(line) );
+            
+            // Regular line
+            return lineIndex < lines.length - 1 ? (
+              <React.Fragment key={lineIndex}>
+                {processInlineFormatting(line)}
+                <br />
+              </React.Fragment>
+            ) : (
+              processInlineFormatting(line)
+            );
           })}
         </React.Fragment>
       );
@@ -277,56 +192,90 @@ const AIRecommendations = () => {
 
   const processInlineFormatting = (text) => {
     if (!text) return text;
+    
     const parts = [];
     let currentIndex = 0;
+    
+    // Regex to match **bold**, *italic*, or plain text
     const regex = /(\*\*[^*]+\*\*|\*[^*]+\*)/g;
     let match;
+    
     while ((match = regex.exec(text)) !== null) {
-      if (match.index > currentIndex) { parts.push(text.slice(currentIndex, match.index)); }
+      // Add text before the match
+      if (match.index > currentIndex) {
+        parts.push(text.slice(currentIndex, match.index));
+      }
+      
       const matched = match[0];
       if (matched.startsWith('**') && matched.endsWith('**')) {
-        parts.push( <strong key={match.index} className="font-semibold">{matched.slice(2, -2)}</strong> );
+        // Bold text
+        parts.push(
+          <strong key={match.index} className="font-semibold">
+            {matched.slice(2, -2)}
+          </strong>
+        );
       } else if (matched.startsWith('*') && matched.endsWith('*')) {
-        parts.push( <em key={match.index} className="italic">{matched.slice(1, -1)}</em> );
+        // Italic text
+        parts.push(
+          <em key={match.index} className="italic">
+            {matched.slice(1, -1)}
+          </em>
+        );
       }
+      
       currentIndex = regex.lastIndex;
     }
-    if (currentIndex < text.length) { parts.push(text.slice(currentIndex)); }
+    
+    // Add remaining text
+    if (currentIndex < text.length) {
+      parts.push(text.slice(currentIndex));
+    }
+    
     return parts.length > 0 ? parts : text;
   };
 
+  // REFINED: sendMessage logic is now cleaner and more robust with database persistence
   const sendMessage = async () => {
     if (!currentMessage.trim()) return;
+
     const messageToSend = currentMessage;
-    setCurrentMessage('');
+    setCurrentMessage(''); // Clear input immediately for better UX
+
     let activeConvId = currentConvId;
-    if (!activeConvId) {
-        const tempId = `temp_${Date.now()}`;
-        const newConv = { id: tempId, title: 'New Chat', messages: [] };
-        setConversations(prev => [newConv, ...prev]);
-        setCurrentConvId(tempId);
-        activeConvId = tempId;
+    let activeConv = getCurrentConv();
+
+    // If no conversation is selected, create a new one
+    if (!activeConv) {
+      const newConv = { id: Date.now().toString(), title: 'New Chat', messages: [] };
+      setConversations(prev => [newConv, ...prev]);
+      setCurrentConvId(newConv.id);
+      activeConv = newConv;
+      activeConvId = newConv.id;
     }
+
+    // Add user message to UI immediately
     const userMsg = { id: Date.now().toString(), type: 'user', content: messageToSend, timestamp: new Date() };
-    setConversations(prev => prev.map(c => c.id === activeConvId ? {
-        ...c,
-        messages: [...c.messages, userMsg],
-        title: c.messages.length === 0 ? (messageToSend.substring(0, 40) + (messageToSend.length > 40 ? '...' : '')) : c.title
-    } : c));
+    const updatedMessages = [...activeConv.messages, userMsg];
+    const newTitle = activeConv.messages.length === 0 ? (messageToSend.substring(0, 40) + (messageToSend.length > 40 ? '...' : '')) : activeConv.title;
+    updateConversationState(activeConvId, { messages: updatedMessages, title: newTitle });
+
     setLoading(true);
     setIsTyping(true);
     setError('');
 
     try {
-      const currentConv = conversations.find(c => c.id === activeConvId);
-      const conversationHistory = currentConv?.messages.map(msg => ({
+      // Prepare context for the API: all messages *before* the new one
+      const conversationHistory = activeConv.messages.map(msg => ({
         role: msg.type === 'user' ? 'user' : 'assistant',
         content: msg.content
-      })) || [];
+      }));
+
+      // Use chat service to send message
       const result = await chatService.sendMessage(
-        messageToSend, conversationHistory, userProfile,
-        activeConvId.startsWith('temp_') ? null : activeConvId,
-        language
+        messageToSend,
+        conversationHistory,
+        userProfile,
+        activeConvId.startsWith('temp_') ? null : activeConvId // Only send conversationId if it's from database
       );
 
       if (result) {
@@ -336,13 +285,17 @@ const AIRecommendations = () => {
           content: result.answer, 
           timestamp: new Date() 
         };
-        const finalConvId = result.conversationId || activeConvId;
-        if (finalConvId !== activeConvId) {
-            setCurrentConvId(finalConvId);
+        
+        // Update conversation with new conversationId if it was created
+        if (result.conversationId && activeConvId.startsWith('temp_')) {
+          const updatedConv = { ...activeConv, id: result.conversationId };
+          setConversations(prev => prev.map(c => c.id === activeConvId ? updatedConv : c));
+          setCurrentConvId(result.conversationId);
         }
-        setConversations(prev => prev.map(c => c.id === activeConvId || c.id === finalConvId ? {
-            ...c, id: finalConvId, messages: [...c.messages, aiMsg]
-        } : c));
+        
+        updateConversationState(result.conversationId || activeConvId, { 
+          messages: [...updatedMessages, aiMsg] 
+        });
       } else {
         setError('Failed to get response');
       }
@@ -353,12 +306,28 @@ const AIRecommendations = () => {
       setIsTyping(false);
     }
   };
-  
-  const handleKeyPress = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
-  const clearConv = () => { if (currentConvId) { updateConversationState(currentConvId, { messages: [] }); } };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  const clearConv = () => {
+    if (currentConvId) {
+      updateConversationState(currentConvId, { messages: [] });
+    }
+  };
+
   const deleteConv = async (id) => {
     try {
-      if (!id.startsWith('temp_')) { await chatService.deleteConversation(id); }
+      // If it's a database conversation, delete it from the database
+      if (!id.startsWith('temp_')) {
+        await chatService.deleteConversation(id);
+      }
+      
+      // Remove from local state
       setConversations(conversations.filter(c => c.id !== id));
       if (currentConvId === id) setCurrentConvId(null);
     } catch (error) {
@@ -366,63 +335,90 @@ const AIRecommendations = () => {
       setError('Failed to delete conversation');
     }
   };
-  const copyMessage = (content) => { navigator.clipboard.writeText(content); };
+
+  const copyMessage = (content) => {
+    navigator.clipboard.writeText(content);
+  };
   
-  // **FIX: Restored regenerateResponse function logic**
+  // REFINED: regenerateResponse logic is simplified
   const regenerateResponse = async () => {
     const conv = getCurrentConv();
     if (!conv || conv.messages.length < 1) return;
 
+    // Find the last user message to resubmit
     const lastUserMessageIndex = conv.messages.findLastIndex(m => m.type === 'user');
     if (lastUserMessageIndex === -1) return;
 
     const messagesToResubmit = conv.messages.slice(0, lastUserMessageIndex + 1);
     const lastUserMessage = messagesToResubmit[lastUserMessageIndex];
     
+    // Update UI to show only the history being resubmitted
     updateConversationState(conv.id, { messages: messagesToResubmit });
+
     setLoading(true);
     setIsTyping(true);
     setError('');
 
     try {
-      const conversationHistory = messagesToResubmit.slice(0, -1).map(msg => ({
-        role: msg.type === 'user' ? 'user' : 'assistant',
-        content: msg.content
-      }));
+        const conversationHistory = messagesToResubmit.slice(0, -1).map(msg => ({
+            role: msg.type === 'user' ? 'user' : 'assistant',
+            content: msg.content
+        }));
 
-      const result = await chatService.sendMessage(
-        lastUserMessage.content, conversationHistory, userProfile,
-        conv.id.startsWith('temp_') ? null : conv.id,
-        language
-      );
+        const response = await fetch(`${API_BASE_URL}/ai/ask`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                question: lastUserMessage.content,
+                conversationHistory,
+                userProfile
+            })
+        });
 
-      if (result) {
-        const aiMsg = { 
-          id: result.messageId || (Date.now() + 1).toString(), 
-          type: 'assistant', 
-          content: result.answer, 
-          timestamp: new Date() 
-        };
-        updateConversationState(conv.id, { messages: [...messagesToResubmit, aiMsg] });
-      } else {
-        setError('Failed to regenerate response');
-      }
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'API request failed');
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            const aiMsg = { id: Date.now().toString(), type: 'assistant', content: data.answer, timestamp: new Date() };
+            updateConversationState(conv.id, { messages: [...messagesToResubmit, aiMsg] });
+        } else {
+            setError(data.error || 'Failed to regenerate response');
+        }
     } catch (err) {
-      setError(`Failed to regenerate: ${err.message}`);
+        setError(`Failed to regenerate: ${err.message}`);
     } finally {
-      setLoading(false);
-      setIsTyping(false);
+        setLoading(false);
+        setIsTyping(false);
     }
   };
-  
+
+
   const handleGetRecommendations = async () => {
     setLoading(true);
     setError('');
     try {
-      const result = await chatService.getRecommendations(userProfile);
-      setRecommendations(result);
+      const response = await fetch(`${API_BASE_URL}/ai/recommendations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userLevel: userProfile.level,
+          currentTopics: userProfile.topics.join(', '),
+          strengths: userProfile.strengths.join(', '),
+          weaknesses: userProfile.weaknesses.join(', ')
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setRecommendations(data.recommendations);
+      } else {
+        setError('Failed to get recommendations');
+      }
     } catch (err) {
-      setError(err.message || 'Failed to get recommendations');
+      setError('Failed to connect to server');
     } finally {
       setLoading(false);
     }
@@ -436,88 +432,93 @@ const AIRecommendations = () => {
     setLoading(true);
     setError('');
     try {
-      const result = await chatService.explainAlgorithm(algorithm, level);
-      setExplanation(result);
+      const response = await fetch(`${API_BASE_URL}/ai/explain`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ algorithm, level })
+      });
+      const data = await response.json();
+      if (data.success) {
+        setExplanation(data.explanation);
+      } else {
+        setError('Failed to get explanation');
+      }
     } catch (err) {
-      setError(err.message || 'Failed to get explanation');
+      setError('Failed to connect to server');
     } finally {
       setLoading(false);
     }
   };
-  
+
   const addToProfile = (field, value) => {
     if (value && !userProfile[field].includes(value)) {
-      setUserProfile(prev => ({ ...prev, [field]: [...prev[field], value] }));
+      setUserProfile({ ...userProfile, [field]: [...userProfile[field], value] });
     }
   };
-  
-  const removeFromProfile = (field, index) => {
-    setUserProfile(prev => ({
-      ...prev,
-      [field]: prev[field].filter((_, i) => i !== index),
-    }));
-  };
 
+  const removeFromProfile = (field, index) => {
+    setUserProfile({ ...userProfile, [field]: userProfile[field].filter((_, i) => i !== index) });
+  };
+  
   const renderConversation = () => {
     const conv = getCurrentConv();
     const lastMessage = conv?.messages[conv.messages.length - 1];
     const canRegenerate = lastMessage?.type === 'assistant' && !loading;
 
     return (
-      <div className="flex h-[600px] border border-gray-200 dark:border-neutral-800 rounded-lg bg-white dark:bg-neutral-900">
-        <div className="w-1/4 border-r border-gray-200 dark:border-neutral-800 p-3 overflow-y-auto scrollbar-hide bg-gray-50 dark:bg-neutral-950">
+      <div className="flex h-[600px] border rounded-lg">
+        <div className="w-1/4 border-r p-3 overflow-y-auto bg-muted/30">
           <div className="flex justify-between items-center mb-3">
             <h3 className="font-semibold text-sm">Conversations</h3>
-            <Button size="icon" variant="ghost" onClick={createNewConversation} className="h-7 w-7"><Plus className="h-4 w-4" /></Button>
+            <Button size="icon" variant="ghost" onClick={createNewConversation} className="h-7 w-7">
+              <Plus className="h-4 w-4" />
+            </Button>
           </div>
           <div className="space-y-2">
             {conversations.map((c) => (
               <div
                 key={c.id}
-                className={`p-2 rounded cursor-pointer text-sm transition-colors relative group ${ c.id === currentConvId ? 'bg-gray-900 dark:bg-neutral-800 text-white' : 'hover:bg-gray-100 dark:hover:bg-neutral-800 text-gray-900 dark:text-white' }`}
+                className={`p-2 rounded cursor-pointer text-sm transition-colors relative group ${ c.id === currentConvId ? 'bg-primary text-primary-foreground' : 'hover:bg-muted' }`}
                 onClick={() => selectConversation(c.id)}
               >
                 <p className="truncate pr-8">{c.title}</p>
-                <Button size="icon" variant="ghost" className="h-6 w-6 p-0 absolute top-1/2 right-1 -translate-y-1/2 opacity-0 group-hover:opacity-100" onClick={(e) => { e.stopPropagation(); deleteConv(c.id); }}><Trash2 className="h-3.5 w-3.5" /></Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-6 w-6 p-0 absolute top-1/2 right-1 -translate-y-1/2 opacity-0 group-hover:opacity-100"
+                  onClick={(e) => { e.stopPropagation(); deleteConv(c.id); }}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
               </div>
             ))}
           </div>
         </div>
-        <div className="flex-1 flex flex-col bg-white dark:bg-neutral-900">
-          <div className="border-b border-gray-200 dark:border-neutral-800 p-3 flex justify-between items-center">
+        <div className="flex-1 flex flex-col bg-background">
+          <div className="border-b p-3 flex justify-between items-center">
             <h3 className="font-semibold text-sm">{conv?.title || 'Select a conversation'}</h3>
-             <div className="flex items-center gap-4">
-               <Select value={language} onValueChange={setLanguage}>
-                 <SelectTrigger className="w-[120px] h-7 text-xs"><SelectValue /></SelectTrigger>
-                 <SelectContent>
-                   {indianLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}
-                 </SelectContent>
-               </Select>
-              {conv && conv.messages.length > 0 && ( <Button variant="outline" size="sm" onClick={clearConv} className="h-7 text-xs"><Trash2 className="h-3 w-3 mr-1" />Clear</Button> )}
-            </div>
+            {conv && conv.messages.length > 0 && (
+              <Button variant="outline" size="sm" onClick={clearConv} className="h-7 text-xs">
+                <Trash2 className="h-3 w-3 mr-1" />Clear
+              </Button>
+            )}
           </div>
-          <div className="flex-1 overflow-y-auto scrollbar-hide p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {!conv && (
-              <div className="text-center text-gray-500 dark:text-gray-400 h-full flex flex-col justify-center items-center">
+              <div className="text-center text-muted-foreground h-full flex flex-col justify-center items-center">
                 <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-50" />
                 <p className="text-sm mb-3">Select a chat or start a new one</p>
-                <Button size="sm" variant="outline" onClick={createNewConversation} className="bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700">New Chat</Button>
+                <Button size="sm" onClick={createNewConversation}>New Chat</Button>
               </div>
             )}
-            {conv?.messages.map((msg) => (
+            {conv?.messages.map((msg, idx) => (
               <div key={msg.id} className={`flex items-start gap-3 ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {msg.type === 'assistant' && <Bot className="h-5 w-5 mt-2 flex-shrink-0" />}
-                <div className={`max-w-[85%] rounded-lg p-3 text-sm ${ msg.type === 'user' ? 'bg-gray-900 dark:bg-neutral-800 text-white' : 'bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-white' }`}>
+                <div className={`max-w-[85%] rounded-lg p-3 text-sm ${ msg.type === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted' }`}>
                   <div className="break-words">{formatText(msg.content)}</div>
                    <div className="flex items-center gap-2 mt-2 text-xs opacity-60">
-                     <span>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                     <span>{msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                      <button className="p-1 hover:opacity-100 opacity-70" onClick={() => copyMessage(msg.content)}><Copy className="h-3 w-3" /></button>
-                     {/* **FIX: Re-added the TTS button** */}
-                     {msg.type === 'assistant' && (
-                       <button className="p-1 hover:opacity-100 opacity-70" onClick={() => toggleSpeak(msg)}>
-                         { audioPlayer.messageId === msg.id ? <VolumeX className="h-3.5 w-3.5 text-blue-500" /> : <Volume2 className="h-3.5 w-3.5" /> }
-                       </button>
-                     )}
                    </div>
                 </div>
                 {msg.type === 'user' && <User className="h-5 w-5 mt-2 flex-shrink-0" />}
@@ -526,11 +527,11 @@ const AIRecommendations = () => {
             {isTyping && (
               <div className="flex items-start gap-3 justify-start">
                   <Bot className="h-5 w-5 mt-2 flex-shrink-0" />
-                  <div className="bg-gray-100 dark:bg-neutral-800 rounded-lg p-3 flex items-center">
+                  <div className="bg-muted rounded-lg p-3 flex items-center">
                     <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-gray-600 dark:bg-gray-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-gray-600 dark:bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                      <div className="w-2 h-2 bg-gray-600 dark:bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                     </div>
                   </div>
               </div>
@@ -544,7 +545,7 @@ const AIRecommendations = () => {
                 </Button>
             </div>
           )}
-          <div className="border-t border-gray-200 dark:border-neutral-800 p-3">
+          <div className="border-t p-3">
             <div className="relative">
               <Textarea
                 placeholder="Ask about DSA... (Enter to send, Shift+Enter for new line)"
@@ -552,26 +553,12 @@ const AIRecommendations = () => {
                 onChange={(e) => setCurrentMessage(e.target.value)}
                 onKeyDown={handleKeyPress}
                 rows={1}
-                className="resize-none pr-24 py-3 text-sm"
+                className="resize-none pr-12 py-3 text-sm"
                 disabled={loading || !currentConvId}
               />
-              {/* **FIX: Re-added the Mic button, wrapping the GlowButton** */}
-              <div className="absolute right-12 bottom-1.5">
-                {recognition && (
-                  <Button onClick={toggleListening} variant="ghost" size="icon" className={`h-10 w-10 ${isListening ? 'text-red-500' : ''}`} disabled={loading || !currentConvId}>
-                    <Mic className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-              <GlowButton
-                onClick={sendMessage}
-                disabled={loading || !currentMessage.trim()}
-                fullWidth={false}
-                className="absolute right-2 bottom-1.5 h-10 w-10 p-0 rounded-full"
-                aria-label="Send message"
-              >
+              <Button onClick={sendMessage} disabled={loading || !currentMessage.trim()} size="icon" className="absolute right-2 bottom-1.5 h-8 w-8">
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              </GlowButton>
+              </Button>
             </div>
           </div>
         </div>
@@ -579,31 +566,19 @@ const AIRecommendations = () => {
     );
   };
   
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
-      <div className="p-6 pt-24 pb-12 space-y-6">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="text-center mb-6"
-          >
-            <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">AI DSA Assistant</h1>
-            <p className="text-gray-600 dark:text-gray-400">Your context-aware DSA learning companion</p>
-          </motion.div>
+    return (
+    <div className="p-4 md:p-6 lg:p-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold mb-2">AI DSA Assistant</h1>
+          <p className="text-muted-foreground">Your context-aware DSA learning companion</p>
+        </div>
         
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Alert variant="destructive" className="mb-4 bg-red-100 dark:bg-red-900/30 border-red-200 dark:border-red-800">
-                <AlertDescription className="text-red-800 dark:text-red-200">{error}</AlertDescription>
-              </Alert>
-            </motion.div>
-          )}
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
         
         <Tabs defaultValue="chat" className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-4">
@@ -612,7 +587,9 @@ const AIRecommendations = () => {
             <TabsTrigger value="explanations"><BookOpen className="h-4 w-4 mr-2" />Explain</TabsTrigger>
           </TabsList>
           <TabsContent value="chat">
-            <Card><CardContent className="p-0">{renderConversation()}</CardContent></Card>
+            <Card>
+              <CardContent className="p-0">{renderConversation()}</CardContent>
+            </Card>
           </TabsContent>
           <TabsContent value="recommendations">
              <Card>
@@ -620,7 +597,7 @@ const AIRecommendations = () => {
                  <CardTitle>Personalized Recommendations</CardTitle>
                  <CardDescription>Get tailored learning suggestions based on your profile.</CardDescription>
                </CardHeader>
-               <CardContent className="space-y-4 max-h-[600px] overflow-y-auto scrollbar-hide">
+               <CardContent className="space-y-4 max-h-[600px] overflow-y-auto">
                  <div className="space-y-2">
                    <Label>Your Level</Label>
                    <Select value={userProfile.level} onValueChange={(v) => setUserProfile({...userProfile, level: v})}>
@@ -680,10 +657,10 @@ const AIRecommendations = () => {
                      ))}
                    </div>
                  </div>
-                <GlowButton onClick={handleGetRecommendations} disabled={loading}>
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Get Recommendations
-                </GlowButton>
+                 <Button onClick={handleGetRecommendations} disabled={loading} className="w-full">
+                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                   Get Recommendations
+                 </Button>
                  {recommendations && (
                    <Card className="bg-muted/50">
                      <CardHeader><CardTitle>Your Learning Plan</CardTitle></CardHeader>
@@ -695,16 +672,32 @@ const AIRecommendations = () => {
            </TabsContent>
            <TabsContent value="explanations">
              <Card>
-               <CardHeader><CardTitle>Quick Algorithm Explanation</CardTitle><CardDescription>Get an instant explanation tailored to your skill level.</CardDescription></CardHeader>
+               <CardHeader>
+                 <CardTitle>Quick Algorithm Explanation</CardTitle>
+                 <CardDescription>Get an instant explanation tailored to your skill level.</CardDescription>
+               </CardHeader>
                <CardContent className="space-y-4">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   <div className="space-y-2"><Label htmlFor="algorithm-input">Algorithm</Label><Input id="algorithm-input" placeholder="e.g., Quick Sort" value={algorithm} onChange={(e) => setAlgorithm(e.target.value)} /></div>
-                   <div className="space-y-2"><Label>Level</Label><Select value={level} onValueChange={setLevel}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="beginner">Beginner</SelectItem><SelectItem value="intermediate">Intermediate</SelectItem><SelectItem value="advanced">Advanced</SelectItem></SelectContent></Select></div>
+                   <div className="space-y-2">
+                     <Label htmlFor="algorithm-input">Algorithm</Label>
+                     <Input id="algorithm-input" placeholder="e.g., Quick Sort" value={algorithm} onChange={(e) => setAlgorithm(e.target.value)} />
+                   </div>
+                   <div className="space-y-2">
+                     <Label>Level</Label>
+                     <Select value={level} onValueChange={setLevel}>
+                       <SelectTrigger><SelectValue /></SelectTrigger>
+                       <SelectContent>
+                         <SelectItem value="beginner">Beginner</SelectItem>
+                         <SelectItem value="intermediate">Intermediate</SelectItem>
+                         <SelectItem value="advanced">Advanced</SelectItem>
+                       </SelectContent>
+                     </Select>
+                   </div>
                  </div>
-                <GlowButton onClick={handleExplainAlgorithm} disabled={loading || !algorithm.trim()}>
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Explain Algorithm
-                </GlowButton>
+                 <Button onClick={handleExplainAlgorithm} disabled={loading || !algorithm.trim()} className="w-full">
+                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                   Explain Algorithm
+                 </Button>
                  {explanation && (
                    <Card className="bg-muted/50">
                      <CardHeader><CardTitle>{algorithm}</CardTitle></CardHeader>
@@ -714,8 +707,7 @@ const AIRecommendations = () => {
                </CardContent>
              </Card>
            </TabsContent>
-          </Tabs>
-        </div>
+        </Tabs>
       </div>
     </div>
   );
