@@ -138,7 +138,7 @@ const SidebarEnhanced = ({ admin = false, children }) => {
     },
     {
       to: "/user/ai-recommendations",
-      label: "AI Recommendations",
+      label: "AlgoBot AI",
       icon: <Lightbulb className="h-5 w-5 shrink-0" />,
     },
   ];
