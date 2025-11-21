@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
+const syncTopicsFromFile = require('./utils/topicSeeder');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -13,9 +14,6 @@ const questionRoutes = require('./routes/questionRoutes');
 
 // Load environment variables
 dotenv.config();
-
-// Connect to MongoDB
-connectDB();
 
 // Initialize app
 const app = express();
@@ -45,8 +43,16 @@ app.use((err, req, res, next) => {
   res.status(500).json({ success: false, message: 'Server Error' });
 });
 
-// Start server
+// Start server after DB connection and seeding
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+
+const startServer = async () => {
+  await connectDB();
+  await syncTopicsFromFile();
+
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+  });
+};
+
+startServer();

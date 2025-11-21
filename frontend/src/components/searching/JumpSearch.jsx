@@ -54,7 +54,8 @@ export default function JumpSearch() {
         setSearchPhase("jumping");
 
         const n = array.length;
-        const step = Math.floor(Math.sqrt(n));
+        const stepSize = Math.floor(Math.sqrt(n));
+        let step = stepSize;
         let prev = 0;
 
         // Jump through blocks
@@ -65,7 +66,7 @@ export default function JumpSearch() {
             await new Promise((r) => setTimeout(r, delay));
 
             prev = step;
-            step += Math.floor(Math.sqrt(n));
+            step += stepSize;
 
             if (prev >= n) {
                 // Not found

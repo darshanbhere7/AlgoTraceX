@@ -1,231 +1,313 @@
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
+import { toast } from 'sonner';
+import { ChevronDown, ChevronUp, Loader2, RefreshCcw, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+
+const difficultyFilters = [
+  { value: 'all', label: 'All' },
+  { value: 'beginner', label: 'Beginner' },
+  { value: 'intermediate', label: 'Intermediate' },
+  { value: 'advanced', label: 'Advanced' },
+];
 
 const ManageTopics = () => {
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filter, setFilter] = useState('all');
+  const [expandedIds, setExpandedIds] = useState(new Set());
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [newTopic, setNewTopic] = useState({
     title: '',
     description: '',
-    difficulty: 'beginner'
+    difficulty: 'beginner',
   });
-  const [error, setError] = useState(null);
 
-    const fetchTopics = async () => {
-      try {
+  const token = localStorage.getItem('token');
+
+  const fetchTopics = useCallback(async () => {
+    try {
       setLoading(true);
-      setError(null);
-      const response = await axios.get('http://localhost:5000/api/admin/topics', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+      const { data } = await axios.get('http://localhost:5000/api/admin/topics', {
+        headers: { Authorization: `Bearer ${token}` },
       });
-        setTopics(response.data);
-      } catch (error) {
-      console.error('Failed to fetch topics:', error);
-      setError('Failed to load topics. Please try again.');
-      toast.error('Failed to load topics. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
+      setTopics(data);
+    } catch (error) {
+      const message =
+        error.response?.data?.message || 'Failed to load topics. Please try again.';
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
 
   useEffect(() => {
     fetchTopics();
-    // Set up polling for real-time updates
-    const interval = setInterval(fetchTopics, 30000); // Update every 30 seconds
-    return () => clearInterval(interval);
-  }, []);
+  }, [fetchTopics]);
 
-  const handleAddTopic = async (e) => {
-    e.preventDefault();
+  const filteredTopics = useMemo(() => {
+    const query = searchTerm.toLowerCase();
+    return topics.filter((topic) => {
+      const matchesSearch =
+        topic.title.toLowerCase().includes(query) ||
+        topic.description.toLowerCase().includes(query);
+      const matchesFilter = filter === 'all' || topic.difficulty === filter;
+      return matchesSearch && matchesFilter;
+    });
+  }, [topics, searchTerm, filter]);
+
+  const toggleExpand = (id) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const handleAddTopic = async (event) => {
+    event.preventDefault();
     try {
-      const response = await axios.post(
+      const { data } = await axios.post(
         'http://localhost:5000/api/admin/topics',
         newTopic,
-        {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      setTopics([...topics, response.data]);
+      setTopics((prev) => [...prev, data]);
       setNewTopic({ title: '', description: '', difficulty: 'beginner' });
-      toast.success('Topic added successfully!');
+      setPreviewOpen(false);
+      toast.success('Topic added successfully');
     } catch (error) {
-      console.error('Failed to add topic:', error);
-      toast.error('Failed to add topic. Please try again.');
+      const message =
+        error.response?.data?.message || 'Failed to add topic. Please try again.';
+      toast.error(message);
     }
   };
 
-  const handleDeleteTopic = async (topicId) => {
+  const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/admin/topics/${topicId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+      await axios.delete(`http://localhost:5000/api/admin/topics/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      setTopics(topics.filter(topic => topic._id !== topicId));
-      toast.success('Topic deleted successfully!');
+      setTopics((prev) => prev.filter((topic) => topic._id !== id));
+      toast.success('Topic deleted successfully');
     } catch (error) {
-      console.error('Failed to delete topic:', error);
-      toast.error('Failed to delete topic. Please try again.');
+      const message =
+        error.response?.data?.message || 'Failed to delete topic. Please try again.';
+      toast.error(message);
     }
   };
-
-  if (loading && topics.length === 0) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-neutral-950">
-        <div className="text-xl text-gray-600 dark:text-gray-400">Loading topics...</div>
-      </div>
-    );
-  }
-
-  if (error && topics.length === 0) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-50 dark:bg-neutral-950">
-        <div className="text-xl text-red-600 dark:text-red-400">{error}</div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
-      {/* Add padding-top to account for fixed navbar */}
-      <div className="p-6 pt-24 space-y-6">
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="flex justify-between items-center"
-        >
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage Topics</h1>
-        <motion.button 
+    <div className="space-y-6 bg-slate-50 px-6 py-6 text-slate-900">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
+        <div>
+          <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Admin</p>
+          <h1 className="text-2xl font-semibold text-slate-900">Manage Topics</h1>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="border-slate-200 text-slate-700"
           onClick={fetchTopics}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="px-4 py-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white rounded hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 transition-colors shadow-sm"
         >
-          Refresh Topics
-        </motion.button>
-      </motion.div>
+          <RefreshCcw className="mr-2 h-4 w-4" />
+          Refresh
+        </Button>
+      </header>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-      >
-      <Card className="bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 shadow-sm">
-        <CardContent className="p-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Add New Topic</h2>
-          <form onSubmit={handleAddTopic} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Title</label>
-              <Input
-                type="text"
-                value={newTopic.title}
-                onChange={(e) => setNewTopic({ ...newTopic, title: e.target.value })}
-                placeholder="Enter topic title"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Description</label>
-              <Textarea
-                value={newTopic.description}
-                onChange={(e) => setNewTopic({ ...newTopic, description: e.target.value })}
-                placeholder={`Input: An array A of size n. A target value key
+      <div className="grid gap-6 lg:grid-cols-[360px,1fr]">
+        <Card className="border-slate-200 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Add Topic</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form className="space-y-4" onSubmit={handleAddTopic}>
+              <div className="space-y-1.5">
+                <label className="text-sm text-slate-600">Title</label>
+                <Input
+                  value={newTopic.title}
+                  onChange={(event) =>
+                    setNewTopic((prev) => ({ ...prev, title: event.target.value }))
+                  }
+                  placeholder="Binary Search fundamentals"
+                  required
+                />
+              </div>
 
-Output: Index of the key if found, otherwise -1
+              <div className="space-y-1.5">
+                <label className="text-sm text-slate-600">Description</label>
+                <Textarea
+                  value={newTopic.description}
+                  onChange={(event) =>
+                    setNewTopic((prev) => ({ ...prev, description: event.target.value }))
+                  }
+                  className="min-h-[160px] font-mono text-sm"
+                  placeholder={`Input: Sorted array nums, target value x\nOutput: Index if found else -1\nAlgorithm:\n1. l = 0, r = n - 1\n...`}
+                  required
+                />
+              </div>
 
-🔸 Algorithm:
-LinearSearch(A, n, key)
-1. for i ← 0 to n - 1 do
-2.     if A[i] = key then
-3.         return i
-4. return -1`}
-                className="font-mono"
-                rows={10}
-                required
-              />
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                Use the format above with Input, Output, and Algorithm sections. Use monospace font for better readability.
-              </p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-900 dark:text-white">Difficulty</label>
-              <select
-                value={newTopic.difficulty}
-                onChange={(e) => setNewTopic({ ...newTopic, difficulty: e.target.value })}
-                className="w-full p-2 border border-gray-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-900 text-gray-900 dark:text-white"
-                required
-              >
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
-            </div>
-            <motion.button 
-              type="submit"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-4 py-2 rounded transition-colors bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 shadow-sm font-medium"
-            >
-              Add Topic
-            </motion.button>
-          </form>
-        </CardContent>
-      </Card>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.2 }}
-      >
-      <Card className="bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 shadow-sm">
-        <CardContent className="p-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Available Topics</h2>
-          <div className="space-y-4">
-            {topics.map((topic, index) => (
-              <motion.div 
-                key={topic._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
-                whileHover={{ y: -4 }}
-                className="flex items-center justify-between p-4 bg-gray-50 dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 shadow-sm"
-              >
-                <div className="flex-1">
-                  <h3 className="font-medium text-gray-900 dark:text-white">{topic.title}</h3>
-                  <pre className="text-sm text-gray-600 dark:text-gray-400 font-mono whitespace-pre-wrap mt-2">{topic.description}</pre>
-                  <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-neutral-800 text-gray-800 dark:text-gray-300 mt-2 inline-block">
-                    {topic.difficulty}
-                  </span>
-                </div>
-                <motion.button
-                  onClick={() => handleDeleteTopic(topic._id)}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="ml-4 px-4 py-2 rounded transition-colors bg-white dark:bg-neutral-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-gray-300 dark:border-neutral-700 shadow-sm"
+              <div className="space-y-1.5">
+                <label className="text-sm text-slate-600">Difficulty</label>
+                <select
+                  value={newTopic.difficulty}
+                  onChange={(event) =>
+                    setNewTopic((prev) => ({ ...prev, difficulty: event.target.value }))
+                  }
+                  className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
                 >
-                  Delete
-                </motion.button>
-              </motion.div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-      </motion.div>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 border-slate-200 text-slate-700"
+                  onClick={() => setPreviewOpen(true)}
+                >
+                  Preview
+                </Button>
+                <Button type="submit" className="flex-1">
+                  Save
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+
+        <div className="space-y-4">
+          <Card className="border-slate-200 shadow-sm">
+            <CardContent className="flex flex-col gap-4 py-4 md:flex-row md:items-center md:justify-between">
+              <div className="flex flex-1 items-center gap-2 rounded-full border border-slate-200 px-3 py-2">
+                <Search className="h-4 w-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search topics"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  className="w-full bg-transparent text-sm text-slate-700 focus:outline-none"
+                />
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {difficultyFilters.map((chip) => (
+                  <button
+                    key={chip.value}
+                    onClick={() => setFilter(chip.value)}
+                    className={`rounded-full px-3 py-1 text-xs font-medium transition ${
+                      filter === chip.value
+                        ? 'bg-blue-50 text-blue-600'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {chip.label}
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {loading && topics.length === 0 ? (
+            <div className="flex min-h-[240px] items-center justify-center rounded-md border border-dashed border-slate-200 bg-white">
+              <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+            </div>
+          ) : filteredTopics.length === 0 ? (
+            <div className="rounded-md border border-dashed border-slate-200 bg-white p-10 text-center text-sm text-slate-500">
+              No topics match your filters.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredTopics.map((topic) => {
+                const isExpanded = expandedIds.has(topic._id);
+                return (
+                  <Card key={topic._id} className="border-slate-200 shadow-sm">
+                    <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
+                      <div>
+                        <CardTitle className="text-base font-semibold text-slate-900">
+                          {topic.title}
+                        </CardTitle>
+                        <span className="mt-1 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium lowercase text-slate-600">
+                          {topic.difficulty}
+                        </span>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-slate-600"
+                          onClick={() => toggleExpand(topic._id)}
+                        >
+                          {isExpanded ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-500 hover:text-red-600"
+                          onClick={() => handleDelete(topic._id)}
+                        >
+                          ×
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    {isExpanded && (
+                      <CardContent className="border-t border-slate-100 pt-3">
+                        <pre className="whitespace-pre-wrap rounded-md bg-slate-50 p-3 text-sm text-slate-700">
+                          {topic.description}
+                        </pre>
+                      </CardContent>
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
+
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-2xl border-slate-200">
+          <DialogHeader>
+            <DialogTitle>Topic Preview</DialogTitle>
+            <DialogDescription>Verify the content before saving.</DialogDescription>
+          </DialogHeader>
+          <Card className="border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">
+                {newTopic.title || 'Untitled Topic'}
+              </CardTitle>
+              <span className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                {newTopic.difficulty}
+              </span>
+            </CardHeader>
+            <CardContent>
+              <pre className="whitespace-pre-wrap rounded-md bg-slate-50 p-3 text-sm text-slate-700">
+                {newTopic.description || 'Description will appear here.'}
+              </pre>
+            </CardContent>
+          </Card>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
 
 export default ManageTopics;
+

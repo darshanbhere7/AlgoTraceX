@@ -1,0 +1,453 @@
+[
+  {
+    "title": "Arrays Foundations",
+    "category": "Arrays",
+    "difficulty": "beginner",
+    "description": "Work with contiguous memory, read/write by index, and iterate safely. Understand when arrays beat other containers.",
+    "keyConcepts": ["indexing", "iteration", "in-place updates", "bounds checks"],
+    "keyInsight": "Trust linear scans first—clarity beats premature tricks.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Arrays Optimization",
+    "category": "Arrays",
+    "difficulty": "intermediate",
+    "description": "Use sliding windows, prefix sums, and partition tricks to reduce brute force loops to linear passes.",
+    "keyConcepts": ["two pointers", "prefix sums", "frequency tables", "partition schemes"],
+    "keyInsight": "Shifting pointers beats nested loops in most array puzzles.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Arrays Advanced Transformations",
+    "category": "Arrays",
+    "difficulty": "advanced",
+    "description": "Handle heavy range updates with difference arrays, offline queries, and block decomposition.",
+    "keyConcepts": ["difference arrays", "Mo's algorithm", "sqrt decomposition", "range updates"],
+    "keyInsight": "Segmenting big arrays keeps even massive data interactive.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "String Building Blocks",
+    "category": "Strings",
+    "difficulty": "beginner",
+    "description": "Treat strings as character arrays: slicing, concatenating, reversing, and checking palindromes.",
+    "keyConcepts": ["substring", "concatenation", "two pointers", "palindrome check"],
+    "keyInsight": "Most string issues shrink once you view them as arrays of chars.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "String Patterning",
+    "category": "Strings",
+    "difficulty": "intermediate",
+    "description": "Use hashing, KMP, and Z-arrays to detect patterns, rotations, and repeated substrings quickly.",
+    "keyConcepts": ["rolling hash", "KMP", "Z-function", "frequency window"],
+    "keyInsight": "Preprocessing the pattern lets you skip useless comparisons.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "String Structures Mastery",
+    "category": "Strings",
+    "difficulty": "advanced",
+    "description": "Build suffix arrays, automata, and palindromic trees for tough substring queries.",
+    "keyConcepts": ["suffix array", "suffix automaton", "palindromic tree", "DP on strings"],
+    "keyInsight": "Global string structures expose overlaps invisible to local scans.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Searching Starter Pack",
+    "category": "Searching",
+    "difficulty": "beginner",
+    "description": "Compare linear vs binary search, understand sorted prerequisites, and guard boundaries.",
+    "keyConcepts": ["linear scan", "binary search", "mid calculation", "sorted array"],
+    "keyInsight": "Check ordering first; it decides your entire search approach.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Search Space Design",
+    "category": "Searching",
+    "difficulty": "intermediate",
+    "description": "Use binary search on answers, ternary search on unimodal arrays, and search rotated ranges.",
+    "keyConcepts": ["binary search on answer", "ternary search", "rotated array", "search pruning"],
+    "keyInsight": "Define a monotone check and let search zoom to the boundary.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Advanced Search Spaces",
+    "category": "Searching",
+    "difficulty": "advanced",
+    "description": "Blend search with DP, geometry, or verification oracles to solve complex decision problems.",
+    "keyConcepts": ["parametric search", "meet-in-the-middle", "state pruning", "verification oracle"],
+    "keyInsight": "Search becomes lethal when verifying a guess is cheaper than building it.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Sorting Kickoff",
+    "category": "Sorting",
+    "difficulty": "beginner",
+    "description": "Learn comparison vs counting sorts, stability, and practice simple implementations.",
+    "keyConcepts": ["selection sort", "insertion sort", "stability", "counting sort idea"],
+    "keyInsight": "Pick the sort whose trade-offs fit data shape, not habit.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Efficient Sorting",
+    "category": "Sorting",
+    "difficulty": "intermediate",
+    "description": "Implement merge, quick, and heap sort while balancing memory, pivoting, and stability needs.",
+    "keyConcepts": ["merge sort", "quick sort", "heap sort", "partitioning"],
+    "keyInsight": "Stability and memory are the quiet forces behind sorting choices.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Specialized Sorting Systems",
+    "category": "Sorting",
+    "difficulty": "advanced",
+    "description": "Use radix, bucket, and hybrid strategies to bypass comparison limits on structured data.",
+    "keyConcepts": ["radix sort", "bucket sort", "intro sort", "external sort"],
+    "keyInsight": "Domain-aware sorts skip comparisons entirely for huge wins.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Linked List Basics",
+    "category": "Linked List",
+    "difficulty": "beginner",
+    "description": "Create singly lists, insert/delete nodes, and trace head/tail pointers safely.",
+    "keyConcepts": ["node structure", "head/tail", "pointer updates", "null checks"],
+    "keyInsight": "Save the next pointer before rewiring; it prevents silent bugs.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Linked List Patterns",
+    "category": "Linked List",
+    "difficulty": "intermediate",
+    "description": "Use fast/slow pointers, reversal, and multi-list merges to solve real interview staples.",
+    "keyConcepts": ["two pointers", "cycle detection", "list reversal", "merge lists"],
+    "keyInsight": "Pointer symmetry keeps list tricks O(1) space yet expressive.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Advanced Linked Structures",
+    "category": "Linked List",
+    "difficulty": "advanced",
+    "description": "Engineer skip lists, LRU caches, and persistent lists using augmented pointers.",
+    "keyConcepts": ["skip list", "LRU list", "persistent nodes", "XOR pointers"],
+    "keyInsight": "Metadata on nodes lets lists rival arrays for speed and features.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Stack Fundamentals",
+    "category": "Stack",
+    "difficulty": "beginner",
+    "description": "Push/pop, peek, and use stacks for expression checks, undo, and reversal tasks.",
+    "keyConcepts": ["LIFO", "array stack", "linked stack", "balanced brackets"],
+    "keyInsight": "Whenever the last action must be resolved first, use a stack.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Stack Problem Patterns",
+    "category": "Stack",
+    "difficulty": "intermediate",
+    "description": "Apply monotonic stacks, next greater elements, and histogram tricks.",
+    "keyConcepts": ["monotonic stack", "span problems", "stock analysis", "histogram area"],
+    "keyInsight": "Stack ordering compresses future comparisons into one sleek pass.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Stacks for Systems",
+    "category": "Stack",
+    "difficulty": "advanced",
+    "description": "Parse expressions, run iterative traversals, and design custom stack machines.",
+    "keyConcepts": ["expression tree", "iterative DFS", "stack automata", "state compression"],
+    "keyInsight": "Stacks simulate recursion but give you explicit control of memory.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Queue Basics",
+    "category": "Queue",
+    "difficulty": "beginner",
+    "description": "Understand FIFO behavior, implement circular queues, and feel BFS intuition.",
+    "keyConcepts": ["enqueue", "dequeue", "circular buffer", "BFS starter"],
+    "keyInsight": "Queues shine when fairness and order-of-arrival matter most.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Queue Techniques",
+    "category": "Queue",
+    "difficulty": "intermediate",
+    "description": "Use deques for sliding windows, multi-source BFS, and scheduling problems.",
+    "keyConcepts": ["deque", "sliding window", "multi-source BFS", "scheduler queue"],
+    "keyInsight": "Deques merge stack and queue power for windowed logic.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Advanced Queue Systems",
+    "category": "Queue",
+    "difficulty": "advanced",
+    "description": "Deploy indexed and priority queues for Dijkstra, event simulation, and rate limiters.",
+    "keyConcepts": ["indexed PQ", "bucket queue", "0-1 BFS", "event simulation"],
+    "keyInsight": "Ordering the queue transforms how traversals explore graphs.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Tree Fundamentals",
+    "category": "Trees",
+    "difficulty": "beginner",
+    "description": "Identify roots, leaves, and depths while running simple DFS/BFS traversals.",
+    "keyConcepts": ["rooted tree", "DFS", "BFS", "depth vs height"],
+    "keyInsight": "Traversals linearize trees without losing parent-child context.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Tree Problem Solving",
+    "category": "Trees",
+    "difficulty": "intermediate",
+    "description": "Handle BST logic, tree diameter, and lowest common ancestor using recursion.",
+    "keyConcepts": ["BST invariant", "tree diameter", "LCA", "tree DP"],
+    "keyInsight": "Re-rooting views expose symmetry hidden in the original tree.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Advanced Tree Decompositions",
+    "category": "Trees",
+    "difficulty": "advanced",
+    "description": "Build segment, Fenwick, and heavy-light structures for fast path queries.",
+    "keyConcepts": ["segment tree", "Fenwick tree", "HLD", "centroid decomposition"],
+    "keyInsight": "Breaking trees into chains turns hard queries into array work.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Graph Foundations",
+    "category": "Graphs",
+    "difficulty": "beginner",
+    "description": "Model graphs with adjacency lists/matrices and run BFS/DFS confidently.",
+    "keyConcepts": ["adjacency list", "adjacency matrix", "BFS", "DFS"],
+    "keyInsight": "Pick the representation that matches edge density to stay lean.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Graph Algorithms Toolkit",
+    "category": "Graphs",
+    "difficulty": "intermediate",
+    "description": "Solve shortest paths, detect cycles, and perform topological sorting.",
+    "keyConcepts": ["Dijkstra", "topological sort", "cycle detection", "disjoint set"],
+    "keyInsight": "Edge weights and direction pick the exact traversal you need.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Advanced Graph Theory",
+    "category": "Graphs",
+    "difficulty": "advanced",
+    "description": "Master flows, bridges, articulation points, and DP on graph decompositions.",
+    "keyConcepts": ["max flow", "Tarjan bridges", "articulation points", "treewidth DP"],
+    "keyInsight": "Cutting graphs into components reveals deep structural answers.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Dynamic Programming Basics",
+    "category": "Dynamic Programming",
+    "difficulty": "beginner",
+    "description": "Define states, recurrences, and memoization for small overlapping problems.",
+    "keyConcepts": ["state design", "recurrence", "memoization", "tabulation"],
+    "keyInsight": "Half the battle is describing the state in one clean sentence.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "DP Pattern Library",
+    "category": "Dynamic Programming",
+    "difficulty": "intermediate",
+    "description": "Tackle knapsack, LIS, interval, and bitmask DP with reusable templates.",
+    "keyConcepts": ["0/1 knapsack", "LIS", "interval DP", "bitmask DP"],
+    "keyInsight": "Once the pattern matches, only minor tweaks remain.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Optimized DP Systems",
+    "category": "Dynamic Programming",
+    "difficulty": "advanced",
+    "description": "Use divide-conquer DP, convex hull trick, and digit DP to slash complexity.",
+    "keyConcepts": ["divide & conquer DP", "convex hull trick", "digit DP", "profile DP"],
+    "keyInsight": "DP optimizations exploit monotonicity hiding inside states.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Greedy Intuition",
+    "category": "Greedy",
+    "difficulty": "beginner",
+    "description": "Spot local choices that lead to global wins and justify them with exchange arguments.",
+    "keyConcepts": ["local optimum", "activity selection", "sorting first", "exchange proof"],
+    "keyInsight": "If you can prove a greedy swap never hurts, the algorithm stands.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Greedy Engineering",
+    "category": "Greedy",
+    "difficulty": "intermediate",
+    "description": "Use heaps and frequency maps to schedule tasks, compress codes, and allocate resources.",
+    "keyConcepts": ["priority queues", "interval scheduling", "Huffman coding", "resource allocation"],
+    "keyInsight": "Greedy thrives when future costs depend only on current structure.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Advanced Greedy Proofs",
+    "category": "Greedy",
+    "difficulty": "advanced",
+    "description": "Blend greedy with matroids, flows, or DP to solve complex optimization problems.",
+    "keyConcepts": ["matroid", "minimum cut", "greedy + DP", "exchange arguments"],
+    "keyInsight": "Structure-aware proofs certify greedy choices on hard domains.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Recursion Basics",
+    "category": "Recursion & Backtracking",
+    "difficulty": "beginner",
+    "description": "Break tasks into base and recursive cases while tracing the call stack.",
+    "keyConcepts": ["base case", "recursive case", "stack frames", "overflow guard"],
+    "keyInsight": "Think inductively: solve a smaller copy, trust recursion for the rest.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Backtracking Patterns",
+    "category": "Recursion & Backtracking",
+    "difficulty": "intermediate",
+    "description": "Generate permutations, combinations, and board solutions with pruning and state reset.",
+    "keyConcepts": ["decision tree", "pruning", "state restoration", "constraint checks"],
+    "keyInsight": "Cut branches the moment a constraint fails to save exponential time.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Advanced Search Strategies",
+    "category": "Recursion & Backtracking",
+    "difficulty": "advanced",
+    "description": "Use meet-in-the-middle, bidirectional search, and memoized recursion on massive states.",
+    "keyConcepts": ["meet-in-the-middle", "bidirectional search", "memoized recursion", "implicit graphs"],
+    "keyInsight": "Hybrid searches trim both depth and breadth without losing completeness.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Hashing Essentials",
+    "category": "Hashing",
+    "difficulty": "beginner",
+    "description": "Use hash maps and sets for instant lookups, frequency counts, and duplicates tracking.",
+    "keyConcepts": ["hash function basics", "hash map", "hash set", "collision awareness"],
+    "keyInsight": "Hashing trades memory for near-O(1) access when order is irrelevant.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Hashing Patterns",
+    "category": "Hashing",
+    "difficulty": "intermediate",
+    "description": "Design custom hashes for pairs, grids, and substrings using rolling techniques.",
+    "keyConcepts": ["custom key", "pair hashing", "rolling hash", "collision mitigation"],
+    "keyInsight": "The right hash prevents collisions from stealing your runtime wins.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Advanced Hash-Based Systems",
+    "category": "Hashing",
+    "difficulty": "advanced",
+    "description": "Leverage bloom filters, cuckoo hashing, and perfect hashing for large-scale data.",
+    "keyConcepts": ["bloom filter", "cuckoo hashing", "perfect hash", "hash-based DP"],
+    "keyInsight": "Probabilistic hashing unlocks massive datasets with tiny footprints.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Heap Essentials",
+    "category": "Heaps / Priority Queues",
+    "difficulty": "beginner",
+    "description": "Build min/max heaps, perform heapify, and grab top-k elements fast.",
+    "keyConcepts": ["binary heap", "heapify", "priority queue", "top-k extraction"],
+    "keyInsight": "Heaps give instant access to extremes without sorting everything.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Priority Queue Patterns",
+    "category": "Heaps / Priority Queues",
+    "difficulty": "intermediate",
+    "description": "Use heaps for Dijkstra, scheduling, and median maintenance with dual structures.",
+    "keyConcepts": ["Dijkstra", "lazy deletion", "double heap median", "task scheduling"],
+    "keyInsight": "Dynamic priorities keep algorithms responsive to new data.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Advanced Heap Variants",
+    "category": "Heaps / Priority Queues",
+    "difficulty": "advanced",
+    "description": "Explore Fibonacci, pairing, and indexed heaps for heavy decrease-key workloads.",
+    "keyConcepts": ["Fibonacci heap", "pairing heap", "indexed heap", "meld operations"],
+    "keyInsight": "Amortized-friendly heaps shine when priorities shift constantly.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Bit Manipulation Basics",
+    "category": "Bit Manipulation",
+    "difficulty": "beginner",
+    "description": "Toggle bits, create masks, and use XOR for parity or duplicate detection.",
+    "keyConcepts": ["bit mask", "set/clear bits", "XOR tricks", "shift operations"],
+    "keyInsight": "Bits pack many booleans into one integer with zero overhead.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Bitwise Problem Patterns",
+    "category": "Bit Manipulation",
+    "difficulty": "intermediate",
+    "description": "Enumerate subsets, run bit DP, and leverage popcount for combinatorial speedups.",
+    "keyConcepts": ["subset masks", "bit DP", "popcount", "bit transitions"],
+    "keyInsight": "Binary masks turn combinational states into cheap arithmetic.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  },
+  {
+    "title": "Advanced Bit Magic",
+    "category": "Bit Manipulation",
+    "difficulty": "advanced",
+    "description": "Use Fenwick tricks, Gray codes, and Walsh-Hadamard transforms for high-speed ops.",
+    "keyConcepts": ["Fenwick bit tricks", "Gray code", "bitwise convolution", "Walsh-Hadamard"],
+    "keyInsight": "Transforming to bitwise space reveals structure hardware already accelerates.",
+    "roadmap": ["Basics", "Patterns", "Practice", "Apply"],
+    "actions": ["bookmark", "pin", "quiz", "problems"]
+  }
+]
+
