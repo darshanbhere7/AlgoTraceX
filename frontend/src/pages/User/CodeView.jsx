@@ -1,49 +1,100 @@
 import React, { useState } from 'react';
-import {
-  Loader2,
-  Info,
-  Sparkles,
-  Bug,
-  ListChecks,
-  PlayCircle,
-  Wrench,
-  Gauge,
-  PenLine,
-  Lightbulb,
-  Languages,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Textarea } from '@/components/ui/Textarea';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  analyzeComplexity,
-  convertLanguage,
-  detectBugs,
-  explainCode,
-  fixCode,
-  generateComments,
-  generateTestcases,
-  getRecommendations as fetchRecommendations,
-  optimizeCode,
-  simulateInput,
-} from '@/utils/aiHelpers';
+import { Loader2, Info, Sparkles, Bug, ListChecks, PlayCircle, Wrench, Gauge, PenLine, Lightbulb, Languages } from 'lucide-react';
 
-// Alias to avoid duplicate import name
-const recommendationEngine = fetchRecommendations;
+// Mock AI helper functions (replace with actual API calls)
+const explainCode = async (code, language) => {
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  return {
+    explanation: `This ${language} code performs the following operations:\n\n1. Declares variables and initializes data structures\n2. Implements core logic with conditional statements\n3. Returns the final result\n\nThe algorithm follows standard patterns for this type of problem.`
+  };
+};
+
+const optimizeCode = async (code, language) => {
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  return {
+    optimizedCode: `// Optimized version\n${code}\n// Performance improvements applied`,
+    explanation: 'Optimizations applied:\n- Reduced time complexity\n- Improved memory usage\n- Removed redundant operations'
+  };
+};
+
+const detectBugs = async (code, language) => {
+  await new Promise(resolve => setTimeout(resolve, 1800));
+  return {
+    bugs: [
+      { title: 'Potential Null Pointer', description: 'Variable may be null at line 15' },
+      { title: 'Off-by-one Error', description: 'Loop boundary condition may cause issues' }
+    ],
+    summary: 'Found 2 potential issues that should be reviewed.'
+  };
+};
+
+const generateTestcases = async (code, language) => {
+  await new Promise(resolve => setTimeout(resolve, 1600));
+  return {
+    testcases: [
+      { id: 1, title: 'Happy Path', description: 'Normal input case', input: '[1,2,3]', expected: '6' },
+      { id: 2, title: 'Edge Case', description: 'Empty input', input: '[]', expected: '0' },
+      { id: 3, title: 'Stress Test', description: 'Large input', input: '[1...1000]', expected: '500500' }
+    ]
+  };
+};
+
+const simulateInput = async (code, language, input) => {
+  await new Promise(resolve => setTimeout(resolve, 2200));
+  return {
+    steps: [
+      'Initialize variables',
+      `Process input: ${input}`,
+      'Execute main logic',
+      'Return result'
+    ],
+    variables: { step1: 'value1', step2: 'value2' },
+    notes: 'Simulation completed successfully'
+  };
+};
+
+const fixCode = async (code, language) => {
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  return {
+    fixedCode: `// Fixed version\n${code}\n// Bugs corrected`,
+    explanation: 'Applied fixes:\n- Corrected null checks\n- Fixed loop boundaries\n- Added error handling'
+  };
+};
+
+const analyzeComplexity = async (code, language) => {
+  await new Promise(resolve => setTimeout(resolve, 1400));
+  return {
+    time: 'O(n)',
+    space: 'O(1)',
+    reasoning: 'The algorithm iterates through the input once with constant extra space.'
+  };
+};
+
+const generateComments = async (code, language) => {
+  await new Promise(resolve => setTimeout(resolve, 1700));
+  return {
+    commentedCode: `/**\n * Function description\n */\n${code}\n// Inline comments added`,
+    docstring: '/**\n * @param {type} param - description\n * @returns {type} description\n */',
+    summary: 'Added comprehensive documentation'
+  };
+};
+
+const getRecommendations = async (code, language) => {
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  return {
+    topics: ['Data Structures', 'Algorithms', 'Design Patterns'],
+    questions: ['Practice array manipulation', 'Study sorting algorithms', 'Learn recursion'],
+    mistakes: ['Not handling edge cases', 'Inefficient loops', 'Poor variable naming']
+  };
+};
+
+const convertLanguage = async (code, sourceLanguage, targetLanguage) => {
+  await new Promise(resolve => setTimeout(resolve, 2500));
+  return {
+    convertedCode: `# Converted to ${targetLanguage}\n# Original ${sourceLanguage} code converted\n\n${code.split('\n').map(line => '# ' + line).join('\n')}`,
+    targetLanguage: targetLanguage
+  };
+};
 
 const LANGUAGE_OPTIONS = [
   { label: 'JavaScript', value: 'javascript' },
@@ -53,467 +104,349 @@ const LANGUAGE_OPTIONS = [
   { label: 'C++', value: 'cpp' },
 ];
 
-const ResultCard = ({ title, description, children }) => (
-  <Card>
-    <CardHeader>
-      <CardTitle className="text-lg">{title}</CardTitle>
-      {description && (
-        <CardDescription className="text-sm text-gray-500">
-          {description}
-        </CardDescription>
-      )}
-    </CardHeader>
-    <CardContent className="space-y-3">{children}</CardContent>
-  </Card>
+const Card = ({ children, className = '' }) => (
+  <div className={`bg-white rounded-lg border border-gray-200 shadow-sm ${className}`}>{children}</div>
 );
 
-const CodeBlock = ({ label, value }) => (
-  <div className="space-y-2">
-    {label && (
-      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-        {label}
-      </p>
-    )}
-    <pre className="w-full overflow-auto rounded-md bg-slate-900 p-4 text-sm text-slate-100">
-      {value || 'No output returned.'}
-    </pre>
-  </div>
-);
+const CardHeader = ({ children }) => <div className="p-6 pb-4">{children}</div>;
+const CardTitle = ({ children, className = '' }) => <h3 className={`text-xl font-semibold ${className}`}>{children}</h3>;
+const CardDescription = ({ children, className = '' }) => <p className={`text-sm text-gray-500 mt-1 ${className}`}>{children}</p>;
+const CardContent = ({ children, className = '' }) => <div className={`p-6 pt-0 ${className}`}>{children}</div>;
 
-const initialResults = {
-  explanation: null,
-  optimization: null,
-  bugs: null,
-  testcases: null,
-  simulation: null,
-  fix: null,
-  complexity: null,
-  comments: null,
-  recommendations: null,
-  conversion: null,
+const Button = ({ children, onClick, disabled, className = '', variant = 'default' }) => {
+  const baseStyles = 'px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
+  const variantStyles = variant === 'secondary' 
+    ? 'bg-gray-100 text-gray-900 hover:bg-gray-200' 
+    : 'bg-blue-600 text-white hover:bg-blue-700';
+  
+  return (
+    <button onClick={onClick} disabled={disabled} className={`${baseStyles} ${variantStyles} ${className}`}>
+      {children}
+    </button>
+  );
 };
 
-const actionConfigs = [
-  { key: 'explanation', label: 'Explain Code', icon: Info },
-  { key: 'optimization', label: 'Optimize Code', icon: Sparkles },
-  { key: 'bugs', label: 'Find Bugs', icon: Bug },
-  { key: 'testcases', label: 'Generate Testcases', icon: ListChecks },
-  { key: 'simulation', label: 'Simulate Input', icon: PlayCircle },
-  { key: 'fix', label: 'Fix My Code', icon: Wrench },
-  { key: 'complexity', label: 'Analyze Complexity', icon: Gauge },
-  { key: 'comments', label: 'Generate Comments', icon: PenLine },
-  { key: 'recommendations', label: 'AI Recommendations', icon: Lightbulb },
-  { key: 'conversion', label: 'Convert Language', icon: Languages },
-];
+const Textarea = ({ value, onChange, rows, placeholder, className = '' }) => (
+  <textarea
+    value={value}
+    onChange={onChange}
+    rows={rows}
+    placeholder={placeholder}
+    className={`w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`}
+  />
+);
+
+const Dialog = ({ open, onOpenChange, children }) => {
+  if (!open) return null;
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-black/50" onClick={() => onOpenChange(false)} />
+      <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-auto">
+        {children}
+      </div>
+    </div>
+  );
+};
+
+const DialogContent = ({ children, className = '' }) => <div className={`p-6 ${className}`}>{children}</div>;
+const DialogHeader = ({ children }) => <div className="mb-4">{children}</div>;
+const DialogTitle = ({ children }) => <h2 className="text-2xl font-bold">{children}</h2>;
+const DialogDescription = ({ children }) => <p className="text-gray-500 mt-1">{children}</p>;
+
+const Toast = ({ message, type = 'success' }) => {
+  const bgColor = type === 'error' ? 'bg-red-500' : type === 'info' ? 'bg-blue-500' : 'bg-green-500';
+  return (
+    <div className={`fixed bottom-4 right-4 ${bgColor} text-white px-4 py-2 rounded-md shadow-lg z-50`}>
+      {message}
+    </div>
+  );
+};
 
 const CodeView = () => {
   const [code, setCode] = useState('');
-  const [language, setLanguage] = useState('javascript');
+  const [language, setLanguage] = useState('java');
   const [targetLanguage, setTargetLanguage] = useState('python');
   const [simulationInput, setSimulationInput] = useState('');
-  const [results, setResults] = useState(initialResults);
+  const [results, setResults] = useState({});
   const [loadingAction, setLoadingAction] = useState(null);
-  const [modalState, setModalState] = useState({
-    open: false,
-    title: '',
-    description: '',
-    content: null,
-  });
+  const [modalState, setModalState] = useState({ open: false, title: '', description: '', content: null });
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const hasCode = code.trim().length > 0;
 
-  const setModalContent = (title, description, content) => {
-    setModalState({
-      open: true,
-      title,
-      description,
-      content,
-    });
-  };
-
-  const closeModal = () =>
-    setModalState((prev) => ({
-      ...prev,
-      open: false,
-    }));
-
-  const runAction = async ({
-    key,
-    request,
-    args = [],
-    successMessage,
-    modalTitle,
-    modalDescription,
-  }) => {
+  const runAction = async ({ key, request, args = [], successMessage, modalTitle, modalDescription }) => {
     if (!hasCode) {
-      toast.error('Please paste your code before using AI features.');
+      showToast('Please paste your code before using AI features.', 'error');
       return;
     }
     setLoadingAction(key);
     try {
       const data = await request(...args);
-      setResults((prev) => ({
-        ...prev,
-        [key]: data,
-      }));
-      setModalContent(
-        modalTitle,
-        modalDescription,
-        renderResultContent(key, data)
-      );
-      toast.success(successMessage);
+      setResults(prev => ({ ...prev, [key]: data }));
+      setModalState({
+        open: true,
+        title: modalTitle,
+        description: modalDescription,
+        content: renderResultContent(key, data)
+      });
+      showToast(successMessage);
     } catch (error) {
-      toast.error(error.message || 'AI action failed. Please try again.');
+      showToast(error.message || 'AI action failed. Please try again.', 'error');
     } finally {
       setLoadingAction(null);
     }
   };
 
-  const renderList = (items = []) => {
-    if (!Array.isArray(items) || items.length === 0) {
-      return <p className="text-sm text-gray-500">No data available.</p>;
-    }
-    return (
-      <ul className="list-disc space-y-2 pl-5 text-sm">
-        {items.map((item, index) => (
-          <li key={`${item}-${index}`} className="text-gray-700">
-            {typeof item === 'string' ? item : item.description || JSON.stringify(item)}
-          </li>
-        ))}
-      </ul>
-    );
-  };
-
   const renderResultContent = (key, data) => {
     switch (key) {
       case 'explanation':
-        return (
-          <div className="space-y-4">
-            {data.lines?.length ? (
-              <div className="space-y-2 text-sm text-gray-700">
-                {data.lines.map((line, idx) => (
-                  <p key={idx}>
-                    <span className="font-semibold">Line {idx + 1}:</span> {line}
-                  </p>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                {data.explanation}
-              </p>
-            )}
-          </div>
-        );
+        return <div className="text-sm text-gray-700 whitespace-pre-wrap">{data.explanation}</div>;
+      
       case 'optimization':
         return (
           <div className="space-y-4">
-            <CodeBlock label="Optimized Code" value={data.optimizedCode} />
-            <p className="text-sm text-gray-700 whitespace-pre-wrap">
-              {data.explanation}
-            </p>
+            <div>
+              <p className="text-xs font-semibold text-gray-500 mb-2">OPTIMIZED CODE</p>
+              <pre className="bg-slate-900 text-slate-100 p-4 rounded-md overflow-auto text-sm">{data.optimizedCode}</pre>
+            </div>
+            <p className="text-sm text-gray-700 whitespace-pre-wrap">{data.explanation}</p>
           </div>
         );
+      
       case 'bugs':
-        {
-          const bugItems = (data.bugs || []).map((bug, idx) =>
-            typeof bug === 'string'
-              ? bug
-              : `${bug.title || `Issue ${idx + 1}`}: ${
-                  bug.detail || bug.description || JSON.stringify(bug)
-                }`
-          );
         return (
           <div className="space-y-3">
-            {renderList(bugItems)}
-            {data.summary && (
-              <p className="text-sm text-gray-600">{data.summary}</p>
-            )}
+            <ul className="list-disc pl-5 space-y-2 text-sm">
+              {data.bugs.map((bug, idx) => (
+                <li key={idx} className="text-gray-700">
+                  <span className="font-semibold">{bug.title}:</span> {bug.description}
+                </li>
+              ))}
+            </ul>
+            {data.summary && <p className="text-sm text-gray-600">{data.summary}</p>}
           </div>
         );
-        }
+      
       case 'testcases':
         return (
           <div className="space-y-4">
-            {(data.testcases || []).map((testcase) => (
-              <div
-                key={testcase.id}
-                className="rounded-md border border-gray-200 p-3 text-sm"
-              >
-                <p className="font-semibold text-gray-900">{testcase.title}</p>
-                <p className="text-gray-600">{testcase.description}</p>
+            {data.testcases.map(tc => (
+              <div key={tc.id} className="border border-gray-200 rounded-md p-3 text-sm">
+                <p className="font-semibold text-gray-900">{tc.title}</p>
+                <p className="text-gray-600">{tc.description}</p>
                 <div className="mt-2 grid gap-2 sm:grid-cols-2">
                   <div>
                     <p className="text-xs font-semibold text-gray-500">Input</p>
-                    <pre className="rounded bg-gray-100 p-2">
-                      {testcase.input || 'N/A'}
-                    </pre>
+                    <pre className="bg-gray-100 rounded p-2">{tc.input}</pre>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-gray-500">
-                      Expected
-                    </p>
-                    <pre className="rounded bg-gray-100 p-2">
-                      {testcase.expected || 'N/A'}
-                    </pre>
+                    <p className="text-xs font-semibold text-gray-500">Expected</p>
+                    <pre className="bg-gray-100 rounded p-2">{tc.expected}</pre>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         );
+      
       case 'simulation':
         return (
           <div className="space-y-4">
-            {data.steps?.length > 0 && (
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                  Execution Steps
-                </p>
-                <ol className="list-decimal space-y-2 pl-5 text-sm text-gray-700">
-                  {data.steps.map((step, idx) => (
-                    <li key={`step-${idx}`}>{step}</li>
-                  ))}
-                </ol>
-              </div>
-            )}
-            {data.variables && (
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                  Variable Timeline
-                </p>
-                <pre className="rounded-md bg-gray-100 p-3 text-sm text-gray-800">
-                  {JSON.stringify(data.variables, null, 2)}
-                </pre>
-              </div>
-            )}
-            {data.notes && (
-              <p className="text-sm text-gray-600">{data.notes}</p>
-            )}
+            <div>
+              <p className="text-xs font-semibold text-gray-500 mb-2">EXECUTION STEPS</p>
+              <ol className="list-decimal pl-5 space-y-2 text-sm text-gray-700">
+                {data.steps.map((step, idx) => <li key={idx}>{step}</li>)}
+              </ol>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-gray-500 mb-2">VARIABLE TIMELINE</p>
+              <pre className="bg-gray-100 p-3 rounded-md text-sm">{JSON.stringify(data.variables, null, 2)}</pre>
+            </div>
+            {data.notes && <p className="text-sm text-gray-600">{data.notes}</p>}
           </div>
         );
+      
       case 'fix':
         return (
           <div className="space-y-4">
-            <CodeBlock label="Fixed Code" value={data.fixedCode} />
-            <p className="text-sm text-gray-700 whitespace-pre-wrap">
-              {data.explanation}
-            </p>
+            <div>
+              <p className="text-xs font-semibold text-gray-500 mb-2">FIXED CODE</p>
+              <pre className="bg-slate-900 text-slate-100 p-4 rounded-md overflow-auto text-sm">{data.fixedCode}</pre>
+            </div>
+            <p className="text-sm text-gray-700 whitespace-pre-wrap">{data.explanation}</p>
           </div>
         );
+      
       case 'complexity':
         return (
           <div className="space-y-2 text-sm text-gray-700">
-            <p>
-              <span className="font-semibold">Time Complexity:</span> {data.time}
-            </p>
-            <p>
-              <span className="font-semibold">Space Complexity:</span>{' '}
-              {data.space}
-            </p>
+            <p><span className="font-semibold">Time Complexity:</span> {data.time}</p>
+            <p><span className="font-semibold">Space Complexity:</span> {data.space}</p>
             <p className="whitespace-pre-wrap">{data.reasoning}</p>
           </div>
         );
+      
       case 'comments':
         return (
           <div className="space-y-4">
-            {data.summary && (
-              <p className="text-sm text-gray-600">{data.summary}</p>
-            )}
+            {data.summary && <p className="text-sm text-gray-600">{data.summary}</p>}
             {data.docstring && (
-              <CodeBlock label="Docstring" value={data.docstring} />
+              <div>
+                <p className="text-xs font-semibold text-gray-500 mb-2">DOCSTRING</p>
+                <pre className="bg-slate-900 text-slate-100 p-4 rounded-md overflow-auto text-sm">{data.docstring}</pre>
+              </div>
             )}
-            <CodeBlock label="Commented Code" value={data.commentedCode} />
+            <div>
+              <p className="text-xs font-semibold text-gray-500 mb-2">COMMENTED CODE</p>
+              <pre className="bg-slate-900 text-slate-100 p-4 rounded-md overflow-auto text-sm">{data.commentedCode}</pre>
+            </div>
           </div>
         );
+      
       case 'recommendations':
         return (
           <div className="space-y-4 text-sm text-gray-700">
             <div>
-              <p className="font-semibold text-gray-900">
-                Focus Topics
-              </p>
-              {renderList(data.topics)}
+              <p className="font-semibold text-gray-900 mb-2">Focus Topics</p>
+              <ul className="list-disc pl-5 space-y-1">
+                {data.topics.map((topic, idx) => <li key={idx}>{topic}</li>)}
+              </ul>
             </div>
             <div>
-              <p className="font-semibold text-gray-900">
-                Suggested Practice Questions
-              </p>
-              {renderList(data.questions)}
+              <p className="font-semibold text-gray-900 mb-2">Suggested Practice Questions</p>
+              <ul className="list-disc pl-5 space-y-1">
+                {data.questions.map((q, idx) => <li key={idx}>{q}</li>)}
+              </ul>
             </div>
             <div>
-              <p className="font-semibold text-gray-900">
-                Common Mistakes
-              </p>
-              {renderList(data.mistakes)}
+              <p className="font-semibold text-gray-900 mb-2">Common Mistakes</p>
+              <ul className="list-disc pl-5 space-y-1">
+                {data.mistakes.map((m, idx) => <li key={idx}>{m}</li>)}
+              </ul>
             </div>
           </div>
         );
+      
       case 'conversion':
         return (
-          <div className="space-y-4">
-            <CodeBlock
-              label={`Converted Code (${data.targetLanguage?.toUpperCase()})`}
-              value={data.convertedCode}
-            />
+          <div>
+            <p className="text-xs font-semibold text-gray-500 mb-2">CONVERTED CODE ({data.targetLanguage.toUpperCase()})</p>
+            <pre className="bg-slate-900 text-slate-100 p-4 rounded-md overflow-auto text-sm">{data.convertedCode}</pre>
           </div>
         );
+      
       default:
-        return (
-          <p className="text-sm text-gray-500">
-            No renderer configured for this result.
-          </p>
-        );
+        return <p className="text-sm text-gray-500">No renderer configured for this result.</p>;
     }
   };
 
-  const handleExplain = () =>
-    runAction({
+  const handlers = {
+    explain: () => runAction({
       key: 'explanation',
       request: explainCode,
       args: [code, language],
       successMessage: 'Generated AI explanation',
       modalTitle: 'AI Code Explanation',
-      modalDescription: 'Line-by-line or block-level insights',
-    });
-
-  const handleOptimize = () =>
-    runAction({
+      modalDescription: 'Line-by-line or block-level insights'
+    }),
+    optimize: () => runAction({
       key: 'optimization',
       request: optimizeCode,
       args: [code, language],
       successMessage: 'Optimization ready',
       modalTitle: 'AI Code Optimization',
-      modalDescription: 'Refactored code and reasoning',
-    });
-
-  const handleBugs = () =>
-    runAction({
+      modalDescription: 'Refactored code and reasoning'
+    }),
+    bugs: () => runAction({
       key: 'bugs',
       request: detectBugs,
       args: [code, language],
       successMessage: 'Bug scan completed',
       modalTitle: 'AI Bug Detection',
-      modalDescription: 'Potential issues & anti-patterns',
-    });
-
-  const handleTestcases = () =>
-    runAction({
+      modalDescription: 'Potential issues & anti-patterns'
+    }),
+    testcases: () => runAction({
       key: 'testcases',
       request: generateTestcases,
       args: [code, language],
       successMessage: 'Testcases generated',
       modalTitle: 'AI Testcase Generator',
-      modalDescription: 'Edge, stress, and happy-path tests',
-    });
-
-  const handleSimulation = () => {
-    if (!simulationInput.trim()) {
-      toast.error('Provide input payload for the simulator.');
-      return;
-    }
-    return runAction({
-      key: 'simulation',
-      request: simulateInput,
-      args: [code, language, simulationInput],
-      successMessage: 'Simulation completed',
-      modalTitle: 'AI Input Simulator',
-      modalDescription: 'Step-by-step execution trace',
-    });
-  };
-
-  const handleFix = () =>
-    runAction({
+      modalDescription: 'Edge, stress, and happy-path tests'
+    }),
+    simulation: () => {
+      if (!simulationInput.trim()) {
+        showToast('Provide input payload for the simulator.', 'error');
+        return;
+      }
+      runAction({
+        key: 'simulation',
+        request: simulateInput,
+        args: [code, language, simulationInput],
+        successMessage: 'Simulation completed',
+        modalTitle: 'AI Input Simulator',
+        modalDescription: 'Step-by-step execution trace'
+      });
+    },
+    fix: () => runAction({
       key: 'fix',
       request: fixCode,
       args: [code, language],
       successMessage: 'Code fixed successfully',
       modalTitle: 'AI Fix My Code',
-      modalDescription: 'Patched code & explanations',
-    });
-
-  const handleComplexity = () =>
-    runAction({
+      modalDescription: 'Patched code & explanations'
+    }),
+    complexity: () => runAction({
       key: 'complexity',
       request: analyzeComplexity,
       args: [code, language],
       successMessage: 'Complexity analyzed',
       modalTitle: 'AI Complexity Analyzer',
-      modalDescription: 'Time & space reasoning',
-    });
-
-  const handleComments = () =>
-    runAction({
+      modalDescription: 'Time & space reasoning'
+    }),
+    comments: () => runAction({
       key: 'comments',
       request: generateComments,
       args: [code, language],
       successMessage: 'Comments generated',
       modalTitle: 'AI Comment Generator',
-      modalDescription: 'Docstrings & inline context',
-    });
-
-  const handleRecommendations = () =>
-    runAction({
+      modalDescription: 'Docstrings & inline context'
+    }),
+    recommendations: () => runAction({
       key: 'recommendations',
-      request: recommendationEngine,
+      request: getRecommendations,
       args: [code, language],
       successMessage: 'Personalized recommendations ready',
       modalTitle: 'AI Recommendation Engine',
-      modalDescription: 'Topics, questions, and pitfalls',
-    });
-
-  const handleConversion = () => {
-    if (language === targetLanguage) {
-      toast.info('Select a different target language.');
-      return;
+      modalDescription: 'Topics, questions, and pitfalls'
+    }),
+    conversion: () => {
+      if (language === targetLanguage) {
+        showToast('Select a different target language.', 'info');
+        return;
+      }
+      runAction({
+        key: 'conversion',
+        request: convertLanguage,
+        args: [code, language, targetLanguage],
+        successMessage: 'Language conversion complete',
+        modalTitle: 'AI Language Converter',
+        modalDescription: `Converted to ${targetLanguage.toUpperCase()}`
+      });
     }
-    return runAction({
-      key: 'conversion',
-      request: convertLanguage,
-      args: [code, language, targetLanguage],
-      successMessage: 'Language conversion complete',
-      modalTitle: 'AI Language Converter',
-      modalDescription: `Converted to ${targetLanguage.toUpperCase()}`,
-    });
   };
-
-  const actionHandlers = {
-    explanation: handleExplain,
-    optimization: handleOptimize,
-    bugs: handleBugs,
-    testcases: handleTestcases,
-    simulation: handleSimulation,
-    fix: handleFix,
-    complexity: handleComplexity,
-    comments: handleComments,
-    recommendations: handleRecommendations,
-    conversion: handleConversion,
-  };
-
-  const renderResultPanels = () =>
-    actionConfigs
-      .filter((config) => results[config.key])
-      .map((config) => (
-        <ResultCard
-          key={config.key}
-          title={config.label}
-          description="AI generated output"
-        >
-          {renderResultContent(config.key, results[config.key])}
-        </ResultCard>
-      ));
-
-  const renderedPanels = renderResultPanels();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white p-4 md:p-8">
       <div className="mx-auto max-w-6xl space-y-6">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">
-            AI-Powered Code Mentor
-          </h1>
-          <p className="mt-1 text-gray-600">
-            Understand, debug, and elevate your code with one-click AI insights.
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900">AI-Powered Code Mentor</h1>
+          <p className="mt-1 text-gray-600">Understand, debug, and elevate your code with one-click AI insights.</p>
         </div>
 
         <Card>
@@ -524,129 +457,127 @@ const CodeView = () => {
           <CardContent className="space-y-4">
             <div className="flex flex-col gap-4 md:flex-row">
               <div className="flex-1">
-                <label className="text-sm font-semibold text-gray-700">
-                  Source Language
-                </label>
+                <label className="text-sm font-semibold text-gray-700">Source Language</label>
                 <select
                   value={language}
-                  onChange={(event) => setLanguage(event.target.value)}
+                  onChange={(e) => setLanguage(e.target.value)}
                   className="mt-1 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none"
                 >
-                  {LANGUAGE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
+                  {LANGUAGE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
               </div>
               <div className="flex-1">
-                <label className="text-sm font-semibold text-gray-700">
-                  Target Language (Converter)
-                </label>
+                <label className="text-sm font-semibold text-gray-700">Target Language (for Conversion)</label>
                 <select
                   value={targetLanguage}
-                  onChange={(event) => setTargetLanguage(event.target.value)}
+                  onChange={(e) => setTargetLanguage(e.target.value)}
                   className="mt-1 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none"
                 >
-                  {LANGUAGE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
+                  {LANGUAGE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
               </div>
             </div>
+            
             <Textarea
               value={code}
-              onChange={(event) => setCode(event.target.value)}
+              onChange={(e) => setCode(e.target.value)}
               rows={16}
-              placeholder="Paste your solution here..."
+              placeholder="Paste your Java, Python, or other code here..."
               className="font-mono text-sm"
             />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Inputs & Simulation</CardTitle>
-            <CardDescription>
-              Provide custom input for the AI input simulator to trace execution.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">
-              Simulator Input
-            </label>
-            <Textarea
-              value={simulationInput}
-              onChange={(event) => setSimulationInput(event.target.value)}
-              rows={4}
-              placeholder='Example: {"nums":[1,2,3],"target":6}'
-              className="font-mono text-sm"
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>AI Toolbelt</CardTitle>
-            <CardDescription>
-              Run specialized AI copilots for explanation, debugging, optimization, and more.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {actionConfigs.map((action) => {
-                const Icon = action.icon;
-                const isLoading = loadingAction === action.key;
-                return (
-                  <Button
-                    key={action.key}
-                    variant="secondary"
-                    className="flex w-full items-center justify-center gap-2 border border-gray-200 bg-white text-gray-900 shadow-sm hover:border-gray-300 hover:bg-gray-50"
-                    disabled={isLoading}
-                    onClick={actionHandlers[action.key]}
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Icon className="h-4 w-4 text-blue-500" />
-                    )}
-                    <span className="text-sm font-semibold">{action.label}</span>
-                  </Button>
-                );
-              })}
+            
+            <div className="border-t border-gray-200 pt-4">
+              <p className="mb-3 text-sm font-semibold text-gray-700">Quick Actions</p>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <Button onClick={handlers.conversion} disabled={loadingAction === 'conversion'} className="flex items-center justify-center gap-2 bg-blue-600 text-white hover:bg-blue-700">
+                  {loadingAction === 'conversion' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Languages className="h-4 w-4" />}
+                  <span className="text-sm font-semibold">Convert Code</span>
+                </Button>
+                
+                <Button onClick={handlers.optimize} disabled={loadingAction === 'optimization'} className="flex items-center justify-center gap-2 bg-purple-600 text-white hover:bg-purple-700">
+                  {loadingAction === 'optimization' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                  <span className="text-sm font-semibold">Optimize Code</span>
+                </Button>
+                
+                <Button onClick={handlers.fix} disabled={loadingAction === 'fix'} className="flex items-center justify-center gap-2 bg-green-600 text-white hover:bg-green-700">
+                  {loadingAction === 'fix' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wrench className="h-4 w-4" />}
+                  <span className="text-sm font-semibold">Fix My Code</span>
+                </Button>
+                
+                <Button onClick={handlers.explain} disabled={loadingAction === 'explanation'} className="flex items-center justify-center gap-2 bg-indigo-600 text-white hover:bg-indigo-700">
+                  {loadingAction === 'explanation' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Info className="h-4 w-4" />}
+                  <span className="text-sm font-semibold">Explain Code</span>
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <div className="space-y-4">
-          {renderedPanels.length > 0 ? (
-            renderedPanels
-          ) : (
-            <Card>
-              <CardContent className="py-10 text-center text-gray-500">
-                Results will appear here once you run an AI action.
-              </CardContent>
-            </Card>
-          )}
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>More AI Tools</CardTitle>
+            <CardDescription>Additional analysis and generation tools</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <Button onClick={handlers.bugs} disabled={loadingAction === 'bugs'} variant="secondary" className="flex items-center justify-center gap-2">
+                {loadingAction === 'bugs' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bug className="h-4 w-4 text-red-500" />}
+                <span className="text-sm font-semibold">Find Bugs</span>
+              </Button>
+              
+              <Button onClick={handlers.testcases} disabled={loadingAction === 'testcases'} variant="secondary" className="flex items-center justify-center gap-2">
+                {loadingAction === 'testcases' ? <Loader2 className="h-4 w-4 animate-spin" /> : <ListChecks className="h-4 w-4 text-blue-500" />}
+                <span className="text-sm font-semibold">Generate Tests</span>
+              </Button>
+              
+              <Button onClick={handlers.complexity} disabled={loadingAction === 'complexity'} variant="secondary" className="flex items-center justify-center gap-2">
+                {loadingAction === 'complexity' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Gauge className="h-4 w-4 text-orange-500" />}
+                <span className="text-sm font-semibold">Analyze Complexity</span>
+              </Button>
+              
+              <Button onClick={handlers.comments} disabled={loadingAction === 'comments'} variant="secondary" className="flex items-center justify-center gap-2">
+                {loadingAction === 'comments' ? <Loader2 className="h-4 w-4 animate-spin" /> : <PenLine className="h-4 w-4 text-green-500" />}
+                <span className="text-sm font-semibold">Add Comments</span>
+              </Button>
+              
+              <Button onClick={handlers.recommendations} disabled={loadingAction === 'recommendations'} variant="secondary" className="flex items-center justify-center gap-2">
+                {loadingAction === 'recommendations' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lightbulb className="h-4 w-4 text-yellow-500" />}
+                <span className="text-sm font-semibold">Get Tips</span>
+              </Button>
+              
+              <Button onClick={handlers.simulation} disabled={loadingAction === 'simulation'} variant="secondary" className="flex items-center justify-center gap-2">
+                {loadingAction === 'simulation' ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4 text-purple-500" />}
+                <span className="text-sm font-semibold">Simulate Input</span>
+              </Button>
+            </div>
+            
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <label className="text-sm font-semibold text-gray-700">Simulator Input (for Simulate button)</label>
+              <Textarea
+                value={simulationInput}
+                onChange={(e) => setSimulationInput(e.target.value)}
+                rows={3}
+                placeholder='Example: {"nums":[1,2,3],"target":6}'
+                className="font-mono text-sm mt-1"
+              />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <Dialog open={modalState.open} onOpenChange={closeModal}>
+      <Dialog open={modalState.open} onOpenChange={() => setModalState(prev => ({ ...prev, open: false }))}>
         <DialogContent className="max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{modalState.title}</DialogTitle>
-            {modalState.description && (
-              <DialogDescription>{modalState.description}</DialogDescription>
-            )}
+            <DialogDescription>{modalState.description}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">{modalState.content}</div>
         </DialogContent>
       </Dialog>
+
+      {toast && <Toast message={toast.message} type={toast.type} />}
     </div>
   );
 };
 
 export default CodeView;
-
