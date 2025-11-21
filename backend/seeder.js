@@ -27,6 +27,7 @@ mongoose.connect(process.env.MONGO_URI, {
 
 // Read JSON files
 let questionsData;
+let topicsData;
 try {
   questionsData = JSON.parse(
     fs.readFileSync(`${__dirname}/_data/questions.json`, 'utf-8') // Create a folder `_data` and put your questions.json there
@@ -34,6 +35,16 @@ try {
   console.log('questions.json loaded successfully. Number of topics:', questionsData.length); // Log success
 } catch (err) {
   console.error('Error reading questions.json:', err);
+  process.exit(1);
+}
+
+try {
+  topicsData = JSON.parse(
+    fs.readFileSync(`${__dirname}/_data/topics.json`, 'utf-8')
+  );
+  console.log('topics.json loaded successfully. Number of topics:', topicsData.length);
+} catch (err) {
+  console.error('Error reading topics.json:', err);
   process.exit(1);
 }
 
@@ -89,6 +100,8 @@ const importData = async () => {
     console.log(`Prepared ${questionsToInsert.length} questions for insertion.`); // Log count
 
     await PracticeQuestion.create(questionsToInsert);
+    await Topic.deleteMany();
+    await Topic.create(topicsData);
     console.log('Data Imported successfully.'); // Changed success message
     process.exit();
   } catch (err) {

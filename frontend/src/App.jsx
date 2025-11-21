@@ -19,6 +19,7 @@ import Sidebar from './components/Sidebar';
 import { Toaster } from 'sonner';
 import Topics from './pages/User/Topics';
 import PracticeQuestions from './pages/User/PracticeQuestions';
+import CodeView from './pages/User/CodeView';
 import ManagePracticeQuestions from './pages/Admin/ManagePracticeQuestions';
 
 import VisualizerHome from './pages/User/VisualizerHome';
@@ -92,6 +93,7 @@ function App() {
               <Route path="weekly-test" element={<WeeklyTest />} />
               <Route path="visualizer-home" element={<VisualizerHome />} />
               <Route path="practice-questions" element={<PracticeQuestions />} />
+              <Route path="code-view" element={<CodeView />} />
 
               <Route path="bubble-sort" element={<BubbleSort />} />
               <Route path="merge-sort" element={<MergeSort />} />
