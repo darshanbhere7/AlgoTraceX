@@ -205,14 +205,19 @@ const PracticeQuestions = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center max-w-md"
         >
-          <div className="bg-red-50 rounded-full p-4 w-16 h-16 flex items-center justify-center mx-auto mb-4">
-            <X className="h-8 w-8 text-red-600" />
+          <div className="bg-red-100 dark:bg-red-900/30 rounded-full p-4 w-16 h-16 flex items-center justify-center mx-auto mb-4 border border-red-200 dark:border-red-800">
+            <X className="h-8 w-8 text-red-600 dark:text-red-400" />
           </div>
-          <p className="text-red-600 text-lg mb-4">{error}</p>
-          <Button onClick={fetchQuestions} variant="primary">
-            <RefreshCw className="mr-2 h-4 w-4" />
+          <p className="text-red-600 dark:text-red-400 text-lg mb-4">{error}</p>
+          <motion.button
+            onClick={fetchQuestions}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="flex items-center gap-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 py-2.5 px-5 rounded-lg transition-colors shadow-sm mx-auto"
+          >
+            <RefreshCw className="h-4 w-4" />
             Retry
-          </Button>
+          </motion.button>
         </motion.div>
       </div>
     );
@@ -222,7 +227,8 @@ const PracticeQuestions = () => {
   const bookmarkedSet = new Set(progressData.bookmarked);
 
   return (
-    <div className="container mx-auto p-4 md:p-6 lg:p-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
+      <div className="p-6 pt-24 pb-12 max-w-7xl mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-3 space-y-6">
@@ -233,10 +239,10 @@ const PracticeQuestions = () => {
             className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
           >
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                 DSA Practice Questions
               </h1>
-              <p className="text-gray-600">Master data structures and algorithms</p>
+              <p className="text-gray-600 dark:text-gray-400">Master data structures and algorithms</p>
             </div>
           </motion.div>
 
@@ -253,7 +259,7 @@ const PracticeQuestions = () => {
                 placeholder="Search questions..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white focus:border-transparent text-gray-900 dark:text-white"
               />
             </div>
           </motion.div>
@@ -272,7 +278,7 @@ const PracticeQuestions = () => {
                     <select
                       value={filters.topic}
                       onChange={(e) => setFilters((prev) => ({ ...prev, topic: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white text-gray-900 dark:text-white"
                     >
                       {topicOptions.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -288,7 +294,7 @@ const PracticeQuestions = () => {
                       onChange={(e) =>
                         setFilters((prev) => ({ ...prev, difficulty: e.target.value }))
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white text-gray-900 dark:text-white"
                     >
                       {difficultyOptions.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -302,7 +308,7 @@ const PracticeQuestions = () => {
                     <select
                       value={filters.status}
                       onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white text-gray-900 dark:text-white"
                     >
                       {statusOptions.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -372,7 +378,7 @@ const PracticeQuestions = () => {
                                       transition={{ delay: qIndex * 0.05 }}
                                       whileHover={{ y: -4 }}
                                     >
-                                      <Card className="h-full hover:shadow-xl transition-all duration-300 border-l-4 border-l-blue-500">
+                                      <Card className="h-full hover:shadow-md transition-all duration-300 border-l-4 border-l-gray-900 dark:border-l-white bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-sm">
                                         <CardContent className="p-5">
                                           <div className="flex justify-between items-start mb-3">
                                             <h3 className="font-semibold text-lg text-gray-900 flex-1 pr-2">
@@ -458,7 +464,7 @@ const PracticeQuestions = () => {
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             onClick={() => handleQuestionOpen(question.url)}
-                                            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
+                                            className="inline-flex items-center gap-2 text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-gray-300 font-medium text-sm transition-colors"
                                           >
                                             Solve Problem
                                             <ExternalLink className="h-4 w-4" />
@@ -505,7 +511,7 @@ const PracticeQuestions = () => {
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-medium text-gray-700">Overall Progress</span>
-                    <span className="text-sm font-bold text-blue-600">
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">
                       {analytics.overallProgress.toFixed(1)}%
                     </span>
                   </div>
@@ -518,13 +524,13 @@ const PracticeQuestions = () => {
                 <div className="pt-4 border-t border-gray-200">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-700">Completed</span>
-                    <span className="text-lg font-bold text-green-600">
+                    <span className="text-lg font-bold text-gray-900 dark:text-white">
                       {analytics.completedCount}
                     </span>
                   </div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700">Bookmarked</span>
-                    <span className="text-lg font-bold text-yellow-600">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Bookmarked</span>
+                    <span className="text-lg font-bold text-gray-900 dark:text-white">
                       {analytics.bookmarkedCount}
                     </span>
                   </div>
@@ -552,6 +558,7 @@ const PracticeQuestions = () => {
             </Card>
           </motion.div>
         </div>
+      </div>
       </div>
     </div>
   );

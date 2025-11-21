@@ -171,11 +171,6 @@ const evaluateBadges = ({ accuracy, timeRatio, zeroMistakes, streak }) => {
   return earned;
 };
 
-const getTimerVariant = (percentage) => {
-  if (percentage > 0.6) return 'bg-emerald-600/90 text-white';
-  if (percentage > 0.2) return 'bg-amber-500/90 text-white';
-  return 'bg-rose-600 text-white animate-pulse';
-};
 
 const WeeklyTest = () => {
   const [tests, setTests] = useState([]);
@@ -865,9 +860,13 @@ const WeeklyTest = () => {
         className="fixed top-6 right-6 z-50"
       >
         <div
-          className={`flex items-center gap-3 rounded-full px-5 py-3 shadow-xl backdrop-blur border border-white/10 ${getTimerVariant(
-            timerPercentage
-          )}`}
+          className={`flex items-center gap-3 rounded-full px-5 py-3 shadow-sm border ${
+            timerPercentage > 0.6
+              ? 'bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 text-gray-900 dark:text-white'
+              : timerPercentage > 0.2
+              ? 'bg-gray-100 dark:bg-neutral-800 border-gray-300 dark:border-neutral-700 text-gray-900 dark:text-white'
+              : 'bg-gray-900 dark:bg-white border-gray-900 dark:border-white text-white dark:text-gray-900 animate-pulse'
+          }`}
         >
           <Timer className="h-5 w-5" />
           <span className="font-semibold tracking-wide">{formatTime(timeLeft)}</span>
@@ -890,7 +889,7 @@ const WeeklyTest = () => {
           exit={{ opacity: 0 }}
           className="mb-8"
         >
-          <Card className="border border-white/10 bg-gradient-to-br from-slate-900 to-slate-800 text-white overflow-hidden shadow-2xl">
+          <Card className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 overflow-hidden shadow-sm">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row gap-6 items-center">
                 <motion.div
@@ -899,46 +898,47 @@ const WeeklyTest = () => {
                   transition={{ duration: 4, repeat: Infinity }}
                 >
                   <div
-                    className="h-full w-full rounded-full border-4 border-white/10 flex items-center justify-center"
+                    className="h-full w-full rounded-full border-4 border-gray-200 dark:border-neutral-700 flex items-center justify-center"
                     style={{
-                      background: `conic-gradient(rgb(16, 185, 129) ${lastResult.score}%, rgba(148,163,184,.3) ${lastResult.score}%)`,
+                      background: `conic-gradient(currentColor ${lastResult.score}%, rgba(148,163,184,.3) ${lastResult.score}%)`,
+                      color: 'currentColor'
                     }}
                   >
-                    <div className="h-28 w-28 rounded-full bg-slate-900 flex flex-col items-center justify-center text-center">
-                      <span className="text-3xl font-bold">{lastResult.score}%</span>
-                      <span className="text-xs uppercase tracking-wide text-slate-400">
+                    <div className="h-28 w-28 rounded-full bg-white dark:bg-neutral-900 flex flex-col items-center justify-center text-center">
+                      <span className="text-3xl font-bold text-gray-900 dark:text-white">{lastResult.score}%</span>
+                      <span className="text-xs uppercase tracking-wide text-gray-600 dark:text-gray-400">
                         Score
                       </span>
                     </div>
                   </div>
                 </motion.div>
 
-                <div className="flex-1 space-y-4 text-slate-100">
+                <div className="flex-1 space-y-4 text-gray-900 dark:text-white">
                   <div>
-                    <p className="text-sm uppercase tracking-[0.3em] text-slate-400">
+                    <p className="text-sm uppercase tracking-[0.3em] text-gray-600 dark:text-gray-400">
                       Completed
                     </p>
                     <h2 className="text-2xl font-semibold">{lastResult.testTitle}</h2>
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div className="bg-white/10 rounded-xl p-3">
-                      <p className="text-slate-400 text-xs">Accuracy</p>
-                      <p className="text-lg font-semibold">{accuracy}%</p>
+                    <div className="bg-gray-100 dark:bg-neutral-800 rounded-lg p-3 border border-gray-200 dark:border-neutral-700">
+                      <p className="text-gray-600 dark:text-gray-400 text-xs">Accuracy</p>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-white">{accuracy}%</p>
                     </div>
-                    <div className="bg-white/10 rounded-xl p-3">
-                      <p className="text-slate-400 text-xs">Correct</p>
-                      <p className="text-lg font-semibold">
+                    <div className="bg-gray-100 dark:bg-neutral-800 rounded-lg p-3 border border-gray-200 dark:border-neutral-700">
+                      <p className="text-gray-600 dark:text-gray-400 text-xs">Correct</p>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-white">
                         {lastResult.correctAnswers}/{lastResult.totalQuestions}
                       </p>
                     </div>
-                    <div className="bg-white/10 rounded-xl p-3">
-                      <p className="text-slate-400 text-xs">Incorrect</p>
-                      <p className="text-lg font-semibold">{incorrect}</p>
+                    <div className="bg-gray-100 dark:bg-neutral-800 rounded-lg p-3 border border-gray-200 dark:border-neutral-700">
+                      <p className="text-gray-600 dark:text-gray-400 text-xs">Incorrect</p>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-white">{incorrect}</p>
                     </div>
-                    <div className="bg-white/10 rounded-xl p-3">
-                      <p className="text-slate-400 text-xs">Time</p>
-                      <p className="text-lg font-semibold">{formatTime(lastResult.timeSpent)}</p>
+                    <div className="bg-gray-100 dark:bg-neutral-800 rounded-lg p-3 border border-gray-200 dark:border-neutral-700">
+                      <p className="text-gray-600 dark:text-gray-400 text-xs">Time</p>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatTime(lastResult.timeSpent)}</p>
                     </div>
                   </div>
                 </div>
@@ -954,8 +954,8 @@ const WeeklyTest = () => {
     <Dialog open={reviewOpen} onOpenChange={setReviewOpen}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Layers className="h-5 w-5 text-indigo-500" />
+          <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+            <Layers className="h-5 w-5 text-gray-600 dark:text-gray-400" />
             Review Before Submit
           </DialogTitle>
         </DialogHeader>
@@ -963,26 +963,26 @@ const WeeklyTest = () => {
         <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
           <section>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-slate-800">Attempted</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">Attempted</p>
               <Badge variant="secondary">{attemptedQuestions.length}</Badge>
             </div>
             <div className="grid gap-2">
               {attemptedQuestions.length === 0 && (
-                <p className="text-sm text-slate-500">No questions answered yet.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">No questions answered yet.</p>
               )}
               {attemptedQuestions.map((question) => (
                 <div
                   key={question.index}
-                  className="flex items-center justify-between rounded-lg border border-emerald-100 bg-emerald-50/80 px-3 py-2"
+                  className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-900 px-3 py-2"
                 >
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
                     Q{question.index + 1}: {question.question.slice(0, 60)}
                     {question.question.length > 60 ? '…' : ''}
                   </span>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-emerald-600"
+                    className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-800"
                     onClick={() => handleJumpToQuestion(question.index)}
                   >
                     Jump
@@ -992,30 +992,30 @@ const WeeklyTest = () => {
             </div>
           </section>
 
-          <div className="h-px bg-slate-100" />
+          <div className="h-px bg-gray-200 dark:bg-neutral-800" />
 
           <section>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-slate-800">Unattempted</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">Unattempted</p>
               <Badge variant="destructive">{unattemptedQuestions.length}</Badge>
             </div>
             <div className="grid gap-2">
               {unattemptedQuestions.length === 0 && (
-                <p className="text-sm text-slate-500">Great! Everything is answered.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Great! Everything is answered.</p>
               )}
               {unattemptedQuestions.map((question) => (
                 <div
                   key={question.index}
-                  className="flex items-center justify-between rounded-lg border border-rose-100 bg-rose-50/80 px-3 py-2"
+                  className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-900 px-3 py-2"
                 >
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
                     Q{question.index + 1}: {question.question.slice(0, 60)}
                     {question.question.length > 60 ? '…' : ''}
                   </span>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-rose-600"
+                    className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-800"
                     onClick={() => handleJumpToQuestion(question.index)}
                   >
                     Jump
@@ -1047,12 +1047,12 @@ const WeeklyTest = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: qIndex * 0.02 }}
     >
-      <Card className="border border-slate-200 shadow-sm hover:shadow-lg transition-all">
+      <Card className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all">
         <CardHeader className="space-y-1">
           <Badge variant="outline" className="w-fit text-xs uppercase tracking-wide">
             Question {qIndex + 1}
           </Badge>
-          <CardTitle className="text-base font-semibold text-slate-900">
+          <CardTitle className="text-base font-semibold text-gray-900 dark:text-white">
             {question.question}
           </CardTitle>
         </CardHeader>
@@ -1068,10 +1068,10 @@ const WeeklyTest = () => {
               <Label
                 key={oIndex}
                 htmlFor={`q${qIndex}-o${oIndex}`}
-                className={`flex w-full cursor-pointer items-center justify-between rounded-xl border px-4 py-3 text-sm font-medium transition-colors ${
+                className={`flex w-full cursor-pointer items-center justify-between rounded-lg border px-4 py-3 text-sm font-medium transition-colors ${
                   answers[qIndex] === oIndex
-                    ? 'border-indigo-500 bg-indigo-50'
-                    : 'border-slate-200 hover:border-slate-300'
+                    ? 'border-gray-900 dark:border-white bg-gray-100 dark:bg-neutral-800'
+                    : 'border-gray-200 dark:border-neutral-700 hover:border-gray-300 dark:hover:border-neutral-600'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -1079,10 +1079,10 @@ const WeeklyTest = () => {
                     value={String(oIndex)}
                     id={`q${qIndex}-o${oIndex}`}
                   />
-                  <span>{option}</span>
+                  <span className="text-gray-900 dark:text-white">{option}</span>
                 </div>
                 {answers[qIndex] === oIndex && (
-                  <CheckCircle2 className="h-5 w-5 text-indigo-500" />
+                  <CheckCircle2 className="h-5 w-5 text-gray-900 dark:text-white" />
                 )}
               </Label>
             ))}
@@ -1106,30 +1106,30 @@ const WeeklyTest = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Card className="overflow-hidden border border-slate-200 shadow-xl">
-            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 p-6 text-white">
+          <Card className="overflow-hidden border border-gray-200 dark:border-neutral-800 shadow-sm">
+            <div className="bg-gray-100 dark:bg-neutral-800 p-6 text-gray-900 dark:text-white border-b border-gray-200 dark:border-neutral-700">
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <p className="text-sm uppercase tracking-[0.3em] text-white/60">
+                  <p className="text-sm uppercase tracking-[0.3em] text-gray-600 dark:text-gray-400">
                     Week {selectedTest.weekNumber}
                   </p>
                   <h1 className="text-3xl font-semibold">{selectedTest.title}</h1>
                   {practiceMode && (
-                    <Badge variant="secondary" className="mt-3 bg-white/20 text-white">
+                    <Badge variant="secondary" className="mt-3 bg-gray-200 dark:bg-neutral-700 text-gray-900 dark:text-white">
                       Practice Mode
                     </Badge>
                   )}
                 </div>
                 <div className="flex gap-4 text-sm">
-                  <div className="rounded-2xl border border-white/30 px-4 py-3">
-                    <p className="text-white/60">Questions</p>
-                    <p className="text-xl font-semibold text-white">
+                  <div className="rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-3">
+                    <p className="text-gray-600 dark:text-gray-400">Questions</p>
+                    <p className="text-xl font-semibold text-gray-900 dark:text-white">
                       {answeredCount}/{selectedTest.questions.length}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-white/30 px-4 py-3">
-                    <p className="text-white/60">Time Limit</p>
-                    <p className="text-xl font-semibold text-white">
+                  <div className="rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-3">
+                    <p className="text-gray-600 dark:text-gray-400">Time Limit</p>
+                    <p className="text-xl font-semibold text-gray-900 dark:text-white">
                       {selectedTest.timeLimit} min
                     </p>
                   </div>
@@ -1139,7 +1139,7 @@ const WeeklyTest = () => {
 
             <CardContent className="space-y-6 p-6">
               <div>
-                <div className="flex items-center justify-between text-sm text-slate-500 mb-2">
+                <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
                   <span>Answered</span>
                   <span>
                     {answeredCount}/{selectedTest.questions.length}
@@ -1154,21 +1154,25 @@ const WeeklyTest = () => {
                 <Button
                   variant="outline"
                   onClick={() => resetWorkingState()}
-                  className="gap-2"
+                  className="gap-2 border-gray-300 dark:border-neutral-700 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-800"
                 >
                   <RefreshCw className="h-4 w-4" />
                   Exit Test
                 </Button>
                 <Button
-                  variant="secondary"
-                  className="gap-2"
+                  variant="outline"
+                  className="gap-2 border-gray-300 dark:border-neutral-700 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-800"
                   onClick={() => setReviewOpen(true)}
                   disabled={!selectedTest.questions.length}
                 >
                   <HelpCircle className="h-4 w-4" />
                   Review Before Submit
                 </Button>
-                <Button onClick={handleSubmitTest} disabled={submitting}>
+                <Button 
+                  onClick={handleSubmitTest} 
+                  disabled={submitting}
+                  className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 border border-gray-900 dark:border-white"
+                >
                   {submitting
                     ? 'Submitting…'
                     : practiceMode
@@ -1207,24 +1211,37 @@ const WeeklyTest = () => {
 
     return (
       <motion.div
-        key={test._id}
         layout
-        whileHover={{ y: -6 }}
+        whileHover={{ y: -4 }}
         transition={{ duration: 0.2 }}
+        className="h-full"
       >
-        <Card className="relative overflow-hidden border border-white/5 bg-white/80 backdrop-blur shadow-lg hover:shadow-2xl transition-all">
+        <Card className="relative overflow-visible bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all h-full flex flex-col min-h-[400px]">
           {isCompleted && (
-            <div className="absolute right-0 top-4 rotate-45 bg-indigo-600 px-12 py-1 text-xs font-semibold uppercase text-white shadow-lg">
+            <div className="absolute right-0 top-4 rotate-45 bg-gray-900 dark:bg-white px-12 py-1 text-xs font-semibold uppercase text-white dark:text-gray-900 shadow-sm z-10">
               {answeredBadge}
             </div>
           )}
 
-          <CardHeader className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-b-[2.5rem] pb-16">
-            <CardTitle className="text-xl font-semibold">{test.title}</CardTitle>
-            <CardDescription className="text-slate-200">
+          <CardHeader className="bg-white dark:bg-neutral-900 text-gray-900 dark:text-white p-6 border-b border-gray-200 dark:border-neutral-800">
+            <div className="mb-3 min-h-[3.5rem] flex items-start">
+              <CardTitle 
+                className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2 group relative"
+                title={test.title.length > 50 ? test.title : undefined}
+              >
+                {test.title.length > 50 ? (
+                  <span className="block line-clamp-2 group-hover:line-clamp-none group-hover:absolute group-hover:z-20 group-hover:bg-white dark:group-hover:bg-neutral-900 group-hover:p-3 group-hover:rounded-lg group-hover:shadow-lg group-hover:border group-hover:border-gray-200 dark:group-hover:border-neutral-800 group-hover:max-w-xs group-hover:whitespace-normal">
+                    {test.title}
+                  </span>
+                ) : (
+                  <span>{test.title}</span>
+                )}
+              </CardTitle>
+            </div>
+            <CardDescription className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               Week {test.weekNumber}
             </CardDescription>
-            <div className="mt-4 flex gap-4 text-sm text-white/80">
+            <div className="flex gap-4 text-sm text-gray-600 dark:text-gray-400">
               <div className="flex items-center gap-2">
                 <Timer className="h-4 w-4" />
                 {test.timeLimit} min
@@ -1236,13 +1253,13 @@ const WeeklyTest = () => {
             </div>
           </CardHeader>
 
-          <CardContent className="-mt-10 space-y-4">
+          <CardContent className="flex-1 space-y-4 p-6">
             {isCompleted && score && (
-              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="rounded-lg border border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-800 p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-500">Score</p>
-                    <p className="text-2xl font-semibold text-slate-900">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Score</p>
+                    <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                       {score.score}%
                     </p>
                   </div>
@@ -1250,7 +1267,7 @@ const WeeklyTest = () => {
                     {score.correctAnswers}/{score.totalQuestions} correct
                   </Badge>
                 </div>
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                   {score.autoSubmitted ? 'Auto submitted' : 'Completed manually'} ·{' '}
                   {new Date(score.date).toLocaleString()}
                 </p>
@@ -1258,9 +1275,9 @@ const WeeklyTest = () => {
             )}
           </CardContent>
 
-          <CardFooter className="flex flex-wrap items-center gap-3">
+          <CardFooter className="p-6 pt-0 flex flex-col gap-3">
             <Button
-              className="w-full gap-2"
+              className="w-full gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 border border-gray-900 dark:border-white"
               onClick={() => handleStartTest(test)}
               disabled={!canStartStandard}
             >
@@ -1273,7 +1290,7 @@ const WeeklyTest = () => {
             {isCompleted && (
               <Button
                 variant="outline"
-                className="w-full gap-2"
+                className="w-full gap-2 border-gray-300 dark:border-neutral-700 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-800"
                 onClick={() => handleStartTest(test, 'practice')}
               >
                 <Repeat className="h-4 w-4" />
@@ -1291,44 +1308,68 @@ const WeeklyTest = () => {
       layout
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="space-y-12"
+      className="space-y-8"
     >
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <p className="text-sm uppercase tracking-[0.5em] text-slate-500">
-            Weekly Assessments
-          </p>
-          <h1 className="text-3xl font-semibold text-slate-900">Stay on track</h1>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Weekly Tests
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">Test your knowledge with weekly assessments</p>
         </div>
 
-        <div className="flex flex-wrap gap-4 text-sm">
-          <Card className="flex items-center gap-3 rounded-2xl border border-indigo-100 bg-indigo-50 px-5 py-3 text-indigo-900">
-            <Target className="h-4 w-4" />
-            <div>
-              <p className="text-xs uppercase tracking-wide text-indigo-500">Avg score</p>
-              <p className="text-lg font-semibold">{totalScoreSnapshot.averageScore}%</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            whileHover={{ y: -4 }}
+            className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg p-6 shadow-sm"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <Target className="text-2xl text-gray-400 dark:text-gray-600" />
             </div>
-          </Card>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Average Score</p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">{totalScoreSnapshot.averageScore}%</p>
+          </motion.div>
 
-          <Card className="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-3 text-emerald-900">
-            <Layers className="h-4 w-4" />
-            <div>
-              <p className="text-xs uppercase tracking-wide text-emerald-500">
-                Tests taken
-              </p>
-              <p className="text-lg font-semibold">{totalScoreSnapshot.totalTests}</p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            whileHover={{ y: -4 }}
+            className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg p-6 shadow-sm"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <Layers className="text-2xl text-gray-400 dark:text-gray-600" />
             </div>
-          </Card>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Tests Taken</p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">{totalScoreSnapshot.totalTests}</p>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       <motion.div
         layout
-        className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+        className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
       >
-        {tests.map((test) => renderTestCard(test))}
+        {tests.map((test, index) => (
+          <motion.div
+            key={test._id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: index * 0.1 }}
+            className="h-full"
+          >
+            {renderTestCard(test)}
+          </motion.div>
+        ))}
       </motion.div>
     </motion.div>
   );
@@ -1337,22 +1378,43 @@ const WeeklyTest = () => {
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
       {state === 'loading' ? (
         <>
-          <div className="h-16 w-16 rounded-full border-4 border-dashed border-slate-300 animate-spin" />
-          <p className="text-slate-500">Fetching curated weekly tests…</p>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="animate-spin rounded-full h-12 w-12 border-2 border-gray-300 dark:border-gray-700 border-t-gray-900 dark:border-t-white mx-auto mb-4"></div>
+            <p className="text-lg text-gray-900 dark:text-white">Fetching curated weekly tests…</p>
+          </motion.div>
         </>
       ) : (
         <>
-          <AlertTriangle className="h-10 w-10 text-rose-500" />
-          <p className="text-slate-600">{error}</p>
-          <Button onClick={fetchTests}>Try again</Button>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg p-8 max-w-md shadow-sm"
+          >
+            <AlertTriangle className="h-10 w-10 text-gray-600 dark:text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-900 dark:text-white mb-6">{error}</p>
+            <motion.button
+              onClick={fetchTests}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex items-center gap-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 py-2.5 px-5 rounded-lg transition-colors shadow-sm mx-auto"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Try again
+            </motion.button>
+          </motion.div>
         </>
       )}
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-slate-950/5 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto w-full max-w-6xl">
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
+      <div className="p-6 pt-24 pb-12 max-w-6xl mx-auto">
         {renderResultPanel()}
         {loading && renderFallback('loading')}
         {!loading && error && renderFallback('error')}

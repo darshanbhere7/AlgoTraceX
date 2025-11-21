@@ -499,8 +499,8 @@ const ProgressPage = () => {
           animate={{ opacity: 1, scale: 1 }}
           className="text-center"
         >
-          <RefreshCw className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-xl text-gray-600">Loading Progress...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-gray-300 dark:border-gray-700 border-t-gray-900 dark:border-t-white mx-auto mb-4"></div>
+          <p className="text-lg text-gray-900 dark:text-white">Loading Progress...</p>
         </motion.div>
       </div>
     );
@@ -514,21 +514,27 @@ const ProgressPage = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center max-w-md"
         >
-          <div className="bg-red-50 rounded-full p-4 w-16 h-16 flex items-center justify-center mx-auto mb-4">
-            <X className="h-8 w-8 text-red-600" />
+          <div className="bg-red-100 dark:bg-red-900/30 rounded-full p-4 w-16 h-16 flex items-center justify-center mx-auto mb-4 border border-red-200 dark:border-red-800">
+            <X className="h-8 w-8 text-red-600 dark:text-red-400" />
           </div>
-          <p className="text-red-600 text-lg mb-4">{error}</p>
-          <Button onClick={handleRefresh} variant="primary">
-            <RefreshCw className="mr-2 h-4 w-4" />
+          <p className="text-red-600 dark:text-red-400 text-lg mb-4">{error}</p>
+          <motion.button
+            onClick={handleRefresh}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="flex items-center gap-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 py-2.5 px-5 rounded-lg transition-colors shadow-sm mx-auto"
+          >
+            <RefreshCw className="h-4 w-4" />
             Retry
-          </Button>
+          </motion.button>
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
+      <div className="p-6 pt-24 pb-12 max-w-7xl mx-auto space-y-6">
       {/* Header Section */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -536,13 +542,18 @@ const ProgressPage = () => {
         className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
       >
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Your Learning Progress</h1>
-          <p className="text-gray-600">Track your DSA journey and achievements</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Your Learning Progress</h1>
+          <p className="text-gray-600 dark:text-gray-400">Track your DSA journey and achievements</p>
         </div>
-        <Button onClick={handleDownloadPDF} variant="primary" size="md" className="w-full md:w-auto">
-          <Download className="mr-2 h-4 w-4" />
+        <motion.button
+          onClick={handleDownloadPDF}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="flex items-center gap-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 py-2.5 px-5 rounded-lg transition-colors shadow-sm w-full md:w-auto"
+        >
+          <Download className="h-4 w-4" />
           Download Report (PDF)
-        </Button>
+        </motion.button>
       </motion.div>
 
       {/* Stats Overview Cards */}
@@ -557,10 +568,10 @@ const ProgressPage = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Overall Progress</p>
-                  <p className="text-3xl font-bold text-blue-600">{overallProgress.toFixed(1)}%</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{overallProgress.toFixed(1)}%</p>
                 </div>
-                <div className="bg-blue-100 rounded-full p-3">
-                  <PieChart className="h-6 w-6 text-blue-600" />
+                <div className="bg-gray-100 dark:bg-neutral-800 rounded-full p-3">
+                  <PieChart className="h-6 w-6 text-gray-600 dark:text-gray-400" />
                 </div>
               </div>
               <p className="text-xs text-gray-500 mt-2">
@@ -580,10 +591,10 @@ const ProgressPage = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Daily Streak</p>
-                  <p className="text-3xl font-bold text-orange-600">{displayStreak || 0} days</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{displayStreak || 0} days</p>
                 </div>
-                <div className="bg-orange-100 rounded-full p-3">
-                  <Flame className="h-6 w-6 text-orange-600" />
+                <div className="bg-gray-100 dark:bg-neutral-800 rounded-full p-3">
+                  <Flame className="h-6 w-6 text-gray-600 dark:text-gray-400" />
                 </div>
               </div>
               <p className="text-xs text-gray-500 mt-2">Keep the fire burning!</p>
@@ -601,10 +612,10 @@ const ProgressPage = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Tests Completed</p>
-                  <p className="text-3xl font-bold text-green-600">{testResults.length}</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{testResults.length}</p>
                 </div>
-                <div className="bg-green-100 rounded-full p-3">
-                  <Target className="h-6 w-6 text-green-600" />
+                <div className="bg-gray-100 dark:bg-neutral-800 rounded-full p-3">
+                  <Target className="h-6 w-6 text-gray-600 dark:text-gray-400" />
                 </div>
               </div>
               <p className="text-xs text-gray-500 mt-2">Weekly assessments</p>
@@ -622,10 +633,10 @@ const ProgressPage = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Achievements</p>
-                  <p className="text-3xl font-bold text-purple-600">{achievements.length}</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{achievements.length}</p>
                 </div>
-                <div className="bg-purple-100 rounded-full p-3">
-                  <Award className="h-6 w-6 text-purple-600" />
+                <div className="bg-gray-100 dark:bg-neutral-800 rounded-full p-3">
+                  <Award className="h-6 w-6 text-gray-600 dark:text-gray-400" />
                 </div>
               </div>
               <p className="text-xs text-gray-500 mt-2">Badges unlocked</p>
@@ -652,7 +663,7 @@ const ProgressPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">
-                  <div className="text-5xl font-bold text-blue-600">{overallProgress.toFixed(1)}%</div>
+                  <div className="text-5xl font-bold text-gray-900 dark:text-white">{overallProgress.toFixed(1)}%</div>
                   <div className="flex-1">
                     <motion.div
                       initial={{ width: 0 }}
@@ -991,30 +1002,18 @@ const ProgressPage = () => {
                       transition={{ delay: index * 0.1 }}
                       className={`p-4 rounded-lg border-l-4 ${
                         insight.type === 'success'
-                          ? 'bg-green-50 border-green-500'
+                          ? 'bg-gray-100 dark:bg-neutral-800 border-gray-900 dark:border-white'
                           : insight.type === 'warning'
-                          ? 'bg-yellow-50 border-yellow-500'
-                          : 'bg-blue-50 border-blue-500'
+                          ? 'bg-gray-100 dark:bg-neutral-800 border-gray-700 dark:border-gray-300'
+                          : 'bg-gray-100 dark:bg-neutral-800 border-gray-600 dark:border-gray-400'
                       }`}
                     >
                       <div className="flex items-start gap-3">
                         <div
-                          className={`rounded-full p-2 ${
-                            insight.type === 'success'
-                              ? 'bg-green-100'
-                              : insight.type === 'warning'
-                              ? 'bg-yellow-100'
-                              : 'bg-blue-100'
-                          }`}
+                          className="rounded-full p-2 bg-gray-200 dark:bg-neutral-700"
                         >
                           <Icon
-                            className={`h-5 w-5 ${
-                              insight.type === 'success'
-                                ? 'text-green-600'
-                                : insight.type === 'warning'
-                                ? 'text-yellow-600'
-                                : 'text-blue-600'
-                            }`}
+                            className="h-5 w-5 text-gray-900 dark:text-white"
                           />
                         </div>
                         <div className="flex-1">
@@ -1047,46 +1046,30 @@ const ProgressPage = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-gray-600 mb-1">Last 7 Days</p>
-                <p className="text-3xl font-bold text-blue-600">{comparisonData.last7Days}</p>
-                <p className="text-xs text-gray-500 mt-1">Activities</p>
+              <div className="text-center p-4 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg shadow-sm">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Last 7 Days</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white">{comparisonData.last7Days}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Activities</p>
               </div>
-              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-600 mb-1">Previous 7 Days</p>
-                <p className="text-3xl font-bold text-gray-600">{comparisonData.previous7Days}</p>
-                <p className="text-xs text-gray-500 mt-1">Activities</p>
+              <div className="text-center p-4 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg shadow-sm">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Previous 7 Days</p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white">{comparisonData.previous7Days}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Activities</p>
               </div>
-              <div
-                className={`text-center p-4 rounded-lg ${
-                  comparisonData.trend === 'up'
-                    ? 'bg-green-50'
-                    : comparisonData.trend === 'down'
-                    ? 'bg-red-50'
-                    : 'bg-gray-50'
-                }`}
-              >
-                <p className="text-sm text-gray-600 mb-1">Change</p>
+              <div className="text-center p-4 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg shadow-sm">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Change</p>
                 <div className="flex items-center justify-center gap-2">
                   {comparisonData.trend === 'up' ? (
-                    <TrendingUp className="h-5 w-5 text-green-600" />
+                    <TrendingUp className="h-5 w-5 text-gray-900 dark:text-white" />
                   ) : comparisonData.trend === 'down' ? (
-                    <TrendingDown className="h-5 w-5 text-red-600" />
+                    <TrendingDown className="h-5 w-5 text-gray-900 dark:text-white" />
                   ) : null}
-                  <p
-                    className={`text-3xl font-bold ${
-                      comparisonData.trend === 'up'
-                        ? 'text-green-600'
-                        : comparisonData.trend === 'down'
-                        ? 'text-red-600'
-                        : 'text-gray-600'
-                    }`}
-                  >
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">
                     {comparisonData.change > 0 ? '+' : ''}
                     {comparisonData.change}
                   </p>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   {comparisonData.changePercent}% {comparisonData.trend === 'up' ? 'increase' : comparisonData.trend === 'down' ? 'decrease' : 'change'}
                 </p>
               </div>
@@ -1116,6 +1099,7 @@ const ProgressPage = () => {
           </Card>
         </motion.div>
       )}
+      </div>
     </div>
   );
 };

@@ -884,7 +884,8 @@ const AIRecommendations = () => {
   };
   
   return (
-    <motion.div className="pt-25 pb-8 px-4 md:px-8 lg:px-12" initial="hidden" animate="visible" variants={subtleScale} transition={{ duration: 0.4 }}>
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
+      <motion.div className="pt-24 pb-12 px-4 md:px-8 lg:px-12" initial="hidden" animate="visible" variants={subtleScale} transition={{ duration: 0.4 }}>
       <motion.div className="max-w-6xl mx-auto space-y-6" initial="hidden" animate="visible" variants={fadeInUp} transition={{ duration: 0.4 }}>
         <motion.div className="text-center space-y-2" initial="hidden" animate="visible" variants={fadeInUp} transition={{ duration: 0.3 }}>
           <h1 className="text-3xl font-bold tracking-tight">AlgoBot AI Assitant</h1>
@@ -1020,7 +1021,8 @@ const AIRecommendations = () => {
            </TabsContent>
           </Tabs>
       </motion.div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 };
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Loader2, Info, Sparkles, Bug, ListChecks, PlayCircle, Wrench, Gauge, PenLine, Lightbulb, Languages } from 'lucide-react';
 
 // Mock AI helper functions (replace with actual API calls)
@@ -105,19 +106,19 @@ const LANGUAGE_OPTIONS = [
 ];
 
 const Card = ({ children, className = '' }) => (
-  <div className={`bg-white rounded-lg border border-gray-200 shadow-sm ${className}`}>{children}</div>
+  <div className={`bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 shadow-sm ${className}`}>{children}</div>
 );
 
 const CardHeader = ({ children }) => <div className="p-6 pb-4">{children}</div>;
-const CardTitle = ({ children, className = '' }) => <h3 className={`text-xl font-semibold ${className}`}>{children}</h3>;
-const CardDescription = ({ children, className = '' }) => <p className={`text-sm text-gray-500 mt-1 ${className}`}>{children}</p>;
+const CardTitle = ({ children, className = '' }) => <h3 className={`text-xl font-semibold text-gray-900 dark:text-white ${className}`}>{children}</h3>;
+const CardDescription = ({ children, className = '' }) => <p className={`text-sm text-gray-600 dark:text-gray-400 mt-1 ${className}`}>{children}</p>;
 const CardContent = ({ children, className = '' }) => <div className={`p-6 pt-0 ${className}`}>{children}</div>;
 
 const Button = ({ children, onClick, disabled, className = '', variant = 'default' }) => {
   const baseStyles = 'px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
   const variantStyles = variant === 'secondary' 
-    ? 'bg-gray-100 text-gray-900 hover:bg-gray-200' 
-    : 'bg-blue-600 text-white hover:bg-blue-700';
+    ? 'bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700' 
+    : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 border border-gray-900 dark:border-white';
   
   return (
     <button onClick={onClick} disabled={disabled} className={`${baseStyles} ${variantStyles} ${className}`}>
@@ -132,7 +133,7 @@ const Textarea = ({ value, onChange, rows, placeholder, className = '' }) => (
     onChange={onChange}
     rows={rows}
     placeholder={placeholder}
-    className={`w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`}
+    className={`w-full px-3 py-2 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white text-gray-900 dark:text-white ${className}`}
   />
 );
 
@@ -142,7 +143,7 @@ const Dialog = ({ open, onOpenChange, children }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" onClick={() => onOpenChange(false)} />
-      <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-auto">
+      <div className="relative bg-white dark:bg-neutral-900 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-auto border border-gray-200 dark:border-neutral-800">
         {children}
       </div>
     </div>
@@ -151,8 +152,8 @@ const Dialog = ({ open, onOpenChange, children }) => {
 
 const DialogContent = ({ children, className = '' }) => <div className={`p-6 ${className}`}>{children}</div>;
 const DialogHeader = ({ children }) => <div className="mb-4">{children}</div>;
-const DialogTitle = ({ children }) => <h2 className="text-2xl font-bold">{children}</h2>;
-const DialogDescription = ({ children }) => <p className="text-gray-500 mt-1">{children}</p>;
+const DialogTitle = ({ children }) => <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{children}</h2>;
+const DialogDescription = ({ children }) => <p className="text-gray-600 dark:text-gray-400 mt-1">{children}</p>;
 
 const Toast = ({ message, type = 'success' }) => {
   const bgColor = type === 'error' ? 'bg-red-500' : type === 'info' ? 'bg-blue-500' : 'bg-green-500';
@@ -442,12 +443,17 @@ const CodeView = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white p-4 md:p-8">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">AI-Powered Code Mentor</h1>
-          <p className="mt-1 text-gray-600">Understand, debug, and elevate your code with one-click AI insights.</p>
-        </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
+      <div className="p-6 pt-24 pb-12 max-w-6xl mx-auto space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="text-center"
+        >
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">AI-Powered Code Mentor</h1>
+          <p className="mt-1 text-gray-600 dark:text-gray-400">Understand, debug, and elevate your code with one-click AI insights.</p>
+        </motion.div>
 
         <Card>
           <CardHeader>
@@ -461,7 +467,7 @@ const CodeView = () => {
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
-                  className="mt-1 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none"
+                  className="mt-1 w-full rounded-md border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm shadow-sm focus:border-gray-900 dark:focus:border-white focus:outline-none text-gray-900 dark:text-white"
                 >
                   {LANGUAGE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
@@ -471,7 +477,7 @@ const CodeView = () => {
                 <select
                   value={targetLanguage}
                   onChange={(e) => setTargetLanguage(e.target.value)}
-                  className="mt-1 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none"
+                  className="mt-1 w-full rounded-md border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-sm shadow-sm focus:border-gray-900 dark:focus:border-white focus:outline-none text-gray-900 dark:text-white"
                 >
                   {LANGUAGE_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
@@ -489,22 +495,22 @@ const CodeView = () => {
             <div className="border-t border-gray-200 pt-4">
               <p className="mb-3 text-sm font-semibold text-gray-700">Quick Actions</p>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <Button onClick={handlers.conversion} disabled={loadingAction === 'conversion'} className="flex items-center justify-center gap-2 bg-blue-600 text-white hover:bg-blue-700">
+                <Button onClick={handlers.conversion} disabled={loadingAction === 'conversion'} className="flex items-center justify-center gap-2">
                   {loadingAction === 'conversion' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Languages className="h-4 w-4" />}
                   <span className="text-sm font-semibold">Convert Code</span>
                 </Button>
                 
-                <Button onClick={handlers.optimize} disabled={loadingAction === 'optimization'} className="flex items-center justify-center gap-2 bg-purple-600 text-white hover:bg-purple-700">
+                <Button onClick={handlers.optimize} disabled={loadingAction === 'optimization'} className="flex items-center justify-center gap-2">
                   {loadingAction === 'optimization' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                   <span className="text-sm font-semibold">Optimize Code</span>
                 </Button>
                 
-                <Button onClick={handlers.fix} disabled={loadingAction === 'fix'} className="flex items-center justify-center gap-2 bg-green-600 text-white hover:bg-green-700">
+                <Button onClick={handlers.fix} disabled={loadingAction === 'fix'} className="flex items-center justify-center gap-2">
                   {loadingAction === 'fix' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wrench className="h-4 w-4" />}
                   <span className="text-sm font-semibold">Fix My Code</span>
                 </Button>
                 
-                <Button onClick={handlers.explain} disabled={loadingAction === 'explanation'} className="flex items-center justify-center gap-2 bg-indigo-600 text-white hover:bg-indigo-700">
+                <Button onClick={handlers.explain} disabled={loadingAction === 'explanation'} className="flex items-center justify-center gap-2">
                   {loadingAction === 'explanation' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Info className="h-4 w-4" />}
                   <span className="text-sm font-semibold">Explain Code</span>
                 </Button>

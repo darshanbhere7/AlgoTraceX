@@ -263,20 +263,17 @@ const Topics = () => {
 
   if (loading && topics.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-center items-center min-h-[60vh]">
-            <div className="text-center space-y-4">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                className="inline-block"
-              >
-                <RefreshCw className="w-8 h-8 text-blue-600" />
-              </motion.div>
-              <p className="text-xl text-gray-600">Loading topics...</p>
-            </div>
-          </div>
+      <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
+        <div className="flex justify-center items-center min-h-screen">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="text-center"
+          >
+            <div className="animate-spin rounded-full h-12 w-12 border-2 border-gray-300 dark:border-gray-700 border-t-gray-900 dark:border-t-white mx-auto mb-4"></div>
+            <p className="text-lg text-gray-900 dark:text-white">Loading topics...</p>
+          </motion.div>
         </div>
       </div>
     );
@@ -284,49 +281,54 @@ const Topics = () => {
 
   if (error && topics.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-center items-center min-h-[60vh]">
-            <div className="text-center space-y-4">
-              <p className="text-xl text-red-600">{error}</p>
-              <button
-                onClick={fetchTopics}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Retry
-              </button>
-            </div>
-          </div>
+      <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
+        <div className="flex justify-center items-center min-h-screen">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg p-8 max-w-md shadow-sm text-center"
+          >
+            <p className="text-red-600 dark:text-red-400 mb-6">{error}</p>
+            <motion.button
+              onClick={fetchTopics}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex items-center gap-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 py-2.5 px-5 rounded-lg transition-colors shadow-sm mx-auto"
+            >
+              <RefreshCw /> Retry
+            </motion.button>
+          </motion.div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
+      <div className="p-6 pt-24 pb-12 max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.3 }}
           className="mb-8"
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl shadow-lg">
-                <BookOpen className="w-8 h-8 text-white" />
+              <div className="p-3 bg-gray-100 dark:bg-neutral-800 rounded-xl shadow-sm border border-gray-200 dark:border-neutral-700">
+                <BookOpen className="w-8 h-8 text-gray-900 dark:text-white" />
               </div>
               <div>
-                <h1 className="text-4xl font-bold text-gray-900">Learning Topics</h1>
-                <p className="text-gray-600 mt-1">Explore and master data structures & algorithms</p>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Learning Topics</h1>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">Explore and master data structures & algorithms</p>
               </div>
             </div>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={fetchTopics}
-              className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 rounded-lg shadow-sm transition-colors"
             >
               <RefreshCw className="w-4 h-4" />
               <span>Refresh</span>
@@ -334,52 +336,55 @@ const Topics = () => {
           </div>
 
           {/* Stats Bar */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white/80 backdrop-blur-sm rounded-lg p-4 shadow-md border border-gray-200"
+              whileHover={{ y: -4 }}
+              className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg p-6 shadow-sm"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Sparkles className="w-5 h-5 text-green-600" />
+                <div className="p-2 bg-gray-100 dark:bg-neutral-800 rounded-lg">
+                  <Sparkles className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">{topics.length}</p>
-                  <p className="text-sm text-gray-600">Total Topics</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{topics.length}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Topics</p>
                 </div>
               </div>
             </motion.div>
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white/80 backdrop-blur-sm rounded-lg p-4 shadow-md border border-gray-200"
+              whileHover={{ y: -4 }}
+              className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg p-6 shadow-sm"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-yellow-100 rounded-lg">
-                  <BookOpen className="w-5 h-5 text-yellow-600" />
+                <div className="p-2 bg-gray-100 dark:bg-neutral-800 rounded-lg">
+                  <BookOpen className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">{bookmarkedTopics.size}</p>
-                  <p className="text-sm text-gray-600">Bookmarked</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{bookmarkedTopics.size}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Bookmarked</p>
                 </div>
               </div>
             </motion.div>
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-white/80 backdrop-blur-sm rounded-lg p-4 shadow-md border border-gray-200"
+              whileHover={{ y: -4 }}
+              className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg p-6 shadow-sm"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Sparkles className="w-5 h-5 text-blue-600" />
+                <div className="p-2 bg-gray-100 dark:bg-neutral-800 rounded-lg">
+                  <Sparkles className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">{pinnedTopics.size}</p>
-                  <p className="text-sm text-gray-600">Pinned</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{pinnedTopics.size}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Pinned</p>
                 </div>
               </div>
             </motion.div>
@@ -393,10 +398,10 @@ const Topics = () => {
           transition={{ delay: 0.4 }}
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-white/80 backdrop-blur-sm shadow-md mb-6">
+            <TabsList className="grid w-full grid-cols-3 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-sm mb-6">
               <TabsTrigger
                 value="beginner"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white transition-all"
+                className="data-[state=active]:bg-gray-900 data-[state=active]:dark:bg-white data-[state=active]:text-white data-[state=active]:dark:text-gray-900 transition-all"
               >
                 <span className="flex items-center gap-2">
                   <span>🌱</span>
@@ -405,7 +410,7 @@ const Topics = () => {
               </TabsTrigger>
               <TabsTrigger
                 value="intermediate"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-yellow-500 data-[state=active]:to-amber-500 data-[state=active]:text-white transition-all"
+                className="data-[state=active]:bg-gray-900 data-[state=active]:dark:bg-white data-[state=active]:text-white data-[state=active]:dark:text-gray-900 transition-all"
               >
                 <span className="flex items-center gap-2">
                   <span>⚡</span>
@@ -414,7 +419,7 @@ const Topics = () => {
               </TabsTrigger>
               <TabsTrigger
                 value="advanced"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-orange-500 data-[state=active]:text-white transition-all"
+                className="data-[state=active]:bg-gray-900 data-[state=active]:dark:bg-white data-[state=active]:text-white data-[state=active]:dark:text-gray-900 transition-all"
               >
                 <span className="flex items-center gap-2">
                   <span>🔥</span>
@@ -427,7 +432,7 @@ const Topics = () => {
               {filteredTopics('beginner').length > 0 ? (
                 renderTopicList('beginner')
               ) : (
-                <div className="text-center py-12 text-gray-500">
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                   No beginner topics available
                 </div>
               )}
@@ -437,7 +442,7 @@ const Topics = () => {
               {filteredTopics('intermediate').length > 0 ? (
                 renderTopicList('intermediate')
               ) : (
-                <div className="text-center py-12 text-gray-500">
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                   No intermediate topics available
                 </div>
               )}
@@ -447,7 +452,7 @@ const Topics = () => {
               {filteredTopics('advanced').length > 0 ? (
                 renderTopicList('advanced')
               ) : (
-                <div className="text-center py-12 text-gray-500">
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                   No advanced topics available
                 </div>
               )}
@@ -462,7 +467,7 @@ const Topics = () => {
           transition={{ delay: 1 }}
           className="mt-8 text-center"
         >
-          <p className="text-sm text-gray-500 flex items-center justify-center gap-2">
+          <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2">
             <span>💡</span>
             <span>Drag and drop topics to reorder them</span>
           </p>
