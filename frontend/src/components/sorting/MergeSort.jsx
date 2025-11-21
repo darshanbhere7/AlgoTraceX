@@ -331,6 +331,16 @@ export default function MergeSort() {
 
     return (
         <div className="w-full px-4 sm:px-6 lg:px-8 pt-24 pb-12 max-w-7xl mx-auto">
+            {/* Title Section */}
+            <div className="mb-6">
+                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">
+                    Merge Sort Visualizer
+                </h1>
+                <p className="text-sm text-slate-600 dark:text-white/50">
+                    Watch how bubble sort compares and swaps adjacent elements
+                </p>
+            </div>
+
             {/* Controls Section */}
             <div className="space-y-4 mb-6">
                 {/* Input Row */}

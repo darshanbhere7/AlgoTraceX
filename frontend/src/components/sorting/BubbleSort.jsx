@@ -77,7 +77,6 @@ export default function BubbleSort() {
 
         for (let i = 0; i < arr.length - 1; i++) {
             for (let j = 0; j < arr.length - i - 1; j++) {
-                // Wait for pause to be resumed
                 while (paused) {
                     await new Promise(resolve => setTimeout(resolve, 100));
                 }
@@ -86,7 +85,6 @@ export default function BubbleSort() {
                 bars[j + 1].classList.add("comparing");
                 await new Promise((r) => setTimeout(r, delay));
 
-                // Wait for pause to be resumed
                 while (paused) {
                     await new Promise(resolve => setTimeout(resolve, 100));
                 }
@@ -96,7 +94,6 @@ export default function BubbleSort() {
                     setArray([...arr]);
                     await new Promise((r) => setTimeout(r, delay));
 
-                    // Wait for pause to be resumed
                     while (paused) {
                         await new Promise(resolve => setTimeout(resolve, 100));
                     }
@@ -132,14 +129,13 @@ export default function BubbleSort() {
     };
 
     return (
-        <div className="w-full px-4 sm:px-6 lg:px-8 pt-24 pb-12 max-w-7xl mx-auto">
+        <div className="w-full px-4 sm:px-6 lg:px-8 pt-24 sm:pt-24 pb-8 max-w-7xl mx-auto">
             <style>{`
                 .bar {
                     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                     border-radius: 4px;
                 }
                 
-                /* Dark mode styles */
                 @media (prefers-color-scheme: dark) {
                     .bar {
                         background: rgba(100, 116, 139, 0.6);
@@ -163,7 +159,6 @@ export default function BubbleSort() {
                     }
                 }
                 
-                /* Light mode styles */
                 @media (prefers-color-scheme: light) {
                     .bar {
                         background: rgba(71, 85, 105, 0.75);
@@ -188,6 +183,16 @@ export default function BubbleSort() {
                 }
             `}</style>
 
+            {/* Title Section */}
+            <div className="mb-6">
+                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">
+                    Bubble Sort Visualizer
+                </h1>
+                <p className="text-sm text-slate-600 dark:text-white/50">
+                    See how merge sort divides the array and merges sorted halves efficiently.
+                </p>
+            </div>
+
             {/* Controls Section */}
             <div className="space-y-4 mb-6">
                 {/* Input Row */}
@@ -206,30 +211,18 @@ export default function BubbleSort() {
                             onClick={handleAddValue}
                             disabled={sorting}
                             size="icon"
-                            className="
-                            relative flex items-center justify-center h-10 w-10 shrink-0 border-0 
-                            bg-slate-200 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/15
-                            text-slate-900 dark:text-white
-                            hover:shadow-lg dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]
-                            shadow-[0_0_10px_rgba(0,0,0,0.05)]
-                            transition-all duration-300 ease-out
-                            rounded-md"
+                            className="relative flex items-center justify-center h-10 w-10 shrink-0 border-0 bg-slate-200 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/15 text-slate-900 dark:text-white hover:shadow-lg dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] shadow-[0_0_10px_rgba(0,0,0,0.05)] transition-all duration-300 ease-out rounded-md"
                         >
                             <Plus className="h-4 w-4 text-slate-900 dark:text-white" />
                         </Button>
-
                     </div>
 
                     <div className="flex gap-2">
                         <Button
                             onClick={generateRandomArray}
                             disabled={sorting}
-                            className="flex-1 sm:flex-none h-10 border-0 relative transition-all duration-300 ease-out
-                            bg-slate-200 hover:bg-slate-300 text-slate-900
-                            dark:bg-white/10 dark:hover:bg-white/15 dark:text-white
-                            hover:shadow-lg dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]
-                            shadow-[0_0_10px_rgba(0,0,0,0.05)]
-                            rounded-md">
+                            className="flex-1 sm:flex-none h-10 border-0 relative transition-all duration-300 ease-out bg-slate-200 hover:bg-slate-300 text-slate-900 dark:bg-white/10 dark:hover:bg-white/15 dark:text-white hover:shadow-lg dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] shadow-[0_0_10px_rgba(0,0,0,0.05)] rounded-md"
+                        >
                             <Shuffle className="h-4 w-4 sm:mr-2" />
                             <span className="hidden sm:inline">Random</span>
                         </Button>
@@ -281,23 +274,22 @@ export default function BubbleSort() {
                             size="sm"
                             onClick={() => setSpeedKey(key)}
                             disabled={sorting}
-                            className={`h-8 px-3 text-sm font-medium transition-all rounded-md
-    ${speedKey === key
+                            className={`h-8 px-3 text-sm font-medium transition-all rounded-md ${
+                                speedKey === key
                                     ? 'bg-slate-900 hover:bg-slate-800 dark:bg-white/15 text-white shadow-sm'
-                                    : 'bg-slate-50 hover:bg-slate-100 text-black disabled:text-black dark:bg-transparent dark:text-white/50 dark:hover:text-white/80 dark:hover:bg-white/5 hover:shadow-sm disabled:hover:bg-slate-50'
-                                }`}
+                                    : 'bg-slate-100 hover:bg-slate-200 text-black border border-slate-300 dark:bg-transparent dark:text-white/50 dark:hover:text-white/80 dark:hover:bg-white/5 hover:shadow-sm disabled:hover:bg-slate-100'
+                            }`}
                         >
                             {key}
                         </Button>
-
                     ))}
                 </div>
             </div>
 
             {/* Visualization Area */}
-            <div className="bg-slate-100 dark:bg-white/[0.02] backdrop-blur-sm rounded-xl border border-slate-200 dark:border-white/[0.05] p-6 mb-4 shadow-lg dark:shadow-2xl min-h-[350px] sm:min-h-[400px]">
+            <div className="bg-slate-100 dark:bg-white/[0.02] backdrop-blur-sm rounded-xl border border-slate-200 dark:border-white/[0.05] p-4 sm:p-6 mb-4 shadow-lg dark:shadow-2xl min-h-[300px] sm:min-h-[350px]">
                 {array.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-80 text-slate-400 dark:text-white/40">
+                    <div className="flex flex-col items-center justify-center h-64 sm:h-72 text-slate-400 dark:text-white/40">
                         <p className="text-center text-base mb-2">
                             Add numbers or generate a random array
                         </p>
@@ -306,12 +298,12 @@ export default function BubbleSort() {
                         </p>
                     </div>
                 ) : (
-                    <div className="h-full min-h-[280px] sm:min-h-[320px] flex items-end justify-center gap-1 sm:gap-2 overflow-x-auto pb-2">
+                    <div className="h-full min-h-[240px] sm:min-h-[280px] flex items-end justify-center gap-1 sm:gap-2 overflow-x-auto pb-2">
                         {array.map((val, idx) => {
                             const maxValSafe = Math.max(...array, 1);
-                            const availableHeight = window.innerWidth < 640 ? 220 : 280;
-                            const minHeight = 40;
-                            const maxHeight = availableHeight - 50;
+                            const availableHeight = window.innerWidth < 640 ? 180 : 240;
+                            const minHeight = 30;
+                            const maxHeight = availableHeight - 40;
                             const barHeight = Math.min(
                                 (val / maxValSafe) * maxHeight + minHeight,
                                 maxHeight
