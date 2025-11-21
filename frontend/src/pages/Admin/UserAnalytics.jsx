@@ -91,7 +91,10 @@ const UserAnalytics = () => {
           transition={{ duration: 0.3 }}
           className="flex justify-between items-center"
         >
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">User Analytics</h1>
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-gray-500 dark:text-gray-400 mb-1">Admin</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">User Analytics</h1>
+          </div>
         <motion.button 
           onClick={fetchAnalytics}
           whileHover={{ scale: 1.02 }}
@@ -232,11 +235,7 @@ const UserAnalytics = () => {
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-neutral-800 rounded-full h-2">
                   <div 
-                    className={`h-2 rounded-full ${
-                      progress >= 80 ? 'bg-green-500 dark:bg-green-600' :
-                      progress >= 50 ? 'bg-yellow-500 dark:bg-yellow-600' :
-                      'bg-red-500 dark:bg-red-600'
-                    }`}
+                    className="h-2 rounded-full bg-gray-500 dark:bg-gray-400"
                     style={{ width: `${progress}%` }}
                   />
                 </div>

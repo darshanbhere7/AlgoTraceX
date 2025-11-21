@@ -66,7 +66,7 @@ export default function JumpSearch() {
             await new Promise((r) => setTimeout(r, delay));
 
             prev = step;
-            step += Math.floor(Math.sqrt(n));
+            step += stepSize;
 
             if (prev >= n) {
                 // Not found

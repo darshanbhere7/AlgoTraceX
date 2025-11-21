@@ -91,9 +91,12 @@ const AdminDashboard = () => {
           transition={{ duration: 0.3 }}
           className="flex justify-between items-center"
         >
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Admin Dashboard
-          </h1>
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-gray-500 dark:text-gray-400 mb-1">Admin</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Dashboard
+            </h1>
+          </div>
           <motion.button 
             onClick={fetchAnalytics}
             whileHover={{ scale: 1.02 }}

@@ -106,15 +106,18 @@ const ManageUsers = () => {
           transition={{ duration: 0.3 }}
           className="flex justify-between items-center"
         >
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage Users</h1>
-        <div className="flex items-center space-x-4">
-          <Input
-            type="text"
-            placeholder="Search users..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-64"
-          />
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-gray-500 dark:text-gray-400 mb-1">Admin</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage Users</h1>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Input
+              type="text"
+              placeholder="Search users..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-64 bg-white dark:bg-neutral-800 border-gray-300 dark:border-neutral-700 text-gray-900 dark:text-white"
+            />
           <motion.button 
             onClick={fetchUsers}
             whileHover={{ scale: 1.02 }}
@@ -123,8 +126,8 @@ const ManageUsers = () => {
           >
             Refresh Users
           </motion.button>
-        </div>
-      </motion.div>
+          </div>
+        </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

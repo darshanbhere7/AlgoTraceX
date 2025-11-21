@@ -344,6 +344,260 @@ const updateConversationTitle = async (req, res) => {
   }
 };
 
+/**
+ * Lightweight, rule-based AI helpers for CodeView features
+ */
+
+const ensureCodePayload = (req, res) => {
+  const code = req.body?.code;
+  const language = req.body?.language || 'javascript';
+
+  if (!code || typeof code !== 'string' || code.trim().length === 0) {
+    res.status(400).json({ message: 'Code is required.' });
+    return null;
+  }
+
+  return { code, language };
+};
+
+const buildResult = (res, payload) => res.json({ result: payload });
+
+const explainCodeStatic = (req, res) => {
+  const payload = ensureCodePayload(req, res);
+  if (!payload) return;
+
+  const lines = payload.code.split('\n').map((line, idx) => {
+    const trimmed = line.trim();
+    if (!trimmed) return `Line ${idx + 1}: (blank line)`;
+    if (trimmed.startsWith('//') || trimmed.startsWith('/*')) {
+      return `Line ${idx + 1}: Comment detected – ${trimmed}`;
+    }
+    return `Line ${idx + 1}: ${trimmed}`;
+  });
+
+  buildResult(res, {
+    explanation:
+      'Line-by-line breakdown generated using heuristic analysis (no external AI).',
+    lines,
+  });
+};
+
+const optimizeCodeStatic = (req, res) => {
+  const payload = ensureCodePayload(req, res);
+  if (!payload) return;
+
+  const optimizedCode = payload.code
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .filter((line, idx, arr) => !(line === '' && arr[idx - 1] === ''))
+    .join('\n');
+
+  buildResult(res, {
+    optimizedCode,
+    explanation:
+      'Removed trailing spaces and collapsed consecutive blank lines for readability.',
+  });
+};
+
+const detectBugsStatic = (req, res) => {
+  const payload = ensureCodePayload(req, res);
+  if (!payload) return;
+
+  const bugs = [];
+  if (/while\s*\(\s*true\s*\)/i.test(payload.code) || /for\s*\(\s*;\s*;\s*\)/.test(payload.code)) {
+    bugs.push('Potential infinite loop detected. Verify termination conditions.');
+  }
+  if (/indexOf\(.*-1\)/.test(payload.code)) {
+    bugs.push('Possible negative index usage. Ensure bounds are validated.');
+  }
+  if (/System\.out\.println\(\s*\)/.test(payload.code)) {
+    bugs.push('Empty println call found. Check if this is intentional.');
+  }
+  if (bugs.length === 0) {
+    bugs.push('No obvious issues detected via static heuristics.');
+  }
+
+  buildResult(res, {
+    bugs,
+    summary:
+      'This lightweight scan uses regex-based heuristics. Please run formal tests to confirm.',
+  });
+};
+
+const generateTestcasesStatic = (req, res) => {
+  const payload = ensureCodePayload(req, res);
+  if (!payload) return;
+
+  const base = [
+    {
+      id: 'basic',
+      title: 'Basic case',
+      description: 'Nominal scenario to verify core logic.',
+      input: '1 2 3',
+      expected: 'Result for basic input',
+    },
+    {
+      id: 'edge',
+      title: 'Edge case',
+      description: 'Boundary values to exercise edge conditions.',
+      input: '0 0 0',
+      expected: 'Edge-case handling output',
+    },
+    {
+      id: 'stress',
+      title: 'Stress test',
+      description: 'Large payload to verify performance.',
+      input: '[1000 random numbers]',
+      expected: 'Expected aggregated result',
+    },
+  ];
+
+  buildResult(res, { testcases: base });
+};
+
+const simulateInputStatic = (req, res) => {
+  const payload = ensureCodePayload(req, res);
+  if (!payload) return;
+
+  const userInput = req.body?.input || '';
+  let parsedInput = userInput;
+
+  if (typeof userInput === 'string') {
+    try {
+      parsedInput = JSON.parse(userInput);
+    } catch {
+      parsedInput = userInput;
+    }
+  }
+
+  const steps = [
+    'Received user input and initialized simulation context.',
+    'Parsed input payload and mapped to local variables.',
+    'Traversed control structures heuristically (simulation placeholder).',
+    'Simulation completed. Review variable snapshots for insights.',
+  ];
+
+  buildResult(res, {
+    steps,
+    variables: {
+      input: parsedInput,
+      note: 'This is a static simulation preview. Integrate with real runner for exact states.',
+    },
+    notes:
+      'The AI input simulator currently uses deterministic heuristics. Extend with real execution engine for full fidelity.',
+  });
+};
+
+const fixCodeStatic = (req, res) => {
+  const payload = ensureCodePayload(req, res);
+  if (!payload) return;
+
+  const fixedCode = `// AI Fix Suggestion\n${payload.code}`;
+  buildResult(res, {
+    fixedCode,
+    explanation:
+      'Prepended a fix suggestion comment. Integrate linting/formatting for deeper fixes.',
+  });
+};
+
+const analyzeComplexityStatic = (req, res) => {
+  const payload = ensureCodePayload(req, res);
+  if (!payload) return;
+
+  const hasNestedLoop =
+    /(for|while)[^{]*{[^{}]*(for|while)/.test(payload.code) ||
+    /(for|while)[^{]*\n\s*(for|while)/.test(payload.code);
+  const hasSingleLoop = /(for|while)/.test(payload.code);
+  const isRecursive = /function\s+\w+\s*\([^)]*\)\s*{[^}]*\w+\s*\(/.test(payload.code) || /public\s+\w+\s+\w+\s*\([^)]*\)\s*{[^}]*\bthis\b/.test(payload.code);
+
+  let time = 'O(1)';
+  if (hasNestedLoop) time = 'O(n^2) (nested loops detected heuristically)';
+  else if (hasSingleLoop) time = 'O(n) (single loop detected)';
+  else if (isRecursive) time = 'O(n) (simple recursion detected)';
+
+  const space = isRecursive
+    ? 'O(n) (recursive call stack)'
+    : hasNestedLoop || hasSingleLoop
+    ? 'O(1) unless additional structures added'
+    : 'O(1)';
+
+  buildResult(res, {
+    time,
+    space,
+    reasoning:
+      'Complexity derived from pattern matching on loops and recursion keywords. Review manually for accuracy.',
+  });
+};
+
+const generateCommentsStatic = (req, res) => {
+  const payload = ensureCodePayload(req, res);
+  if (!payload) return;
+
+  const commentedCode = payload.code
+    .split('\n')
+    .map((line) => (line.trim().length ? `// TODO: describe -> ${line}` : line))
+    .join('\n');
+
+  buildResult(res, {
+    commentedCode,
+    summary: 'Inserted TODO comments as placeholders. Replace with meaningful docs.',
+    docstring: `/**\n * Auto-generated summary for ${payload.language} snippet.\n */`,
+  });
+};
+
+const codeRecommendationsStatic = (req, res) => {
+  const payload = ensureCodePayload(req, res);
+  if (!payload) return;
+
+  const lower = payload.code.toLowerCase();
+  const topics = [];
+  if (lower.includes('tree')) topics.push('Trees & Traversals');
+  if (lower.includes('graph')) topics.push('Graphs & BFS/DFS');
+  if (lower.includes('sort')) topics.push('Sorting Techniques');
+  if (lower.includes('dp')) topics.push('Dynamic Programming');
+  if (topics.length === 0) topics.push('Data Structures Basics');
+
+  const questions = [
+    'Practice: Two Sum (Arrays)',
+    'Practice: Binary Tree Level Order Traversal',
+    'Practice: Longest Substring Without Repeating Characters',
+    'Practice: Merge Intervals',
+    'Practice: Implement LRU Cache',
+  ];
+
+  const mistakes = [
+    'Overlooking null/empty input handling.',
+    'Not validating index bounds on arrays/lists.',
+    'Skipping time complexity considerations.',
+  ];
+
+  buildResult(res, {
+    topics,
+    questions,
+    mistakes,
+  });
+};
+
+const convertLanguageStatic = (req, res) => {
+  const payload = ensureCodePayload(req, res);
+  if (!payload) return;
+
+  const source = payload.language.toLowerCase();
+  const target = (req.body?.targetLanguage || 'javascript').toLowerCase();
+
+  if (source === target) {
+    return res.status(400).json({ message: 'Source and target languages must differ.' });
+  }
+
+  const conversionBanner = `// Converted from ${source} to ${target} (heuristic)\n`;
+  const convertedCode = `${conversionBanner}${payload.code}`;
+
+  buildResult(res, {
+    convertedCode,
+    targetLanguage: target,
+  });
+};
+
 module.exports = {
   getRecommendations,
   askQuestion,
@@ -352,5 +606,15 @@ module.exports = {
   getConversationMessages,
   deleteConversation,
   updateConversationTitle,
-  textToSpeech
+  textToSpeech,
+  explainCodeStatic,
+  optimizeCodeStatic,
+  detectBugsStatic,
+  generateTestcasesStatic,
+  simulateInputStatic,
+  fixCodeStatic,
+  analyzeComplexityStatic,
+  generateCommentsStatic,
+  codeRecommendationsStatic,
+  convertLanguageStatic,
 };

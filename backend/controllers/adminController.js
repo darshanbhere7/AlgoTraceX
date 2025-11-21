@@ -104,8 +104,28 @@ const getUserAnalytics = async (req, res) => {
 // Manage Topics - Add a new Topic
 const addTopic = async (req, res) => {
   try {
-    const { title, description, difficulty } = req.body;
-    const newTopic = new Topic({ title, description, difficulty });
+    const {
+      title,
+      category,
+      description,
+      difficulty,
+      keyConcepts = [],
+      keyInsight = '',
+      roadmap = ['Basics', 'Patterns', 'Practice', 'Apply'],
+      actions = ['bookmark', 'pin', 'quiz', 'problems']
+    } = req.body;
+
+    const newTopic = new Topic({
+      title,
+      category,
+      description,
+      difficulty,
+      keyConcepts,
+      keyInsight,
+      roadmap,
+      actions
+    });
+
     await newTopic.save();
     res.status(201).json(newTopic);
   } catch (error) {

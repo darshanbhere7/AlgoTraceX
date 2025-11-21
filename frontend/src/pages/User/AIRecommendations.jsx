@@ -9,8 +9,32 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Brain, MessageSquare, BookOpen, Send, User, Bot, Trash2, Copy, RefreshCw, Mic, MicOff, Languages } from 'lucide-react';
+import { Loader2, Brain, MessageSquare, BookOpen, Send, User, Bot, Trash2, Copy, RefreshCw, Mic, MicOff, Languages, Volume2, VolumeX } from 'lucide-react';
 import chatService from '@/services/chatService';
+
+// SpeechRecognition setup
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+if (recognition) {
+  recognition.continuous = true;
+  recognition.interimResults = true;
+}
+
+// **NEW: Helper function to remove markdown for TTS**
+const stripMarkdown = (text) => {
+  if (!text) return "";
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1') // Bold: **text** -> text
+    .replace(/\*(.*?)\*/g, '$1')     // Italic: *text* -> text
+    .replace(/```[\s\S]*?```/g, ' (code block) ') // Code blocks
+    .replace(/`([^`]+)`/g, '$1')   // Inline code: `text` -> text
+    .replace(/^\s*#+\s*(.*)/gm, '$1') // Headers: # text -> text
+    .replace(/^\s*[-*•]\s*/gm, '')  // List bullets
+    .replace(/^\s*\d+\.\s*/gm, '') // Numbered lists
+    .replace(/[\[\]\(].*?[\]\)]/g, '') // Links [text](url)
+    .replace(/[\*_`#]/g, '');     // Remove any remaining markdown chars
+};
+
 
 const AIRecommendations = () => {
   const [loading, setLoading] = useState(false);
@@ -24,6 +48,12 @@ const AIRecommendations = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('English');
   const [isListening, setIsListening] = useState(false);
   const speechRecognitionRef = useRef(null);
+
+  // State for reliable audio playback
+  const [audioPlayer, setAudioPlayer] = useState({
+    player: null,
+    messageId: null,
+  });
 
   const [userProfile, setUserProfile] = useState({
     level: 'beginner',
@@ -40,12 +70,17 @@ const AIRecommendations = () => {
 
   const commonTopics = ['Arrays', 'Linked Lists', 'Trees', 'Graphs', 'Dynamic Programming', 'Sorting', 'Searching', 'Hash Tables', 'Greedy', 'Backtracking'];
   const commonSkills = ['Problem Analysis', 'Time Complexity', 'Space Complexity', 'Implementation', 'Debugging', 'Pattern Recognition'];
+
   const languageOptions = [
     { label: 'English', value: 'English', speechCode: 'en-US' },
     { label: 'Hindi', value: 'Hindi', speechCode: 'hi-IN' },
-    { label: 'Spanish', value: 'Spanish', speechCode: 'es-ES' },
-    { label: 'French', value: 'French', speechCode: 'fr-FR' },
-    { label: 'German', value: 'German', speechCode: 'de-DE' }
+    { label: 'Marathi', value: 'Marathi', speechCode: 'mr-IN' },
+    { label: 'Telugu', value: 'Telugu', speechCode: 'te-IN' },
+    { label: 'Bengali', value: 'Bengali', speechCode: 'bn-IN' },
+    { label: 'Tamil', value: 'Tamil', speechCode: 'ta-IN' },
+    { label: 'Gujarati', value: 'Gujarati', speechCode: 'gu-IN' },
+    { label: 'Kannada', value: 'Kannada', speechCode: 'kn-IN' },
+    { label: 'Malayalam', value: 'Malayalam', speechCode: 'ml-IN' }
   ];
 
   const getSpeechLangCode = (language) => {
@@ -144,6 +179,76 @@ const AIRecommendations = () => {
     window.scrollTo({ top: 0, behavior: 'auto' });
   }, []);
 
+  // Effect to clean up the audio player
+  useEffect(() => {
+    return () => {
+      if (audioPlayer.player) {
+        audioPlayer.player.pause();
+      }
+    };
+  }, [audioPlayer.player]);
+
+  // **UPDATED toggleSpeak function to use the backend proxy**
+  const toggleSpeak = async (message) => {
+    if (audioPlayer.player && audioPlayer.messageId === message.id) {
+      audioPlayer.player.pause();
+      setAudioPlayer({ player: null, messageId: null });
+      return;
+    }
+
+    if (audioPlayer.player) {
+      audioPlayer.player.pause();
+    }
+
+    try {
+      const langCode = getSpeechLangCode(selectedLanguage)?.split('-')[0] || 'en';
+      
+      // **FIX: Clean markdown from text before sending to TTS**
+      const cleanText = stripMarkdown(message.content);
+      
+      // Split text into chunks to avoid hitting any URL length limits
+      const chunks = cleanText.match(/[\s\S]{1,200}/g) || [];
+      let currentChunk = 0;
+      let players = []; // Store all audio players to manage them
+
+      const playNextChunk = () => {
+        if (currentChunk >= chunks.length) {
+          setAudioPlayer({ player: null, messageId: null });
+          return;
+        }
+
+        const playCurrentChunk = async () => {
+          const audioUrl = await chatService.textToSpeech(chunks[currentChunk], langCode);
+          const newPlayer = new Audio(audioUrl);
+          players[currentChunk] = newPlayer;
+
+          newPlayer.onended = () => {
+            URL.revokeObjectURL(audioUrl); // Clean up memory
+            currentChunk++;
+            playNextChunk();
+          };
+
+          newPlayer.onerror = () => {
+            console.error("Error playing audio chunk.");
+            setError("Could not play audio.");
+            setAudioPlayer({ player: null, messageId: null });
+          };
+          
+          newPlayer.play();
+          setAudioPlayer({ player: newPlayer, messageId: message.id });
+        };
+        
+        playCurrentChunk();
+      };
+      
+      playNextChunk();
+
+    } catch (error) {
+      setError('Failed to generate or play audio.');
+      setAudioPlayer({ player: null, messageId: null });
+    }
+  };
+
   // Load conversations from database on component mount
   useEffect(() => {
     const loadConversations = async () => {
@@ -201,7 +306,7 @@ const AIRecommendations = () => {
     const conv = conversations.find(c => c.id === conversationId);
     
     // If conversation has no messages loaded, load them
-    if (conv && conv.messages.length === 0) {
+    if (conv && conv.messages.length === 0 && !conv.id.startsWith('temp_')) {
       loadConversationMessages(conversationId);
     }
   };
@@ -479,29 +584,25 @@ const AIRecommendations = () => {
             content: msg.content
         }));
 
-        const response = await fetch(`${API_BASE_URL}/ai/ask`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                question: lastUserMessage.content,
-                conversationHistory,
-                userProfile,
-                language: selectedLanguage
-            })
-        });
+        // **Calling chatService directly now**
+        const result = await chatService.sendMessage(
+            lastUserMessage.content,
+            conversationHistory,
+            userProfile,
+            conv.id.startsWith('temp_') ? null : conv.id,
+            selectedLanguage
+        );
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'API request failed');
-        }
-
-        const data = await response.json();
-
-        if (data.success) {
-            const aiMsg = { id: Date.now().toString(), type: 'assistant', content: data.answer, timestamp: new Date() };
+        if (result) {
+            const aiMsg = { 
+              id: result.messageId || Date.now().toString(), 
+              type: 'assistant', 
+              content: result.answer, 
+              timestamp: new Date() 
+            };
             updateConversationState(conv.id, { messages: [...messagesToResubmit, aiMsg] });
         } else {
-            setError(data.error || 'Failed to regenerate response');
+            setError('Failed to regenerate response');
         }
     } catch (err) {
         setError(`Failed to regenerate: ${err.message}`);
@@ -516,24 +617,11 @@ const AIRecommendations = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`${API_BASE_URL}/ai/recommendations`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userLevel: userProfile.level,
-          currentTopics: userProfile.topics.join(', '),
-          strengths: userProfile.strengths.join(', '),
-          weaknesses: userProfile.weaknesses.join(', ')
-        })
-      });
-      const data = await response.json();
-      if (data.success) {
-        setRecommendations(data.recommendations);
-      } else {
-        setError('Failed to get recommendations');
-      }
+      // **Using chatService now**
+      const result = await chatService.getRecommendations(userProfile);
+      setRecommendations(result);
     } catch (err) {
-      setError('Failed to connect to server');
+      setError(err.message || 'Failed to get recommendations');
     } finally {
       setLoading(false);
     }
@@ -547,19 +635,11 @@ const AIRecommendations = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`${API_BASE_URL}/ai/explain`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ algorithm, level })
-      });
-      const data = await response.json();
-      if (data.success) {
-        setExplanation(data.explanation);
-      } else {
-        setError('Failed to get explanation');
-      }
+      // **Using chatService now**
+      const result = await chatService.explainAlgorithm(algorithm, level);
+      setExplanation(result);
     } catch (err) {
-      setError('Failed to connect to server');
+      setError(err.message || 'Failed to get explanation');
     } finally {
       setLoading(false);
     }
@@ -575,6 +655,28 @@ const AIRecommendations = () => {
     setUserProfile({ ...userProfile, [field]: userProfile[field].filter((_, i) => i !== index) });
   };
   
+  const GlowButton = ({ children, className = '', fullWidth = true, type = 'button', ...props }) => {
+    const widthClasses = fullWidth ? 'w-full px-5 py-3' : 'px-3 py-2';
+    return (
+      <button
+        type={type}
+        {...props}
+        className={`
+          relative group overflow-hidden rounded-lg bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500
+          hover:from-indigo-400 hover:via-purple-400 hover:to-blue-400 text-white font-semibold shadow-lg
+          transition-all duration-300 border border-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+          disabled:opacity-60 disabled:cursor-not-allowed
+          ${!props.disabled ? 'hover:-translate-y-0.5' : ''}
+          ${widthClasses}
+          ${className}
+        `}
+      >
+        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-120%] group-hover:translate-x-[120%] transition-transform duration-700 ease-out" />
+        <span className="relative z-10 flex items-center justify-center gap-2">{children}</span>
+      </button>
+    );
+  };
+
   const renderConversation = () => {
     const conv = getCurrentConv();
     const lastMessage = conv?.messages[conv.messages.length - 1];
@@ -683,6 +785,12 @@ const AIRecommendations = () => {
                     <button className="p-1 hover:text-foreground transition-colors" onClick={() => copyMessage(msg.content)}>
                       <Copy className="h-3 w-3" />
                     </button>
+                    {/* **FIX: Re-added the TTS button with correct styling** */}
+                    {msg.type === 'assistant' && (
+                      <button className="p-1 hover:text-foreground transition-colors" onClick={() => toggleSpeak(msg)}>
+                        { audioPlayer.messageId === msg.id ? <VolumeX className="h-3.5 w-3.5 text-blue-500" /> : <Volume2 className="h-3.5 w-3.5" /> }
+                      </button>
+                    )}
                   </div>
                 </div>
                 {msg.type === 'user' && <User className="h-5 w-5 mt-2 flex-shrink-0 text-muted-foreground" />}
@@ -739,6 +847,7 @@ const AIRecommendations = () => {
               <Textarea
                 placeholder="Ask about DSA... (Enter to send, Shift+Enter for new line)"
                 value={currentMessage}
+                // **THIS IS THE FIX**
                 onChange={(e) => setCurrentMessage(e.target.value)}
                 onKeyDown={handleKeyPress}
                 onFocus={handleInputFocus}
@@ -885,27 +994,11 @@ const AIRecommendations = () => {
            </TabsContent>
            <TabsContent value="explanations">
              <Card className="border-muted pt-5 pb-5">
-               <CardHeader>
-                 <CardTitle>Quick Algorithm Explanation</CardTitle>
-                 <CardDescription>Get an instant explanation tailored to your skill level.</CardDescription>
-               </CardHeader>
+               <CardHeader><CardTitle>Quick Algorithm Explanation</CardTitle><CardDescription>Get an instant explanation tailored to your skill level.</CardDescription></CardHeader>
                <CardContent className="space-y-4">
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   <div className="space-y-2">
-                     <Label htmlFor="algorithm-input">Algorithm</Label>
-                     <Input id="algorithm-input" placeholder="e.g., Quick Sort" value={algorithm} onChange={(e) => setAlgorithm(e.target.value)} />
-                   </div>
-                   <div className="space-y-2">
-                     <Label>Level</Label>
-                     <Select value={level} onValueChange={setLevel}>
-                       <SelectTrigger><SelectValue /></SelectTrigger>
-                       <SelectContent>
-                         <SelectItem value="beginner">Beginner</SelectItem>
-                         <SelectItem value="intermediate">Intermediate</SelectItem>
-                         <SelectItem value="advanced">Advanced</SelectItem>
-                       </SelectContent>
-                     </Select>
-                   </div>
+                   <div className="space-y-2"><Label htmlFor="algorithm-input">Algorithm</Label><Input id="algorithm-input" placeholder="e.g., Quick Sort" value={algorithm} onChange={(e) => setAlgorithm(e.target.value)} /></div>
+                   <div className="space-y-2"><Label>Level</Label><Select value={level} onValueChange={setLevel}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="beginner">Beginner</SelectItem><SelectItem value="intermediate">Intermediate</SelectItem><SelectItem value="advanced">Advanced</SelectItem></SelectContent></Select></div>
                  </div>
                  <Button
                    onClick={handleExplainAlgorithm}
@@ -925,7 +1018,7 @@ const AIRecommendations = () => {
                </CardContent>
              </Card>
            </TabsContent>
-        </Tabs>
+          </Tabs>
       </motion.div>
     </motion.div>
   );

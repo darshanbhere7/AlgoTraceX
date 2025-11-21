@@ -284,42 +284,16 @@ const ManagePracticeQuestions = () => {
 
   // Badge components moved inline
 const DifficultyBadge = ({ difficulty }) => {
-  const getDifficultyStyles = () => {
-    switch (difficulty) {
-      case 'Easy':
-        return 'bg-green-100 text-green-800';
-      case 'Medium':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Hard':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   return (
-    <span className={`px-2 py-1 rounded text-sm ${getDifficultyStyles()}`}>
+    <span className="px-2 py-1 rounded text-sm bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300">
       {difficulty}
     </span>
   );
 };
 
 const TopicBadge = ({ topic }) => {
-  const topicColors = {
-    'arrays': 'bg-blue-100 text-blue-800',
-    'linkedlists': 'bg-purple-100 text-purple-800',
-    'trees': 'bg-green-100 text-green-800',
-    'graphs': 'bg-red-100 text-red-800',
-    'dynamic programming': 'bg-yellow-100 text-yellow-800',
-    'strings': 'bg-indigo-100 text-indigo-800',
-    'sorting': 'bg-pink-100 text-pink-800',
-    'searching': 'bg-orange-100 text-orange-800'
-  };
-
-  const colorClass = topicColors[topic.toLowerCase()] || 'bg-gray-100 text-gray-800';
-
   return (
-    <span className={`px-2 py-1 rounded-full text-xs ${colorClass}`}>
+    <span className="px-2 py-1 rounded-full text-xs bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300">
       {topic}
     </span>
   );
@@ -335,7 +309,10 @@ const TopicBadge = ({ topic }) => {
           transition={{ duration: 0.3 }}
           className="flex justify-between items-center mb-8"
         >
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage DSA Practice Questions</h1>
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-gray-500 dark:text-gray-400 mb-1">Admin</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Manage DSA Practice Questions</h1>
+          </div>
         <div className="flex items-center gap-4">
           <motion.button 
             onClick={fetchQuestions}
@@ -535,27 +512,23 @@ const TopicBadge = ({ topic }) => {
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                   whileHover={{ y: -4 }}
                 >
-                <Card className="p-4 bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 shadow-sm">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-semibold text-lg text-gray-900 dark:text-white">{question.title}</h3>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        <span className={`px-2 py-1 rounded text-sm ${
-                          question.difficulty === 'Easy' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
-                          question.difficulty === 'Medium' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
-                          'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                        }`}>
+                <Card className="p-4 bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 shadow-sm min-h-[120px] flex flex-col">
+                  <div className="flex justify-between items-start flex-1">
+                    <div className="flex-1 min-w-0 pr-4">
+                      <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-2 line-clamp-2">{question.title}</h3>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="px-2 py-1 rounded text-sm bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300">
                           {question.difficulty}
                         </span>
-                        <span className="px-2 py-1 rounded bg-gray-100 dark:bg-neutral-800 text-gray-800 dark:text-gray-300 text-sm">
+                        <span className="px-2 py-1 rounded bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 text-sm">
                           {question.source}
                         </span>
-                        <span className="px-2 py-1 rounded bg-gray-100 dark:bg-neutral-800 text-gray-800 dark:text-gray-300 text-sm">
+                        <span className="px-2 py-1 rounded bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 text-sm">
                           Order: {question.sheetOrder}
                         </span>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-shrink-0">
                       <motion.button
                         onClick={() => handleEdit(question)}
                         whileHover={{ scale: 1.1 }}
@@ -574,7 +547,7 @@ const TopicBadge = ({ topic }) => {
                       </motion.button>
                     </div>
                   </div>
-                  <div className="mt-4">
+                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-neutral-800">
                     <a
                       href={question.sourceUrl}
                       target="_blank"
