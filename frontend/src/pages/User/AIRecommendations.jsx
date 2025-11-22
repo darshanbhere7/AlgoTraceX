@@ -762,7 +762,7 @@ const AIRecommendations = () => {
                   <MessageSquare className="h-7 w-7" />
                 </div>
                 <div>
-                  <p className="text-base font-semibold">Hi Shivam 👋</p>
+                  <p className="text-base font-semibold">Hello👋</p>
                   <p className="text-sm">Ask anything about DSA to start a fresh chat.</p>
                 </div>
               </motion.div>

@@ -345,7 +345,7 @@ const updateConversationTitle = async (req, res) => {
 };
 
 /**
- * Lightweight, rule-based AI helpers for CodeView features
+ * AI-powered CodeView features using Gemini API
  */
 
 const ensureCodePayload = (req, res) => {
@@ -360,242 +360,662 @@ const ensureCodePayload = (req, res) => {
   return { code, language };
 };
 
-const buildResult = (res, payload) => res.json({ result: payload });
+/**
+ * Explain Code - AI-powered explanation
+ */
+const explainCodeStatic = async (req, res) => {
+  try {
+    const payload = ensureCodePayload(req, res);
+    if (!payload) return;
 
-const explainCodeStatic = (req, res) => {
-  const payload = ensureCodePayload(req, res);
-  if (!payload) return;
+    const prompt = `You are an expert code reviewer. Explain the following ${payload.language} code in detail.
 
-  const lines = payload.code.split('\n').map((line, idx) => {
-    const trimmed = line.trim();
-    if (!trimmed) return `Line ${idx + 1}: (blank line)`;
-    if (trimmed.startsWith('//') || trimmed.startsWith('/*')) {
-      return `Line ${idx + 1}: Comment detected – ${trimmed}`;
+Code:
+\`\`\`${payload.language}
+${payload.code}
+\`\`\`
+
+Provide a clear, comprehensive explanation that includes:
+1. What the code does overall
+2. Line-by-line or block-by-block breakdown
+3. Key concepts and patterns used
+4. Any important details about the implementation
+
+Format your response as clear, readable text with proper structure.`;
+
+    const contents = [{ role: 'user', parts: [{ text: prompt }] }];
+    const explanation = await callGeminiAPI(contents);
+
+    res.json({ 
+      result: {
+        explanation: explanation || 'Unable to generate explanation.',
+        lines: payload.code.split('\n').map((line, idx) => ({
+          number: idx + 1,
+          content: line
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Error in explainCodeStatic:', error);
+    res.status(500).json({ message: error.message || 'Failed to explain code.' });
+  }
+};
+
+/**
+ * Optimize Code - AI-powered optimization
+ */
+const optimizeCodeStatic = async (req, res) => {
+  try {
+    const payload = ensureCodePayload(req, res);
+    if (!payload) return;
+
+    const prompt = `You are an expert code optimizer. Optimize the following ${payload.language} code for better performance, readability, and best practices.
+
+Original Code:
+\`\`\`${payload.language}
+${payload.code}
+\`\`\`
+
+Provide:
+1. The optimized code (complete, runnable code)
+2. A clear explanation of what optimizations were made and why
+
+Format your response as JSON with this structure:
+{
+  "optimizedCode": "the complete optimized code here",
+  "explanation": "detailed explanation of optimizations"
+}
+
+Return ONLY valid JSON, no markdown formatting.`;
+
+    const contents = [{ role: 'user', parts: [{ text: prompt }] }];
+    let response = await callGeminiAPI(contents);
+
+    // Try to extract JSON from response
+    try {
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        res.json({ 
+          result: {
+            optimizedCode: parsed.optimizedCode || payload.code,
+            explanation: parsed.explanation || 'Optimizations applied.'
+          }
+        });
+      } else {
+        // Fallback: extract code blocks
+        const codeMatch = response.match(/```[\s\S]*?```/);
+        res.json({ 
+          result: {
+            optimizedCode: codeMatch ? codeMatch[0].replace(/```\w*\n?/g, '').replace(/```/g, '').trim() : payload.code,
+            explanation: response.replace(/```[\s\S]*?```/g, '').trim() || 'Optimizations applied.'
+          }
+        });
+      }
+    } catch (parseError) {
+      // If JSON parsing fails, try to extract code from markdown
+      const codeMatch = response.match(/```[\s\S]*?```/);
+      res.json({ 
+        result: {
+          optimizedCode: codeMatch ? codeMatch[0].replace(/```\w*\n?/g, '').replace(/```/g, '').trim() : payload.code,
+          explanation: response.replace(/```[\s\S]*?```/g, '').trim() || 'Optimizations applied.'
+        }
+      });
     }
-    return `Line ${idx + 1}: ${trimmed}`;
-  });
-
-  buildResult(res, {
-    explanation:
-      'Line-by-line breakdown generated using heuristic analysis (no external AI).',
-    lines,
-  });
+  } catch (error) {
+    console.error('Error in optimizeCodeStatic:', error);
+    res.status(500).json({ message: error.message || 'Failed to optimize code.' });
+  }
 };
 
-const optimizeCodeStatic = (req, res) => {
-  const payload = ensureCodePayload(req, res);
-  if (!payload) return;
+/**
+ * Detect Bugs - AI-powered bug detection
+ */
+const detectBugsStatic = async (req, res) => {
+  try {
+    const payload = ensureCodePayload(req, res);
+    if (!payload) return;
 
-  const optimizedCode = payload.code
-    .split('\n')
-    .map((line) => line.trimEnd())
-    .filter((line, idx, arr) => !(line === '' && arr[idx - 1] === ''))
-    .join('\n');
+    const prompt = `You are an expert code reviewer. Analyze the following ${payload.language} code and find all potential bugs, errors, and issues.
 
-  buildResult(res, {
-    optimizedCode,
-    explanation:
-      'Removed trailing spaces and collapsed consecutive blank lines for readability.',
-  });
-};
+Code:
+\`\`\`${payload.language}
+${payload.code}
+\`\`\`
 
-const detectBugsStatic = (req, res) => {
-  const payload = ensureCodePayload(req, res);
-  if (!payload) return;
-
-  const bugs = [];
-  if (/while\s*\(\s*true\s*\)/i.test(payload.code) || /for\s*\(\s*;\s*;\s*\)/.test(payload.code)) {
-    bugs.push('Potential infinite loop detected. Verify termination conditions.');
-  }
-  if (/indexOf\(.*-1\)/.test(payload.code)) {
-    bugs.push('Possible negative index usage. Ensure bounds are validated.');
-  }
-  if (/System\.out\.println\(\s*\)/.test(payload.code)) {
-    bugs.push('Empty println call found. Check if this is intentional.');
-  }
-  if (bugs.length === 0) {
-    bugs.push('No obvious issues detected via static heuristics.');
-  }
-
-  buildResult(res, {
-    bugs,
-    summary:
-      'This lightweight scan uses regex-based heuristics. Please run formal tests to confirm.',
-  });
-};
-
-const generateTestcasesStatic = (req, res) => {
-  const payload = ensureCodePayload(req, res);
-  if (!payload) return;
-
-  const base = [
+Provide a detailed analysis in JSON format:
+{
+  "bugs": [
     {
-      id: 'basic',
-      title: 'Basic case',
-      description: 'Nominal scenario to verify core logic.',
-      input: '1 2 3',
-      expected: 'Result for basic input',
-    },
-    {
-      id: 'edge',
-      title: 'Edge case',
-      description: 'Boundary values to exercise edge conditions.',
-      input: '0 0 0',
-      expected: 'Edge-case handling output',
-    },
-    {
-      id: 'stress',
-      title: 'Stress test',
-      description: 'Large payload to verify performance.',
-      input: '[1000 random numbers]',
-      expected: 'Expected aggregated result',
-    },
-  ];
+      "title": "Bug title",
+      "description": "Detailed description of the bug and how to fix it"
+    }
+  ],
+  "summary": "Overall summary of findings"
+}
 
-  buildResult(res, { testcases: base });
+Return ONLY valid JSON, no markdown formatting.`;
+
+    const contents = [{ role: 'user', parts: [{ text: prompt }] }];
+    let response = await callGeminiAPI(contents);
+
+    try {
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        res.json({ 
+          result: {
+            bugs: Array.isArray(parsed.bugs) ? parsed.bugs : [],
+            summary: parsed.summary || 'Bug analysis completed.'
+          }
+        });
+      } else {
+        res.json({ 
+          result: {
+            bugs: [{ title: 'Analysis Result', description: response }],
+            summary: 'Bug analysis completed.'
+          }
+        });
+      }
+    } catch (parseError) {
+      res.json({ 
+        result: {
+          bugs: [{ title: 'Analysis Result', description: response }],
+          summary: 'Bug analysis completed.'
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error in detectBugsStatic:', error);
+    res.status(500).json({ message: error.message || 'Failed to detect bugs.' });
+  }
 };
 
-const simulateInputStatic = (req, res) => {
-  const payload = ensureCodePayload(req, res);
-  if (!payload) return;
+/**
+ * Generate Test Cases - AI-powered test case generation
+ */
+const generateTestcasesStatic = async (req, res) => {
+  try {
+    const payload = ensureCodePayload(req, res);
+    if (!payload) return;
 
-  const userInput = req.body?.input || '';
-  let parsedInput = userInput;
+    const prompt = `You are an expert test engineer. Generate comprehensive test cases for the following ${payload.language} code.
 
-  if (typeof userInput === 'string') {
+Code:
+\`\`\`${payload.language}
+${payload.code}
+\`\`\`
+
+Generate test cases in JSON format:
+{
+  "testcases": [
+    {
+      "id": "test1",
+      "title": "Test case title",
+      "description": "What this test case validates",
+      "input": "input value or format",
+      "expected": "expected output"
+    }
+  ]
+}
+
+Include:
+- Happy path cases
+- Edge cases
+- Boundary conditions
+- Error cases (if applicable)
+
+Return ONLY valid JSON, no markdown formatting.`;
+
+    const contents = [{ role: 'user', parts: [{ text: prompt }] }];
+    let response = await callGeminiAPI(contents);
+
+    try {
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        res.json({ 
+          result: {
+            testcases: Array.isArray(parsed.testcases) ? parsed.testcases : []
+          }
+        });
+      } else {
+        // Fallback test cases
+        res.json({ 
+          result: {
+            testcases: [
+              { id: 'basic', title: 'Basic Case', description: 'Normal input scenario', input: 'Standard input', expected: 'Expected output' },
+              { id: 'edge', title: 'Edge Case', description: 'Boundary condition', input: 'Edge input', expected: 'Edge output' }
+            ]
+          }
+        });
+      }
+    } catch (parseError) {
+      res.json({ 
+        result: {
+          testcases: [
+            { id: 'basic', title: 'Basic Case', description: 'Normal input scenario', input: 'Standard input', expected: 'Expected output' },
+            { id: 'edge', title: 'Edge Case', description: 'Boundary condition', input: 'Edge input', expected: 'Edge output' }
+          ]
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error in generateTestcasesStatic:', error);
+    res.status(500).json({ message: error.message || 'Failed to generate test cases.' });
+  }
+};
+
+/**
+ * Simulate Input - AI-powered code simulation
+ */
+const simulateInputStatic = async (req, res) => {
+  try {
+    const payload = ensureCodePayload(req, res);
+    if (!payload) return;
+
+    const userInput = req.body?.input || '';
+    if (!userInput || typeof userInput !== 'string' || userInput.trim().length === 0) {
+      return res.status(400).json({ message: 'Input is required for simulation.' });
+    }
+
+    // Validate JSON input
+    let parsedInput;
     try {
       parsedInput = JSON.parse(userInput);
-    } catch {
+    } catch (e) {
+      // If not JSON, use as string
       parsedInput = userInput;
     }
+
+    const prompt = `You are an expert code executor. Simulate the execution of the following ${payload.language} code with the given input.
+
+Code:
+\`\`\`${payload.language}
+${payload.code}
+\`\`\`
+
+Input:
+${JSON.stringify(parsedInput, null, 2)}
+
+Provide a step-by-step simulation in JSON format:
+{
+  "steps": ["step 1", "step 2", ...],
+  "variables": {"var1": "value1", ...},
+  "notes": "summary notes"
+}
+
+Trace through the execution and show:
+1. Execution steps
+2. Variable states at key points
+3. Final output or result
+
+Return ONLY valid JSON, no markdown formatting.`;
+
+    const contents = [{ role: 'user', parts: [{ text: prompt }] }];
+    let response = await callGeminiAPI(contents);
+
+    try {
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        res.json({ 
+          result: {
+            steps: Array.isArray(parsed.steps) ? parsed.steps : [],
+            variables: parsed.variables || { input: parsedInput },
+            notes: parsed.notes || 'Simulation completed.'
+          }
+        });
+      } else {
+        res.json({ 
+          result: {
+            steps: ['Parsed input', 'Executed code', 'Generated output'],
+            variables: { input: parsedInput },
+            notes: response || 'Simulation completed.'
+          }
+        });
+      }
+    } catch (parseError) {
+      res.json({ 
+        result: {
+          steps: ['Parsed input', 'Executed code', 'Generated output'],
+          variables: { input: parsedInput },
+          notes: response || 'Simulation completed.'
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error in simulateInputStatic:', error);
+    res.status(500).json({ message: error.message || 'Failed to simulate input.' });
   }
-
-  const steps = [
-    'Received user input and initialized simulation context.',
-    'Parsed input payload and mapped to local variables.',
-    'Traversed control structures heuristically (simulation placeholder).',
-    'Simulation completed. Review variable snapshots for insights.',
-  ];
-
-  buildResult(res, {
-    steps,
-    variables: {
-      input: parsedInput,
-      note: 'This is a static simulation preview. Integrate with real runner for exact states.',
-    },
-    notes:
-      'The AI input simulator currently uses deterministic heuristics. Extend with real execution engine for full fidelity.',
-  });
 };
 
-const fixCodeStatic = (req, res) => {
-  const payload = ensureCodePayload(req, res);
-  if (!payload) return;
+/**
+ * Fix Code - AI-powered code fixing
+ */
+const fixCodeStatic = async (req, res) => {
+  try {
+    const payload = ensureCodePayload(req, res);
+    if (!payload) return;
 
-  const fixedCode = `// AI Fix Suggestion\n${payload.code}`;
-  buildResult(res, {
-    fixedCode,
-    explanation:
-      'Prepended a fix suggestion comment. Integrate linting/formatting for deeper fixes.',
-  });
-};
+    const prompt = `You are an expert debugger. Fix all errors, bugs, and issues in the following ${payload.language} code.
 
-const analyzeComplexityStatic = (req, res) => {
-  const payload = ensureCodePayload(req, res);
-  if (!payload) return;
+Code:
+\`\`\`${payload.language}
+${payload.code}
+\`\`\`
 
-  const hasNestedLoop =
-    /(for|while)[^{]*{[^{}]*(for|while)/.test(payload.code) ||
-    /(for|while)[^{]*\n\s*(for|while)/.test(payload.code);
-  const hasSingleLoop = /(for|while)/.test(payload.code);
-  const isRecursive = /function\s+\w+\s*\([^)]*\)\s*{[^}]*\w+\s*\(/.test(payload.code) || /public\s+\w+\s+\w+\s*\([^)]*\)\s*{[^}]*\bthis\b/.test(payload.code);
+Provide the fixed code in JSON format:
+{
+  "fixedCode": "the complete fixed code here",
+  "explanation": "detailed explanation of what was fixed and why"
+}
 
-  let time = 'O(1)';
-  if (hasNestedLoop) time = 'O(n^2) (nested loops detected heuristically)';
-  else if (hasSingleLoop) time = 'O(n) (single loop detected)';
-  else if (isRecursive) time = 'O(n) (simple recursion detected)';
+Return ONLY valid JSON, no markdown formatting.`;
 
-  const space = isRecursive
-    ? 'O(n) (recursive call stack)'
-    : hasNestedLoop || hasSingleLoop
-    ? 'O(1) unless additional structures added'
-    : 'O(1)';
+    const contents = [{ role: 'user', parts: [{ text: prompt }] }];
+    let response = await callGeminiAPI(contents);
 
-  buildResult(res, {
-    time,
-    space,
-    reasoning:
-      'Complexity derived from pattern matching on loops and recursion keywords. Review manually for accuracy.',
-  });
-};
-
-const generateCommentsStatic = (req, res) => {
-  const payload = ensureCodePayload(req, res);
-  if (!payload) return;
-
-  const commentedCode = payload.code
-    .split('\n')
-    .map((line) => (line.trim().length ? `// TODO: describe -> ${line}` : line))
-    .join('\n');
-
-  buildResult(res, {
-    commentedCode,
-    summary: 'Inserted TODO comments as placeholders. Replace with meaningful docs.',
-    docstring: `/**\n * Auto-generated summary for ${payload.language} snippet.\n */`,
-  });
-};
-
-const codeRecommendationsStatic = (req, res) => {
-  const payload = ensureCodePayload(req, res);
-  if (!payload) return;
-
-  const lower = payload.code.toLowerCase();
-  const topics = [];
-  if (lower.includes('tree')) topics.push('Trees & Traversals');
-  if (lower.includes('graph')) topics.push('Graphs & BFS/DFS');
-  if (lower.includes('sort')) topics.push('Sorting Techniques');
-  if (lower.includes('dp')) topics.push('Dynamic Programming');
-  if (topics.length === 0) topics.push('Data Structures Basics');
-
-  const questions = [
-    'Practice: Two Sum (Arrays)',
-    'Practice: Binary Tree Level Order Traversal',
-    'Practice: Longest Substring Without Repeating Characters',
-    'Practice: Merge Intervals',
-    'Practice: Implement LRU Cache',
-  ];
-
-  const mistakes = [
-    'Overlooking null/empty input handling.',
-    'Not validating index bounds on arrays/lists.',
-    'Skipping time complexity considerations.',
-  ];
-
-  buildResult(res, {
-    topics,
-    questions,
-    mistakes,
-  });
-};
-
-const convertLanguageStatic = (req, res) => {
-  const payload = ensureCodePayload(req, res);
-  if (!payload) return;
-
-  const source = payload.language.toLowerCase();
-  const target = (req.body?.targetLanguage || 'javascript').toLowerCase();
-
-  if (source === target) {
-    return res.status(400).json({ message: 'Source and target languages must differ.' });
+    try {
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        res.json({ 
+          result: {
+            fixedCode: parsed.fixedCode || payload.code,
+            explanation: parsed.explanation || 'Code fixes applied.'
+          }
+        });
+      } else {
+        // Extract code from markdown
+        const codeMatch = response.match(/```[\s\S]*?```/);
+        res.json({ 
+          result: {
+            fixedCode: codeMatch ? codeMatch[0].replace(/```\w*\n?/g, '').replace(/```/g, '').trim() : payload.code,
+            explanation: response.replace(/```[\s\S]*?```/g, '').trim() || 'Code fixes applied.'
+          }
+        });
+      }
+    } catch (parseError) {
+      const codeMatch = response.match(/```[\s\S]*?```/);
+      res.json({ 
+        result: {
+          fixedCode: codeMatch ? codeMatch[0].replace(/```\w*\n?/g, '').replace(/```/g, '').trim() : payload.code,
+          explanation: response.replace(/```[\s\S]*?```/g, '').trim() || 'Code fixes applied.'
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error in fixCodeStatic:', error);
+    res.status(500).json({ message: error.message || 'Failed to fix code.' });
   }
+};
 
-  const conversionBanner = `// Converted from ${source} to ${target} (heuristic)\n`;
-  const convertedCode = `${conversionBanner}${payload.code}`;
+/**
+ * Analyze Complexity - AI-powered complexity analysis
+ */
+const analyzeComplexityStatic = async (req, res) => {
+  try {
+    const payload = ensureCodePayload(req, res);
+    if (!payload) return;
 
-  buildResult(res, {
-    convertedCode,
-    targetLanguage: target,
-  });
+    const prompt = `You are an expert algorithm analyst. Analyze the time and space complexity of the following ${payload.language} code.
+
+Code:
+\`\`\`${payload.language}
+${payload.code}
+\`\`\`
+
+Provide analysis in JSON format:
+{
+  "time": "O(n) or appropriate complexity notation",
+  "space": "O(1) or appropriate complexity notation",
+  "reasoning": "detailed explanation of why these complexities"
+}
+
+Return ONLY valid JSON, no markdown formatting.`;
+
+    const contents = [{ role: 'user', parts: [{ text: prompt }] }];
+    let response = await callGeminiAPI(contents);
+
+    try {
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        res.json({ 
+          result: {
+            time: parsed.time || 'O(n)',
+            space: parsed.space || 'O(1)',
+            reasoning: parsed.reasoning || 'Complexity analysis completed.'
+          }
+        });
+      } else {
+        res.json({ 
+          result: {
+            time: 'O(n)',
+            space: 'O(1)',
+            reasoning: response || 'Complexity analysis completed.'
+          }
+        });
+      }
+    } catch (parseError) {
+      res.json({ 
+        result: {
+          time: 'O(n)',
+          space: 'O(1)',
+          reasoning: response || 'Complexity analysis completed.'
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error in analyzeComplexityStatic:', error);
+    res.status(500).json({ message: error.message || 'Failed to analyze complexity.' });
+  }
+};
+
+/**
+ * Generate Comments - AI-powered comment generation
+ */
+const generateCommentsStatic = async (req, res) => {
+  try {
+    const payload = ensureCodePayload(req, res);
+    if (!payload) return;
+
+    const prompt = `You are an expert code documenter. Add comprehensive comments and documentation to the following ${payload.language} code.
+
+Code:
+\`\`\`${payload.language}
+${payload.code}
+\`\`\`
+
+Provide the commented code in JSON format:
+{
+  "commentedCode": "code with comments added",
+  "docstring": "function/class docstring if applicable",
+  "summary": "summary of documentation added"
+}
+
+Return ONLY valid JSON, no markdown formatting.`;
+
+    const contents = [{ role: 'user', parts: [{ text: prompt }] }];
+    let response = await callGeminiAPI(contents);
+
+    try {
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        res.json({ 
+          result: {
+            commentedCode: parsed.commentedCode || payload.code,
+            docstring: parsed.docstring || '',
+            summary: parsed.summary || 'Comments generated.'
+          }
+        });
+      } else {
+        const codeMatch = response.match(/```[\s\S]*?```/);
+        res.json({ 
+          result: {
+            commentedCode: codeMatch ? codeMatch[0].replace(/```\w*\n?/g, '').replace(/```/g, '').trim() : payload.code,
+            docstring: '',
+            summary: response.replace(/```[\s\S]*?```/g, '').trim() || 'Comments generated.'
+          }
+        });
+      }
+    } catch (parseError) {
+      const codeMatch = response.match(/```[\s\S]*?```/);
+      res.json({ 
+        result: {
+          commentedCode: codeMatch ? codeMatch[0].replace(/```\w*\n?/g, '').replace(/```/g, '').trim() : payload.code,
+          docstring: '',
+          summary: response.replace(/```[\s\S]*?```/g, '').trim() || 'Comments generated.'
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error in generateCommentsStatic:', error);
+    res.status(500).json({ message: error.message || 'Failed to generate comments.' });
+  }
+};
+
+/**
+ * Code Recommendations - AI-powered recommendations
+ */
+const codeRecommendationsStatic = async (req, res) => {
+  try {
+    const payload = ensureCodePayload(req, res);
+    if (!payload) return;
+
+    const prompt = `You are an expert DSA tutor. Analyze the following ${payload.language} code and provide learning recommendations.
+
+Code:
+\`\`\`${payload.language}
+${payload.code}
+\`\`\`
+
+Provide recommendations in JSON format:
+{
+  "topics": ["topic1", "topic2", ...],
+  "questions": ["practice question 1", "practice question 2", ...],
+  "mistakes": ["common mistake 1", "common mistake 2", ...]
+}
+
+Return ONLY valid JSON, no markdown formatting.`;
+
+    const contents = [{ role: 'user', parts: [{ text: prompt }] }];
+    let response = await callGeminiAPI(contents);
+
+    try {
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        res.json({ 
+          result: {
+            topics: Array.isArray(parsed.topics) ? parsed.topics : [],
+            questions: Array.isArray(parsed.questions) ? parsed.questions : [],
+            mistakes: Array.isArray(parsed.mistakes) ? parsed.mistakes : []
+          }
+        });
+      } else {
+        res.json({ 
+          result: {
+            topics: ['Data Structures', 'Algorithms'],
+            questions: ['Practice problem solving'],
+            mistakes: ['Review code for improvements']
+          }
+        });
+      }
+    } catch (parseError) {
+      res.json({ 
+        result: {
+          topics: ['Data Structures', 'Algorithms'],
+          questions: ['Practice problem solving'],
+          mistakes: ['Review code for improvements']
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error in codeRecommendationsStatic:', error);
+    res.status(500).json({ message: error.message || 'Failed to generate recommendations.' });
+  }
+};
+
+/**
+ * Convert Language - AI-powered code conversion
+ */
+const convertLanguageStatic = async (req, res) => {
+  try {
+    const payload = ensureCodePayload(req, res);
+    if (!payload) return;
+
+    const targetLanguage = req.body?.targetLanguage;
+    if (!targetLanguage || typeof targetLanguage !== 'string' || targetLanguage.trim().length === 0) {
+      return res.status(400).json({ message: 'Target language is required.' });
+    }
+
+    const source = payload.language.toLowerCase();
+    const target = targetLanguage.toLowerCase();
+
+    if (source === target) {
+      return res.status(400).json({ message: 'Source and target languages must differ.' });
+    }
+
+    const prompt = `You are an expert code translator. Convert the following ${source} code to ${target}.
+
+Original Code (${source}):
+\`\`\`${source}
+${payload.code}
+\`\`\`
+
+Provide the converted code in JSON format:
+{
+  "convertedCode": "the complete converted code in ${target}",
+  "targetLanguage": "${target}"
+}
+
+Make sure the conversion:
+1. Maintains the same logic and functionality
+2. Uses idiomatic ${target} syntax
+3. Preserves all comments and structure
+4. Is complete and runnable
+
+Return ONLY valid JSON, no markdown formatting.`;
+
+    const contents = [{ role: 'user', parts: [{ text: prompt }] }];
+    let response = await callGeminiAPI(contents);
+
+    try {
+      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        res.json({ 
+          result: {
+            convertedCode: parsed.convertedCode || payload.code,
+            targetLanguage: parsed.targetLanguage || target
+          }
+        });
+      } else {
+        // Extract code from markdown
+        const codeMatch = response.match(/```[\s\S]*?```/);
+        res.json({ 
+          result: {
+            convertedCode: codeMatch ? codeMatch[0].replace(/```\w*\n?/g, '').replace(/```/g, '').trim() : payload.code,
+            targetLanguage: target
+          }
+        });
+      }
+    } catch (parseError) {
+      const codeMatch = response.match(/```[\s\S]*?```/);
+      res.json({ 
+        result: {
+          convertedCode: codeMatch ? codeMatch[0].replace(/```\w*\n?/g, '').replace(/```/g, '').trim() : payload.code,
+          targetLanguage: target
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error in convertLanguageStatic:', error);
+    res.status(500).json({ message: error.message || 'Failed to convert code.' });
+  }
 };
 
 module.exports = {
