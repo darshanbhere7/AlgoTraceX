@@ -145,8 +145,8 @@ export const convertLanguage = async (
 ) => {
   const data = await callAiEndpoint('convert-language', {
     code,
-    sourceLanguage,
-    targetLanguage,
+    language: sourceLanguage, // Backend expects 'language' for source
+    targetLanguage: targetLanguage,
   });
   return {
     convertedCode: ensureString(data.convertedCode || data.code || ''),
