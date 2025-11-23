@@ -3,6 +3,7 @@ import { motion, useMotionValue, useTransform } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { AuroraBackground } from "../components/ui/aurora-background";
 import DisplayCards from "../components/ui/display-cards";
+import SplineSceneBasic from "./SplineSceneBasic";
 import logoDark from "../assets/logo_dark.png";
 import logo from "../assets/logo.png";
 import {
@@ -120,114 +121,9 @@ const Navbar = () => {
   );
 };
 
-// Hero Section
+// Hero Section - Now using SplineSceneBasic component
 const HeroSection = () => {
-
-  return (
-    <AuroraBackground>
-      <div className="pt-32 pb-20 px-4 min-h-screen flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="max-w-5xl mx-auto text-center"
-        >
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-4 py-2 mb-8 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm border border-gray-200 dark:border-neutral-800 rounded-full shadow-sm"
-          >
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Interactive Algorithm Visualizations
-            </span>
-          </motion.div>
-
-          {/* Main Heading */}
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="text-6xl md:text-8xl font-bold mb-6 leading-[1.1] tracking-tight"
-          >
-            <span className="block text-gray-900 dark:text-white">
-              Master Algorithms
-            </span>
-            <motion.span
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="block bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 dark:from-white dark:via-gray-300 dark:to-white bg-clip-text text-transparent"
-            >
-              Like Never Before
-            </motion.span>
-          </motion.h1>
-
-              {/* Subheading */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="text-xl md:text-2xl text-gray-600 dark:text-gray-400 mb-4 max-w-3xl mx-auto font-light leading-relaxed"
-          >
-            Visualize data structures and algorithms with interactive step-by-step execution.
-          </motion.p>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.7 }}
-            className="text-lg text-gray-500 dark:text-gray-500 mb-12 max-w-2xl mx-auto"
-          >
-            Understand complexity, track progress, and master DSA faster with our comprehensive visualization platform.
-          </motion.p>
-
-          {/* CTA Buttons */}
-          <motion.div
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-          >
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Link
-                to="/register"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg font-semibold hover:bg-gray-800 dark:hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl text-base"
-              >
-                Get Started
-                <motion.svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  initial={{ x: 0 }}
-                  whileHover={{ x: 4 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </motion.svg>
-              </Link>
-            </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Link
-                to="/login"
-                className="inline-flex items-center px-8 py-4 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm text-gray-900 dark:text-white border-2 border-gray-300 dark:border-neutral-700 rounded-lg font-semibold hover:bg-white dark:hover:bg-neutral-800 hover:border-gray-400 dark:hover:border-neutral-600 transition-all shadow-sm text-base"
-              >
-                Sign In
-              </Link>
-            </motion.div>
-          </motion.div>
-        </motion.div>
-      </div>
-    </AuroraBackground>
-  );
+  return <SplineSceneBasic />;
 };
 
 // Bento Grid Components for Features Section
