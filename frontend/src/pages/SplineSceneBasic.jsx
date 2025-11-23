@@ -86,11 +86,11 @@ const ButtonWithSweep = ({ children, to, variant = "primary", className = "" }) 
 
 export default function SplineSceneBasic() {
   return (
-    <div className="relative w-full h-screen max-h-screen flex items-center justify-center pt-20 pb-4 px-4 sm:px-6 lg:px-8 bg-white dark:bg-neutral-900 overflow-hidden">
-      <Card className="w-full max-w-7xl h-full max-h-[calc(100vh-5rem)] bg-white dark:bg-neutral-900 relative overflow-hidden border-0 shadow-none">
-        {/* Spotlight effect using CSS - different for light/dark */}
+    <div className="relative w-full h-screen max-h-screen flex items-center justify-center pt-20 pb-4 px-4 sm:px-6 lg:px-8 bg-white dark:bg-neutral-900 overflow-hidden transition-colors duration-500 ease-in-out">
+      <Card className="w-full max-w-7xl h-full max-h-[calc(100vh-5rem)] bg-white dark:bg-neutral-900 relative overflow-hidden border-0 shadow-none transition-colors duration-500 ease-in-out">
+        {/* Spotlight effect using CSS - different for light/dark with smooth transitions */}
         <div
-          className="absolute -top-40 left-0 md:left-60 md:-top-20 w-[600px] h-[600px] rounded-full opacity-20 dark:opacity-30 pointer-events-none transition-opacity duration-300"
+          className="absolute -top-40 left-0 md:left-60 md:-top-20 w-[600px] h-[600px] rounded-full pointer-events-none transition-opacity duration-500 ease-in-out opacity-20 dark:opacity-0"
           style={{
             background:
               "radial-gradient(circle, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.08) 30%, transparent 70%)",
@@ -99,7 +99,7 @@ export default function SplineSceneBasic() {
           }}
         />
         <div
-          className="absolute -top-40 left-0 md:left-60 md:-top-20 w-[600px] h-[600px] rounded-full opacity-0 dark:opacity-30 pointer-events-none transition-opacity duration-300"
+          className="absolute -top-40 left-0 md:left-60 md:-top-20 w-[600px] h-[600px] rounded-full pointer-events-none transition-opacity duration-500 ease-in-out opacity-0 dark:opacity-30"
           style={{
             background:
               "radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 30%, transparent 70%)",
@@ -116,10 +116,10 @@ export default function SplineSceneBasic() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100/80 dark:bg-neutral-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-neutral-700/50 rounded-full w-fit"
+              className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100/80 dark:bg-neutral-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-neutral-700/50 rounded-full w-fit transition-colors duration-500 ease-in-out"
             >
               <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-              <span className="text-xs font-medium text-gray-700 dark:text-gray-300 tracking-wide uppercase">
+              <span className="text-xs font-medium text-gray-700 dark:text-gray-300 tracking-wide uppercase transition-colors duration-500 ease-in-out">
                 Interactive Learning
               </span>
             </motion.div>
@@ -130,7 +130,7 @@ export default function SplineSceneBasic() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
             >
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white transition-colors duration-500 ease-in-out">
                 Master DSA
                 <br />
                 <motion.span
@@ -151,7 +151,7 @@ export default function SplineSceneBasic() {
               transition={{ duration: 0.8, delay: 0.6 }}
               className="max-w-xl"
             >
-              <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+              <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-300 leading-relaxed transition-colors duration-500 ease-in-out">
                 Transform complex algorithms into interactive visual experiences. Watch every step and master data structures with confidence.
               </p>
             </motion.div>
@@ -180,14 +180,14 @@ export default function SplineSceneBasic() {
             />
             {/* Bottom fade gradient overlay - Light theme */}
             <div 
-              className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none z-10 dark:hidden"
+              className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none z-10 transition-opacity duration-500 ease-in-out opacity-100 dark:opacity-0"
               style={{
                 background: "linear-gradient(to top, rgb(255, 255, 255) 0%, rgba(255, 255, 255, 0.85) 25%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0.2) 75%, transparent 100%)",
               }}
             />
             {/* Bottom fade gradient overlay - Dark theme */}
             <div 
-              className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none z-10 hidden dark:block"
+              className="absolute bottom-0 left-0 right-0 h-40 pointer-events-none z-10 transition-opacity duration-500 ease-in-out opacity-0 dark:opacity-100"
               style={{
                 background: "linear-gradient(to top, rgb(23, 23, 23) 0%, rgba(23, 23, 23, 0.85) 25%, rgba(23, 23, 23, 0.5) 50%, rgba(23, 23, 23, 0.2) 75%, transparent 100%)",
               }}
