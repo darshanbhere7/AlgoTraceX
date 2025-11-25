@@ -197,10 +197,8 @@ const Topics = () => {
     toast.success(shouldPin ? 'Topic pinned' : 'Pin removed');
   };
 
-  const handleQuiz = (topicTitle) => {
-    if (!topicTitle) return;
-    const encodedTitle = encodeURIComponent(topicTitle);
-    navigate(`/user/tests?topic=${encodedTitle}`);
+  const handleQuiz = () => {
+    navigate('/user/weekly-test');
   };
 
   const handleProblems = (topicTitle) => {
