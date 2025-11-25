@@ -1,8 +1,5 @@
 {
-  "//": "Ensure client-side routes like /user/weekly-test are served by index.html",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
-
-
