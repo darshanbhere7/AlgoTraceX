@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const AI_BASE_URL =
-  import.meta.env.VITE_AI_BASE_URL || 'http://localhost:5000/api/ai';
+  import.meta.env.VITE_AI_BASE_URL || 'https://algotracex.onrender.com/api/ai';
 
 const ensureArray = (value) => {
   if (Array.isArray(value)) return value;
