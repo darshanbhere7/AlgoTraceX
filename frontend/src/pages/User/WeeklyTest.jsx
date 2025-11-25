@@ -33,7 +33,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Progress } from '@/components/ui/progress';
+import { Progress } from '@/components/ui/Progress';
 
 const STORAGE_KEYS = {
   activeState: 'weeklyTest.activeState',

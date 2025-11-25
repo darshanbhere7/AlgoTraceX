@@ -24,9 +24,9 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-} from '@/components/ui/Card';
+} from '@/components/ui/card';
 import { Progress } from '@/components/ui/Progress';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   PieChart as RechartsPieChart,
