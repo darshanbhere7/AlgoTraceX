@@ -1,7 +1,7 @@
-export { Button } from './Button';
-export { Card } from './Card';
-export { Input } from './Input';
-export { Textarea } from './Textarea';
-export { Select } from './Select';
+export { Button } from './button';
+export { Card } from './card';
+export { Input } from './input';
+export { Textarea } from './textarea';
+export { Select } from './select';
 export { Progress } from './Progress';
 export { toast } from 'react-hot-toast'; 
