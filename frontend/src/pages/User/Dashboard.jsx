@@ -1,20 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Card, Progress } from '@/components/ui';
+import { Progress } from '@/components/ui';
 import { FaSync, FaChartLine, FaCode, FaLightbulb, FaTrophy, FaCheckCircle, FaBook } from 'react-icons/fa';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadialBarChart, RadialBar, Area, AreaChart } from 'recharts';
 import { motion } from 'framer-motion';
 import { buildApiUrl } from '@/config/api';
+import { getProgress, calculateProgressStats } from '@/utils/progressUtils';
 
 const Dashboard = () => {
   const { user, loading: userLoading } = useAuth();
   const [overallLoading, setOverallLoading] = useState(true);
   const [error, setError] = useState(null);
   const [allQuestions, setAllQuestions] = useState([]);
-  const [completedQuestions, setCompletedQuestions] = useState(new Set());
   const [testResults, setTestResults] = useState([]);
+  const [progressData, setProgressData] = useState(() => getProgress());
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,17 +27,8 @@ const Dashboard = () => {
       setOverallLoading(true);
       setError(null);
       try {
-        const token = localStorage.getItem('token');
-        const headers = { Authorization: `Bearer ${token}` };
-
         const questionsResponse = await axios.get(buildApiUrl('/questions'));
         setAllQuestions(questionsResponse.data);
-
-        const trackingResponse = await axios.get(
-          buildApiUrl('/practice-questions/tracking/questions'),
-          { headers }
-        );
-        setCompletedQuestions(new Set(trackingResponse.data.map(q => q.questionId)));
 
         const savedScores = localStorage.getItem('testScores');
         if (savedScores) {
@@ -59,33 +51,30 @@ const Dashboard = () => {
     fetchData();
   }, [user]);
 
-  const totalQuestions = allQuestions.reduce((acc, topic) => acc + topic.questions.length, 0);
-  const completedCount = completedQuestions.size;
-  const overallProgress = totalQuestions > 0 ? (completedCount / totalQuestions) * 100 : 0;
-
-  const topicProgress = allQuestions.map(topic => {
-    const totalTopicQuestions = topic.questions.length;
-    const completedTopicQuestions = topic.questions.filter(q => completedQuestions.has(q.url)).length;
-    const progress = totalTopicQuestions > 0 ? (completedTopicQuestions / totalTopicQuestions) * 100 : 0;
-    return {
-      topic: topic.topic,
-      completed: completedTopicQuestions,
-      total: totalTopicQuestions,
-      progress: progress.toFixed(2),
+  useEffect(() => {
+    const handleProgressSync = () => {
+      setProgressData(getProgress());
     };
-  }).filter(t => t.total > 0);
 
-  // Prepare chart data
+    window.addEventListener('storage', handleProgressSync);
+    window.addEventListener('focus', handleProgressSync);
+
+    return () => {
+      window.removeEventListener('storage', handleProgressSync);
+      window.removeEventListener('focus', handleProgressSync);
+    };
+  }, []);
+
+  const { totalQuestions, completedCount, overallProgress, topicProgress } = useMemo(() => {
+    return calculateProgressStats(allQuestions, progressData);
+  }, [allQuestions, progressData]);
+
   const topicChartData = topicProgress.map(t => ({
     name: t.topic.length > 12 ? t.topic.substring(0, 12) + '...' : t.topic,
-    value: parseFloat(t.progress),
+    value: t.progress,
     completed: t.completed,
     total: t.total
   }));
-
-  const progressData = [
-    { name: 'Progress', value: overallProgress }
-  ];
 
   // Animation variants
   const containerVariants = {
