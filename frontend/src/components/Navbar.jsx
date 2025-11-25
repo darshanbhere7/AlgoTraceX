@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext.jsx';
 import logo from "../assets/logo.png";
 import logoDark from "../assets/logo_dark.png";
 
@@ -132,16 +133,11 @@ const UserProfile = ({ user, onViewProfile }) => {
 
 const Navbar = () => {
   const { user } = useAuth();
-  const [isDark, setIsDark] = useState(false);
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleViewProfile = () => {
     navigate("/user/profile");
-  };
-
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle("dark");
   };
 
   return (

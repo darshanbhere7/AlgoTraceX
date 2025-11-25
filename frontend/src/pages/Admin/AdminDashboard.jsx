@@ -5,13 +5,14 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { buildApiUrl } from '@/config/api';
+import { useTheme } from '../../context/ThemeContext.jsx';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
+  const { isDark } = useTheme();
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [darkMode, setDarkMode] = useState(false);
 
   const fetchAnalytics = async () => {
     try {
@@ -36,26 +37,6 @@ const AdminDashboard = () => {
     // Set up polling for real-time updates
     const interval = setInterval(fetchAnalytics, 30000); // Update every 30 seconds
     return () => clearInterval(interval);
-  }, []);
-
-  // Check for dark mode preference (for chart colors)
-  useEffect(() => {
-    const checkDarkMode = () => {
-      const isDark = document.documentElement.classList.contains('dark');
-      setDarkMode(isDark);
-    };
-
-    checkDarkMode();
-
-    // Listen for theme changes
-    const observer = new MutationObserver(checkDarkMode);
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-
-    return () => observer.disconnect();
   }, []);
 
   if (loading) {
@@ -169,23 +150,23 @@ const AdminDashboard = () => {
                 <BarChart data={analytics.weeklySignups}>
                   <XAxis 
                     dataKey="date" 
-                    stroke={darkMode ? '#9ca3af' : '#6b7280'}
-                    tick={{ fill: darkMode ? '#9ca3af' : '#6b7280' }}
+                    stroke={isDark ? '#9ca3af' : '#6b7280'}
+                    tick={{ fill: isDark ? '#9ca3af' : '#6b7280' }}
                   />
                   <YAxis 
-                    stroke={darkMode ? '#9ca3af' : '#6b7280'}
-                    tick={{ fill: darkMode ? '#9ca3af' : '#6b7280' }}
+                    stroke={isDark ? '#9ca3af' : '#6b7280'}
+                    tick={{ fill: isDark ? '#9ca3af' : '#6b7280' }}
                   />
                   <Tooltip 
                     contentStyle={{
-                      backgroundColor: darkMode ? '#171717' : '#ffffff',
-                      border: darkMode ? '1px solid #404040' : '1px solid #e5e7eb',
+                      backgroundColor: isDark ? '#171717' : '#ffffff',
+                      border: isDark ? '1px solid #404040' : '1px solid #e5e7eb',
                       borderRadius: '8px',
-                      color: darkMode ? '#ffffff' : '#000000'
+                      color: isDark ? '#ffffff' : '#000000'
                     }}
-                    labelStyle={{ color: darkMode ? '#ffffff' : '#000000' }}
+                    labelStyle={{ color: isDark ? '#ffffff' : '#000000' }}
                   />
-                  <Bar dataKey="count" fill={darkMode ? '#525252' : '#737373'} radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="count" fill={isDark ? '#525252' : '#737373'} radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

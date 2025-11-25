@@ -24,6 +24,7 @@ import ManagePracticeQuestions from './pages/Admin/ManagePracticeQuestions';
 
 import VisualizerHome from './pages/User/VisualizerHome';
 import Profile from './pages/User/Profile';
+import Legal from './pages/Legal';
 import BubbleSort from "@/components/sorting/BubbleSort";
 import MergeSort from "./components/sorting/MergeSort";
 import QuickSort from "./components/sorting/QuickSort";
@@ -76,6 +77,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="home" element={<AlgoTraceXLanding />} />
+          <Route path="legal" element={<Legal />} />
 
           {/* Protected user routes */}
           <Route element={<ProtectedRoute />}>

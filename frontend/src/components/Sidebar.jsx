@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext.jsx";
 import {
   LogOut,
   Settings,
@@ -78,27 +79,9 @@ const SidebarUserProfile = ({ user, onViewProfile, open }) => {
 
 const SidebarEnhanced = ({ admin = false, children }) => {
   const { user, logout } = useAuth();
+  const { isDark } = useTheme();
   const [open, setOpen] = useState(false);
-  const [isDark, setIsDark] = useState(false);
   const navigate = useNavigate();
-
-  // Check for dark mode on component mount and when it changes
-  React.useEffect(() => {
-    const checkDarkMode = () => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    };
-    
-    checkDarkMode();
-    
-    // Listen for changes to the dark class
-    const observer = new MutationObserver(checkDarkMode);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-    
-    return () => observer.disconnect();
-  }, []);
 
   const userLinks = [
     {

@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { AuroraBackground } from "../components/ui/aurora-background";
 import DisplayCards from "../components/ui/display-cards";
 import SplineSceneBasic from "./SplineSceneBasic";
-import logoDark from "../assets/logo_dark.png";
-import logo from "../assets/logo.png";
+import shivam from "../assets/team/shivam_color.png";
+import darshan from "../assets/team/darshan.jpg";
+import bhagyashree from "../assets/team/bhagyashree.jpg";
+
 import {
   Mic,
   Plus,
@@ -24,160 +26,8 @@ import OpenAIDark from "../components/kokonutui/open-ai-dark";
 import MistralAI from "../components/kokonutui/mistral";
 import DeepSeek from "../components/kokonutui/deepseek";
 import { cn } from "../lib/utils";
-
-// Clean Navbar Component
-const Navbar = () => {
-  const [isDark, setIsDark] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const isDarkMode = document.documentElement.classList.contains("dark");
-    setIsDark(isDarkMode);
-  }, []);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      setIsScrolled(scrollPosition > 20);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const handleToggle = () => {
-    const newIsDark = !isDark;
-    setIsDark(newIsDark);
-    document.documentElement.classList.toggle("dark");
-  };
-
-  const scrollToSection = (id) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
-  return (
-    <nav
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ease-out ${
-        isScrolled
-          ? "bg-white/70 dark:bg-neutral-900/70 backdrop-blur-xl border-b border-white/20 dark:border-neutral-800/30 shadow-sm"
-          : "bg-transparent backdrop-blur-none border-b border-transparent"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/home" className="flex items-center gap-2.5 group">
-            <img
-              src={isDark ? logoDark : logo}
-              alt="Algo Trace X"
-              className="w-7 h-7 rounded-lg object-cover transition-transform duration-300 group-hover:scale-105"
-            />
-            <span
-              className={`font-medium text-base tracking-tight transition-colors duration-300 ${
-                isScrolled
-                  ? "text-gray-900 dark:text-white"
-                  : isDark
-                  ? "text-white"
-                  : "text-gray-900"
-              }`}
-            >
-              AlgoTraceX
-            </span>
-          </Link>
-
-          {/* Nav Links */}
-          <div className="hidden md:flex items-center gap-8">
-            <button
-              onClick={() => scrollToSection("features")}
-              className={`text-sm font-normal tracking-tight transition-colors duration-300 relative group ${
-                isScrolled
-                  ? "text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                  : isDark
-                  ? "text-white/90 hover:text-white"
-                  : "text-gray-900/90 hover:text-gray-900"
-              }`}
-            >
-              Features
-              <span className="absolute bottom-0 left-0 w-0 h-px bg-current transition-all duration-300 group-hover:w-full" />
-            </button>
-            <button
-              onClick={() => scrollToSection("how-it-works")}
-              className={`text-sm font-normal tracking-tight transition-colors duration-300 relative group ${
-                isScrolled
-                  ? "text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                  : isDark
-                  ? "text-white/90 hover:text-white"
-                  : "text-gray-900/90 hover:text-gray-900"
-              }`}
-            >
-              How It Works
-              <span className="absolute bottom-0 left-0 w-0 h-px bg-current transition-all duration-300 group-hover:w-full" />
-            </button>
-            <button
-              onClick={() => scrollToSection("pricing")}
-              className={`text-sm font-normal tracking-tight transition-colors duration-300 relative group ${
-                isScrolled
-                  ? "text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                  : isDark
-                  ? "text-white/90 hover:text-white"
-                  : "text-gray-900/90 hover:text-gray-900"
-              }`}
-            >
-              Pricing
-              <span className="absolute bottom-0 left-0 w-0 h-px bg-current transition-all duration-300 group-hover:w-full" />
-            </button>
-          </div>
-
-          {/* CTA and Theme Toggle */}
-          <div className="flex items-center gap-3">
-            <motion.button
-              onClick={handleToggle}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`p-2 rounded-lg transition-all duration-300 ${
-                isScrolled
-                  ? "bg-white/80 dark:bg-neutral-800/80 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-neutral-800 backdrop-blur-sm"
-                  : isDark
-                  ? "bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
-                  : "bg-gray-900/10 text-gray-900 hover:bg-gray-900/20 backdrop-blur-sm"
-              }`}
-            >
-              {isDark ? (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-              ) : (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9 9 0 1020.354 15.354z" />
-                </svg>
-              )}
-            </motion.button>
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Link
-                to="/register"
-                className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  isScrolled
-                    ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100"
-                    : isDark
-                    ? "bg-white text-gray-900 hover:bg-gray-100"
-                    : "bg-gray-900 text-white hover:bg-gray-800"
-                }`}
-              >
-                Get Started
-              </Link>
-            </motion.div>
-          </div>
-        </div>
-      </div>
-    </nav>
-  );
-};
+import LandingNavbar from "../components/home/LandingNavbar.jsx";
+import LandingFooter from "../components/home/LandingFooter.jsx";
 
 // Hero Section - Now using SplineSceneBasic component
 const HeroSection = () => {
@@ -899,59 +749,126 @@ const PricingSection = () => {
   );
 };
 
-// Footer Section
-const FooterSection = () => {
+const TeamSection = () => {
+  const team = [
+    {
+      name: "Darshan Bhere",
+      image: darshan,
+      focus: "Full Stack Developer & AI Systems",
+      gender: "female",
+      linkedin: "https://www.linkedin.com/in/darshan-bhere-b69a14260/",
+    },
+    {
+      name: "Bhagyashree Dhongde",
+      image: bhagyashree,
+      focus: "Backend & Data Engineer",
+      gender: "female",
+      linkedin: "https://www.linkedin.com/in/bhagyashree-dhongde-915582258/",
+    },
+    {
+      name: "Shivam Darekar",
+      image: shivam,
+      focus: "Frontend & Cloud Engineer ",
+      gender: "female",
+      linkedin: "https://www.linkedin.com/in/shivamdarekar2206/",
+    },
+  ];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" },
+    },
+  };
+
   return (
-    <footer className="bg-white dark:bg-neutral-900 border-t border-gray-200 dark:border-neutral-800 py-12 px-4">
-      <div className="max-w-6xl mx-auto">
+    <section
+      id="team"
+      className="relative py-24 bg-white dark:bg-neutral-900 overflow-hidden"
+    >
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-x-0 top-10 mx-auto h-64 w-[28rem] rounded-full bg-gradient-to-b from-slate-200/30 to-transparent dark:from-slate-900/30 blur-[160px] opacity-70" />
+      </div>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.6 }}
+          className="text-center max-w-2xl mx-auto mb-14"
         >
-          <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-4">AlgoTraceX</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Master DSA with interactive visualizations.
-            </p>
-          </div>
-          <div>
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-4">Product</h4>
-            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <li><Link to="/home" className="hover:text-gray-900 dark:hover:text-white transition-colors">Home</Link></li>
-              <li><Link to="/login" className="hover:text-gray-900 dark:hover:text-white transition-colors">Login</Link></li>
-              <li><Link to="/register" className="hover:text-gray-900 dark:hover:text-white transition-colors">Register</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-4">Resources</h4>
-            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <li><a href="#features" className="hover:text-gray-900 dark:hover:text-white transition-colors">Features</a></li>
-              <li><a href="#how-it-works" className="hover:text-gray-900 dark:hover:text-white transition-colors">How It Works</a></li>
-              <li><a href="#pricing" className="hover:text-gray-900 dark:hover:text-white transition-colors">Pricing</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold text-gray-900 dark:text-white mb-4">Legal</h4>
-            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <li><a href="#" className="hover:text-gray-900 dark:hover:text-white transition-colors">Privacy</a></li>
-              <li><a href="#" className="hover:text-gray-900 dark:hover:text-white transition-colors">Terms</a></li>
-            </ul>
-          </div>
+          <h2 className="text-4xl md:text-[46px] font-bold leading-tight text-gray-900 dark:text-white">
+            Meet the Team
+          </h2>
+          <p className="mt-4 text-base md:text-lg text-gray-600 dark:text-gray-400">
+            Your behind-the-scenes crew for smoother learning.
+          </p>
         </motion.div>
+
         <motion.div
-          className="border-t border-gray-200 dark:border-neutral-800 pt-8 text-center text-sm text-gray-600 dark:text-gray-400"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2, duration: 0.5 }}
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          className="grid gap-8 md:grid-cols-3"
         >
-          <p>&copy; 2025 AlgoTraceX. All rights reserved.</p>
+          {team.map((person, idx) => (
+            <motion.article
+              key={person.name}
+              variants={cardVariants}
+              whileHover={{ y: -8 }}
+              className="relative group rounded-2xl border border-gray-200/60 dark:border-neutral-800/60 bg-white/80 dark:bg-neutral-900/60 backdrop-blur-xl shadow-[0_20px_45px_rgba(15,23,42,0.07)] dark:shadow-[0_18px_45px_rgba(0,0,0,0.4)] transition-all duration-500"
+            >
+              <div className="overflow-hidden rounded-t-2xl">
+                <motion.img
+                  src={person.image}
+                  alt={person.name}
+                  className="h-64 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                  whileHover={{ scale: 1.05 }}
+                />
+              </div>
+              <div className="p-6 flex flex-col gap-5">
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Co-founder
+                  </p>
+                  <h3 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                    {person.name}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {person.focus}
+                  </p>
+                </div>
+                <motion.a
+                  href={person.linkedin}
+                  target="_blank"
+                  rel="noreferrer"
+                  whileTap={{ scale: 0.97 }}
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-gray-200 dark:border-neutral-800 bg-white/90 dark:bg-neutral-950/60 px-5 py-2 text-sm font-medium text-gray-900 dark:text-white transition-all duration-300 hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-neutral-900"
+                >
+                  Connect
+                </motion.a>
+              </div>
+              <div className="absolute inset-0 rounded-2xl border border-transparent group-hover:border-gray-300/70 dark:group-hover:border-neutral-700/70 transition-all duration-300 pointer-events-none" />
+            </motion.article>
+          ))}
         </motion.div>
       </div>
-    </footer>
+    </section>
   );
 };
 
@@ -959,12 +876,13 @@ const FooterSection = () => {
 export default function App() {
   return (
     <div className="home-page min-h-screen bg-white dark:bg-neutral-900">
-      <Navbar />
+      <LandingNavbar />
       <HeroSection />
       <FeaturesSection />
       <HowItWorksSection />
       <PricingSection />
-      <FooterSection />
+      <TeamSection />
+      <LandingFooter />
     </div>
   );
 }
