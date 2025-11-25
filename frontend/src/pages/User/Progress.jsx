@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/Progress';
 import { Button } from '@/components/ui/button';
+import { buildApiUrl } from '@/config/api';
 import { Badge } from '@/components/ui/badge';
 import {
   PieChart as RechartsPieChart,
@@ -100,7 +101,7 @@ const ProgressPage = () => {
         const headers = { Authorization: `Bearer ${token}` };
 
         // Fetch all practice questions
-        const questionsResponse = await axios.get('http://localhost:5000/api/questions');
+        const questionsResponse = await axios.get(buildApiUrl('/questions'));
         setAllQuestions(questionsResponse.data);
 
         // Load unified progress data from localStorage

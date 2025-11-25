@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
+import { buildApiUrl } from '@/config/api';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -16,7 +17,7 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get('http://localhost:5000/api/admin/analytics', {
+      const response = await axios.get(buildApiUrl('/admin/analytics'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

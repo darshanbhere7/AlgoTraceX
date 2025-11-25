@@ -6,6 +6,7 @@ import { Card, Progress } from '@/components/ui';
 import { FaSync, FaChartLine, FaCode, FaLightbulb, FaTrophy, FaCheckCircle, FaBook } from 'react-icons/fa';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadialBarChart, RadialBar, Area, AreaChart } from 'recharts';
 import { motion } from 'framer-motion';
+import { buildApiUrl } from '@/config/api';
 
 const Dashboard = () => {
   const { user, loading: userLoading } = useAuth();
@@ -28,11 +29,11 @@ const Dashboard = () => {
         const token = localStorage.getItem('token');
         const headers = { Authorization: `Bearer ${token}` };
 
-        const questionsResponse = await axios.get('http://localhost:5000/api/questions');
+        const questionsResponse = await axios.get(buildApiUrl('/questions'));
         setAllQuestions(questionsResponse.data);
 
         const trackingResponse = await axios.get(
-          'http://localhost:5000/api/practice-questions/tracking/questions',
+          buildApiUrl('/practice-questions/tracking/questions'),
           { headers }
         );
         setCompletedQuestions(new Set(trackingResponse.data.map(q => q.questionId)));

@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/Progress';
 import Skeleton from '@/components/ui/Skeleton';
+import { buildApiUrl } from '@/config/api';
 import {
   getProgress,
   toggleQuestionCompleted,
@@ -72,7 +73,7 @@ const PracticeQuestions = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get('http://localhost:5000/api/questions');
+      const response = await axios.get(buildApiUrl('/questions'));
       setQuestions(response.data);
       // Expand first topic by default
       if (response.data.length > 0) {

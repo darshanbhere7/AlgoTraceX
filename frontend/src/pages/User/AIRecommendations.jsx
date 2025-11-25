@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Brain, MessageSquare, BookOpen, Send, User, Bot, Trash2, Copy, RefreshCw, Mic, MicOff, Languages, Volume2, VolumeX } from 'lucide-react';
 import chatService from '@/services/chatService';
+import { API_BASE_URL, buildApiUrl } from '@/config/api';
 
 // SpeechRecognition setup
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -66,7 +67,7 @@ const AIRecommendations = () => {
   const [level, setLevel] = useState('beginner');
   const [explanation, setExplanation] = useState('');
 
-  const API_BASE_URL = 'http://localhost:5000/api';
+  const recommendationsEndpoint = buildApiUrl('/ai/recommendations');
 
   const commonTopics = ['Arrays', 'Linked Lists', 'Trees', 'Graphs', 'Dynamic Programming', 'Sorting', 'Searching', 'Hash Tables', 'Greedy', 'Backtracking'];
   const commonSkills = ['Problem Analysis', 'Time Complexity', 'Space Complexity', 'Implementation', 'Debugging', 'Pattern Recognition'];

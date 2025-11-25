@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { buildApiUrl } from '@/config/api';
 
 const AuthContext = createContext();
 
@@ -15,7 +16,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const token = localStorage.getItem('token');
         if (token) {
-          const response = await fetch('http://localhost:5000/api/user/profile', {
+          const response = await fetch(buildApiUrl('/user/profile'), {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -43,7 +44,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setError(null);
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch(buildApiUrl('/auth/login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,7 +62,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', data.token);
       
       // Fetch complete user data including progress
-      const userResponse = await fetch('http://localhost:5000/api/user/profile', {
+      const userResponse = await fetch(buildApiUrl('/user/profile'), {
         headers: {
           'Authorization': `Bearer ${data.token}`
         }
@@ -92,7 +93,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (name, email, password) => {
     setError(null);
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const response = await fetch(buildApiUrl('/auth/register'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -127,7 +128,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const token = localStorage.getItem('token');
       
-      const response = await fetch('http://localhost:5000/api/user/progress', {
+      const response = await fetch(buildApiUrl('/user/progress'), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Card, CardContent } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { toast } from 'sonner';
+import { buildApiUrl } from '@/config/api';
 
 const UserAnalytics = () => {
   const [analytics, setAnalytics] = useState(null);
@@ -15,7 +16,7 @@ const UserAnalytics = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get('http://localhost:5000/api/admin/analytics', {
+      const response = await axios.get(buildApiUrl('/admin/analytics'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

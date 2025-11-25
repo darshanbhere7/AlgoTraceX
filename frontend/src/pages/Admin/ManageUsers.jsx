@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { buildApiUrl } from '@/config/api';
 
 const ManageUsers = () => {
   const [users, setUsers] = useState([]);
@@ -16,7 +17,7 @@ const ManageUsers = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get('http://localhost:5000/api/admin/users', {
+      const response = await axios.get(buildApiUrl('/admin/users'), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -40,7 +41,7 @@ const ManageUsers = () => {
 
   const handleDeleteUser = async (userId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/admin/users/${userId}`, {
+      await axios.delete(buildApiUrl(`/admin/users/${userId}`), {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -57,7 +58,7 @@ const ManageUsers = () => {
     try {
       const newRole = currentRole === 'admin' ? 'user' : 'admin';
       await axios.patch(
-        `http://localhost:5000/api/admin/users/${userId}/role`,
+        buildApiUrl(`/admin/users/${userId}/role`),
         { role: newRole },
         {
           headers: {

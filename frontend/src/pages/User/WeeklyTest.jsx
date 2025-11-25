@@ -34,6 +34,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/Progress';
+import { buildApiUrl } from '@/config/api';
 
 const STORAGE_KEYS = {
   activeState: 'weeklyTest.activeState',
@@ -218,7 +219,7 @@ const WeeklyTest = () => {
       setError(null);
 
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/tests/public', {
+      const response = await axios.get(buildApiUrl('/tests/public'), {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
@@ -547,13 +548,9 @@ const WeeklyTest = () => {
     const remaining = [];
     for (const submission of queue) {
       try {
-        const response = await axios.post(
-          'http://localhost:5000/api/tests/submit',
-          submission.payload,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const response = await axios.post(buildApiUrl('/tests/submit'), submission.payload, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const snapshot =
           submission.testSnapshot ||
           tests.find((test) => test._id === submission.payload?.testId);
@@ -697,7 +694,7 @@ const WeeklyTest = () => {
 
       let responseData;
       try {
-        const response = await axios.post('http://localhost:5000/api/tests/submit', payload, {
+        const response = await axios.post(buildApiUrl('/tests/submit'), payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
         responseData = response.data;

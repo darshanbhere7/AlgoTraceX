@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { buildApiUrl } from '@/config/api';
 
 const difficultyFilters = [
   { value: 'all', label: 'All' },
@@ -40,7 +41,7 @@ const ManageTopics = () => {
   const fetchTopics = useCallback(async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get('http://localhost:5000/api/admin/topics', {
+      const { data } = await axios.get(buildApiUrl('/admin/topics'), {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTopics(data);
@@ -80,7 +81,7 @@ const ManageTopics = () => {
     event.preventDefault();
     try {
       const { data } = await axios.post(
-        'http://localhost:5000/api/admin/topics',
+        buildApiUrl('/admin/topics'),
         newTopic,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -97,7 +98,7 @@ const ManageTopics = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/admin/topics/${id}`, {
+      await axios.delete(buildApiUrl(`/admin/topics/${id}`), {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTopics((prev) => prev.filter((topic) => topic._id !== id));

@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { buildApiUrl } from '@/config/api';
 
 const initialQuestion = {
   question: '',
@@ -50,10 +51,10 @@ const ManageTests = () => {
     try {
       setLoading(true);
       const [testsResponse, topicsResponse] = await Promise.all([
-        axios.get('http://localhost:5000/api/tests', {
+        axios.get(buildApiUrl('/tests'), {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        axios.get('http://localhost:5000/api/admin/topics', {
+        axios.get(buildApiUrl('/admin/topics'), {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -119,7 +120,7 @@ const ManageTests = () => {
       return;
     }
     try {
-      const { data } = await axios.post('http://localhost:5000/api/tests', newTest, {
+      const { data } = await axios.post(buildApiUrl('/tests'), newTest, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTests((prev) => [...prev, data]);
@@ -134,7 +135,7 @@ const ManageTests = () => {
 
   const handleDeleteTest = async (testId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/tests/${testId}`, {
+      await axios.delete(buildApiUrl(`/tests/${testId}`), {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTests((prev) => prev.filter((test) => test._id !== testId));

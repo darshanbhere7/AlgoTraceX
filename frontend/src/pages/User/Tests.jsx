@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Timer } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { buildApiUrl } from '@/config/api';
 
 const Tests = () => {
   const [tests, setTests] = useState([]);
@@ -27,7 +28,7 @@ const Tests = () => {
       setLoading(true);
       setError(null);
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/tests/public', {
+      const response = await axios.get(buildApiUrl('/tests/public'), {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
       setTests(response.data);
@@ -78,7 +79,7 @@ const Tests = () => {
       const timeSpent = Math.floor((Date.now() - startTime) / 1000); // Convert to seconds
 
       const response = await axios.post(
-        'http://localhost:5000/api/tests/submit',
+        buildApiUrl('/tests/submit'),
         {
           testId: selectedTest._id,
           answers: Object.entries(answers).map(([questionIndex, answer]) => ({

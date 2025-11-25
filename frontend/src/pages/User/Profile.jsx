@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { FaUser, FaEnvelope, FaEdit, FaSave, FaTimes, FaCamera, FaCheck } from 'react-icons/fa';
+import { buildApiUrl } from '@/config/api';
 
 const Profile = () => {
   const { user, loading: userLoading } = useAuth();
@@ -28,7 +29,7 @@ const Profile = () => {
         const headers = { Authorization: `Bearer ${token}` };
 
         // Fetch detailed profile data
-        const response = await axios.get('http://localhost:5000/api/user/profile', { headers });
+        const response = await axios.get(buildApiUrl('/user/profile'), { headers });
         setProfileData(response.data);
         setEditData({
           name: response.data.name,
@@ -77,11 +78,7 @@ const Profile = () => {
         'Content-Type': 'application/json'
       };
 
-      const response = await axios.put(
-        'http://localhost:5000/api/user/profile',
-        editData,
-        { headers }
-      );
+      const response = await axios.put(buildApiUrl('/user/profile'), editData, { headers });
 
       setProfileData(response.data);
       setIsEditing(false);

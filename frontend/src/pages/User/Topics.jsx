@@ -21,6 +21,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import TopicCard from '@/components/topics/TopicCard';
+import { buildApiUrl } from '@/config/api';
 import { BookOpen, RefreshCw, Sparkles } from 'lucide-react';
 
 // Sortable Item Wrapper
@@ -111,7 +112,7 @@ const Topics = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get('http://localhost:5000/api/topics');
+      const response = await axios.get(buildApiUrl('/topics'));
       const fetchedTopics = response.data;
       setTopics(fetchedTopics);
 

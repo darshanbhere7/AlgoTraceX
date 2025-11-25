@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import axios from 'axios';
 import { Card, Button, Input, Textarea, Select, toast } from '@/components/ui';
 import { FaPlus, FaTrash, FaSync, FaLink, FaExternalLinkAlt, FaCheck, FaTimes, FaEdit, FaChevronDown } from 'react-icons/fa';
+import { buildApiUrl } from '@/config/api';
 // import { DifficultyBadge, TopicBadge } from '@/components/badges';
 
 // Custom Dropdown Component (copied from PracticeQuestions.jsx)
@@ -91,7 +92,7 @@ const ManagePracticeQuestions = () => {
     setError(null);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/practice-questions', {
+      const response = await axios.get(buildApiUrl('/practice-questions'), {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setQuestions(response.data);
@@ -106,10 +107,9 @@ const ManagePracticeQuestions = () => {
     try {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
-      const response = await axios.get(
-        'http://localhost:5000/api/practice-questions/tracking/questions',
-        { headers }
-      );
+      const response = await axios.get(buildApiUrl('/practice-questions/tracking/questions'), {
+        headers,
+      });
       setCompletedQuestions(new Set(response.data.map(q => q.questionId)));
     } catch (error) {
       console.error('Failed to fetch tracking data:', error);
@@ -157,17 +157,15 @@ const ManagePracticeQuestions = () => {
 
       if (editingQuestion) {
         await axios.put(
-          `http://localhost:5000/api/practice-questions/${editingQuestion._id}`,
+          buildApiUrl(`/practice-questions/${editingQuestion._id}`),
           dataToSubmit,
-          { headers: { 'Authorization': `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         toast.success('Question updated successfully!');
       } else {
-        await axios.post(
-          'http://localhost:5000/api/practice-questions',
-          dataToSubmit,
-          { headers: { 'Authorization': `Bearer ${token}` } }
-        );
+        await axios.post(buildApiUrl('/practice-questions'), dataToSubmit, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         toast.success('Question added successfully!');
       }
       setFormData({
@@ -210,7 +208,7 @@ const ManagePracticeQuestions = () => {
     if (!window.confirm('Are you sure you want to delete this question?')) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/practice-questions/${id}`, {
+      await axios.delete(buildApiUrl(`/practice-questions/${id}`), {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       toast.success('Question deleted successfully!');
@@ -231,7 +229,7 @@ const ManagePracticeQuestions = () => {
       setFetching(true);
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        'http://localhost:5000/api/practice-questions/fetch',
+        buildApiUrl('/practice-questions/fetch'),
         { url: fetchUrl },
         { headers: { Authorization: `Bearer ${token}` } }
       );
