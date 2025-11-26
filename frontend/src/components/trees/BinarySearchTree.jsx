@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { Info, Shuffle, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 
 class TreeNode {
     constructor(value) {
@@ -32,6 +32,7 @@ export default function BinarySearchTree() {
     const [pathNodes, setPathNodes] = useState(new Set());
     const [foundNode, setFoundNode] = useState(null);
     const [operation, setOperation] = useState("");
+    const [showInfo, setShowInfo] = useState(false);
 
     const delay = speedOptions[speedKey];
 
@@ -393,7 +394,7 @@ export default function BinarySearchTree() {
         const isFound = foundNode === node.value;
 
         return (
-            <g key={`${node.value}-${x}-${y}`}>
+            <g key={`${node.value}-${x}-${y}`} className="tree-node">
                 {node.left && (
                     <line
                         x1={x}
@@ -439,10 +440,8 @@ export default function BinarySearchTree() {
                         "#94a3b8"
                     }
                     strokeWidth="3"
-                    className="transition-all duration-300"
+                    className={`node-circle transition-all duration-300 ${isHighlighted ? "highlighted" : ""} ${isVisited ? "visited" : ""} ${isFound ? "found" : ""} ${isInPath ? "in-path" : ""}`}
                     style={{
-                        filter: isHighlighted || isFound ? "drop-shadow(0 0 10px currentColor)" : "none",
-                        transform: isHighlighted ? "scale(1.2)" : "scale(1)",
                         transformOrigin: `${x}px ${y}px`
                     }}
                 />
@@ -471,18 +470,41 @@ export default function BinarySearchTree() {
     const svgHeight = Math.max(300, treeHeight * 80 + 40);
 
     return (
-        <Card className="bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 text-gray-900 p-6 max-w-7xl mx-auto border-2 border-indigo-200 shadow-2xl">
-            <CardContent className="space-y-6">
-                <div className="text-center mb-6">
-                    <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 bg-clip-text text-transparent">
-                        Binary Search Tree Visualizer
-                    </h2>
-                    <p className="text-sm text-gray-600">Explore BST operations: Insert, Search, Delete, Find Min/Max</p>
-                </div>
+        <div className="w-full px-4 sm:px-6 lg:px-8 pt-24 sm:pt-24 pb-8 max-w-7xl mx-auto">
+            <style>{`
+                .node-circle {
+                    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+                    filter: drop-shadow(0 8px 16px rgba(15, 23, 42, 0.08));
+                }
+                .node-circle.highlighted {
+                    transform: scale(1.08);
+                    filter: drop-shadow(0 10px 18px rgba(251, 191, 36, 0.3));
+                }
+                .node-circle.in-path {
+                    filter: drop-shadow(0 10px 18px rgba(59, 130, 246, 0.25));
+                }
+                .node-circle.found {
+                    filter: drop-shadow(0 12px 20px rgba(16, 185, 129, 0.4));
+                }
+                @media (prefers-color-scheme: dark) {
+                    .node-circle {
+                        filter: drop-shadow(0 8px 16px rgba(15, 23, 42, 0.7));
+                    }
+                }
+            `}</style>
 
-                {/* Insert Panel */}
-                <div className="flex flex-col lg:flex-row items-center justify-center gap-4 flex-wrap">
-                    <div className="flex items-center gap-2">
+            <div className="mb-6">
+                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">
+                    Binary Search Tree Visualizer
+                </h1>
+                <p className="text-sm text-slate-600 dark:text-white/50">
+                    Practice insert, search, delete, and min/max operations with a layout that mirrors the Bubble Sort experience.
+                </p>
+            </div>
+
+            <div className="space-y-4 mb-6">
+                <div className="grid gap-3 md:grid-cols-3">
+                    <div className="flex gap-2">
                         <Input
                             type="number"
                             placeholder="Insert value (0-999)"
@@ -490,16 +512,20 @@ export default function BinarySearchTree() {
                             disabled={animating}
                             onChange={(e) => setCurrentInput(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && handleAddValue()}
-                            className="w-44 border-indigo-300 bg-white focus:border-indigo-500 focus:ring-indigo-500"
+                            className="flex-1 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 focus:border-slate-400 dark:focus:border-white/20 focus:ring-0 h-10"
                             min="0"
                             max="999"
                         />
-                        <Button onClick={handleAddValue} disabled={animating} size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">
+                        <Button
+                        variant="ghost"
+                            onClick={handleAddValue}
+                            disabled={animating}
+                            className="h-10 px-4 bg-black hover:bg-slate-800 dark:bg-white/15 dark:hover:bg-white/25 text-white dark:text-white border-0 rounded-md shadow-sm disabled:opacity-60"
+                        >
                             Insert
                         </Button>
                     </div>
-
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2">
                         <Input
                             type="number"
                             placeholder="Search value"
@@ -507,16 +533,26 @@ export default function BinarySearchTree() {
                             disabled={animating}
                             onChange={(e) => setSearchInput(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && searchValue()}
-                            className="w-36 border-blue-300 bg-white focus:border-blue-500 focus:ring-blue-500"
+                            className="flex-1 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 focus:border-slate-400 dark:focus:border-white/20 focus:ring-0 h-10"
                             min="0"
                             max="999"
                         />
-                        <Button onClick={searchValue} disabled={animating || !root} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white shadow-md">
+                        <Button
+                            variant="ghost"
+                            onClick={searchValue}
+                            disabled={animating || !root}
+                            className="h-10 px-4 
+                            bg-emerald-500/20 hover:bg-emerald-500/30
+                            dark:bg-emerald-400/20 dark:hover:bg-emerald-400/30
+                            text-emerald-700 dark:text-emerald-300
+                            border border-emerald-500/20
+                            rounded-md shadow-none 
+                            disabled:opacity-40"
+                        >
                             Search
                         </Button>
                     </div>
-
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2">
                         <Input
                             type="number"
                             placeholder="Delete value"
@@ -524,196 +560,213 @@ export default function BinarySearchTree() {
                             disabled={animating}
                             onChange={(e) => setDeleteInput(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && deleteValue()}
-                            className="w-36 border-red-300 bg-white focus:border-red-500 focus:ring-red-500"
+                            className="flex-1 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 focus:border-slate-400 dark:focus:border-white/20 focus:ring-0 h-10"
                             min="0"
                             max="999"
                         />
-                        <Button onClick={deleteValue} disabled={animating || !root} size="sm" className="bg-red-600 hover:bg-red-700 text-white shadow-md">
+                        <Button
+                            variant="ghost"
+                            onClick={deleteValue}
+                            disabled={animating || !root}
+                            className="h-10 px-4 
+                            bg-rose-500/20 hover:bg-rose-500/30
+                            dark:bg-rose-400/20 dark:hover:bg-rose-400/30
+                            text-rose-700 dark:text-rose-300
+                            border border-rose-500/20
+                            rounded-md shadow-none
+                            disabled:opacity-40"
+                        >
                             Delete
                         </Button>
                     </div>
                 </div>
 
-                {/* Additional Operations */}
-                <div className="flex flex-wrap items-center justify-center gap-3">
+                <div className="flex flex-wrap gap-2">
                     <Button
+                        variant="ghost"
                         onClick={() => findMinMax("min")}
                         disabled={animating || !root}
-                        className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-md"
+                        className="flex-1 sm:flex-none
+                                bg-cyan-500/20 hover:bg-cyan-500/30
+                                dark:bg-cyan-400/20 dark:hover:bg-cyan-400/30
+                                text-cyan-700 dark:text-cyan-300
+                                border border-cyan-500/20
+                                h-10 rounded-md shadow-none
+                                disabled:opacity-40"
                     >
                         Find Minimum
                     </Button>
                     <Button
+                        variant="ghost"
                         onClick={() => findMinMax("max")}
                         disabled={animating || !root}
-                        className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white shadow-md"
+                        className="flex-1 sm:flex-none
+                                bg-amber-500/20 hover:bg-amber-500/30
+                                dark:bg-amber-400/20 dark:hover:bg-amber-400/30
+                                text-amber-700 dark:text-amber-300
+                                border border-amber-500/20
+                                h-10 rounded-md shadow-none
+                                disabled:opacity-40"
                     >
                         Find Maximum
                     </Button>
-                    <Button onClick={generateRandomBST} disabled={animating} className="bg-purple-600 hover:bg-purple-700 text-white shadow-md">
-                        Generate Random BST
+                    <Button
+                        variant="ghost"
+                        onClick={generateRandomBST}
+                        disabled={animating}
+                        className="flex-1 sm:flex-none h-10 relative transition-all duration-300 ease-out
+                                        bg-slate-200/80 hover:bg-slate-300
+                                        text-slate-700
+                                        dark:bg-white/15 dark:hover:bg-white/15 dark:text-white
+                                        rounded-md shadow-sm dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                    >
+                        <Shuffle className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Random BST</span>
                     </Button>
-                    <Button variant="outline" onClick={reset} disabled={animating} className="border-indigo-300 text-indigo-700 hover:bg-indigo-50 shadow-md">
-                        Reset
+                    <Button
+                        variant="ghost"
+                        onClick={reset}
+                        disabled={animating}
+                        className="flex-1 sm:flex-none h-10 border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-900 dark:text-white rounded-md hover:bg-slate-50 dark:hover:bg-white/10 px-4"
+                    >
+                        <RotateCcw className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Reset</span>
                     </Button>
                 </div>
 
-                {/* Speed Selection */}
-                <div className="flex flex-wrap items-center justify-center gap-3">
-                    <span className="text-sm font-medium text-gray-700">Animation Speed:</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-slate-900 dark:text-white/50 text-sm font-medium">Speed</span>
                     {Object.keys(speedOptions).map((key) => (
                         <Button
+                            variant="ghost"
                             key={key}
                             size="sm"
-                            variant={speedKey === key ? "default" : "outline"}
                             onClick={() => setSpeedKey(key)}
                             disabled={animating}
-                            className={speedKey === key ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md" : "border-indigo-300 text-gray-700 hover:bg-indigo-50"}
+                            className={`h-8 px-3 text-sm font-medium transition-all rounded-md ${
+                                speedKey === key
+                                    ? "bg-black hover:bg-slate-800 dark:bg-white/15 text-white shadow-sm"
+                                    : "bg-slate-100 hover:bg-slate-200 text-black border border-slate-300 dark:bg-transparent dark:text-white/50 dark:hover:text-white/80 dark:hover:bg-white/5 hover:shadow-sm"
+                            }`}
                         >
                             {key}
                         </Button>
                     ))}
                 </div>
+            </div>
 
-                {/* Current Step Display */}
-                {currentStep && (
-                    <div className="text-center p-4 bg-gradient-to-r from-indigo-100 via-blue-100 to-cyan-100 rounded-xl border-2 border-indigo-300 shadow-md">
-                        <span className="text-lg font-semibold text-gray-800">{currentStep}</span>
+            {currentStep && (
+                <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm sm:text-base shadow-sm mb-4">
+                    {currentStep}
+                </div>
+            )}
+
+            <div className="bg-slate-100 dark:bg-white/[0.02] backdrop-blur-sm rounded-xl border border-slate-200 dark:border-white/[0.05] p-4 sm:p-6 mb-4 shadow-lg dark:shadow-2xl min-h-[320px]">
+                {!root ? (
+                    <div className="flex flex-col items-center justify-center h-64 text-slate-400 dark:text-white/40">
+                        <p className="text-base mb-2 text-center">Insert values or generate a random BST to get started</p>
+                        <p className="text-sm text-slate-400 dark:text-white/30 text-center">
+                            BST property: left subtree &lt; node &lt; right subtree
+                        </p>
+                    </div>
+                ) : (
+                    <div className="flex justify-center overflow-x-auto py-2">
+                        <svg width="900" height={svgHeight} className="mx-auto">
+                            {renderTree(root)}
+                        </svg>
                     </div>
                 )}
+            </div>
 
-                {/* Tree Visualizer */}
-                <div className="min-h-80 bg-white/70 backdrop-blur-sm rounded-2xl p-6 border-2 border-indigo-200 shadow-inner overflow-auto">
-                    {!root ? (
-                        <div className="flex items-center justify-center h-80 text-gray-500">
-                            <div className="text-center">
-                                <div className="text-4xl mb-2">🔍</div>
-                                <span>Insert numbers to build your Binary Search Tree</span>
-                                <p className="text-xs mt-2 text-gray-400">Left subtree &lt; Node &lt; Right subtree</p>
-                            </div>
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs sm:text-sm text-slate-600 dark:text-white/60 mb-4">
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-slate-300" />
+                    <span>Unvisited</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-blue-400" />
+                    <span>Search Path</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-amber-400" />
+                    <span>Current Node</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-slate-500" />
+                    <span>Visited</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-emerald-500" />
+                    <span>Found</span>
+                </div>
+            </div>
+
+            <button
+                onClick={() => setShowInfo(!showInfo)}
+                className="w-full flex items-center justify-center gap-2 py-3 text-slate-500 hover:text-slate-700 dark:text-white/50 dark:hover:text-white/70 transition-colors text-sm font-medium"
+            >
+                <Info className="h-4 w-4" />
+                Algorithm Info
+                {showInfo ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </button>
+
+            {showInfo && (
+                <div className="bg-slate-100 dark:bg-white/[0.02] backdrop-blur-sm rounded-xl border border-slate-200 dark:border-white/[0.05] p-6 space-y-4 animate-in slide-in-from-top-2 duration-300">
+                    <div>
+                        <h3 className="text-slate-900 dark:text-white font-semibold mb-2 text-base">
+                            Binary Search Tree Properties
+                        </h3>
+                        <p className="text-slate-600 dark:text-white/60 text-sm leading-relaxed">
+                            Each node keeps smaller values on the left and larger values on the right. This ordering makes inorder traversal naturally sorted,
+                            and gives BSTs their logarithmic behavior when the tree stays balanced.
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-white/40 mt-2">
+                            Average case: O(log n) for insert/search/delete. Worst case: O(n) for skewed trees. Space: O(n).
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="bg-white dark:bg-white/[0.03] rounded-lg p-4 border border-slate-200 dark:border-white/[0.05] text-sm">
+                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/40 font-semibold mb-2">
+                                Insert & Search
+                            </p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs mb-2">
+                                Compare against each node starting from the root. Go left if the value is smaller, right if larger.
+                            </p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs">
+                                Search stops early when the value is found or a null child is reached, mirroring binary search on arrays.
+                            </p>
                         </div>
-                    ) : (
-                        <div className="flex justify-center">
-                            <svg width="800" height={svgHeight} className="mx-auto">
-                                {renderTree(root)}
-                            </svg>
+                        <div className="bg-white dark:bg-white/[0.03] rounded-lg p-4 border border-slate-200 dark:border-white/[0.05] text-sm">
+                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/40 font-semibold mb-2">
+                                Delete (3 cases)
+                            </p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs">
+                                Remove leaves directly, bypass nodes with one child, or replace nodes with two children using the inorder successor (smallest value in the right subtree) before deleting the duplicate.
+                            </p>
                         </div>
-                    )}
-                </div>
-
-                {/* Legend */}
-                <div className="flex flex-wrap justify-center gap-6 text-sm">
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-slate-200 border-2 border-slate-400 rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Unvisited</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-blue-400 border-2 border-blue-600 rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Search Path</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-amber-500 border-2 border-amber-700 rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Current Node</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-slate-400 border-2 border-slate-600 rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Visited</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-emerald-500 border-2 border-emerald-700 rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Found/Result</span>
-                    </div>
-                </div>
-
-                {/* BST Property Info */}
-                <div className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl p-5 text-sm border-2 border-indigo-200 shadow-md">
-                    <h3 className="font-bold mb-3 text-gray-800 text-lg flex items-center gap-2">
-                        <span className="text-2xl">🔍</span>
-                        Binary Search Tree Properties
-                    </h3>
-                    <p className="text-gray-700 leading-relaxed mb-3">
-                        A Binary Search Tree is a special binary tree with the <strong>BST property</strong>: for every node, 
-                        all values in the left subtree are less than the node's value, and all values in the right subtree 
-                        are greater. This ordering enables efficient searching, insertion, and deletion operations.
-                    </p>
-                    <div className="bg-white/50 rounded-lg p-3 mb-3">
-                        <p className="text-gray-700 text-xs leading-relaxed">
-                            <strong>Key Insight:</strong> The BST property means an inorder traversal visits nodes in 
-                            sorted order. This makes BSTs ideal for maintaining sorted data with dynamic insertions and deletions.
-                        </p>
-                    </div>
-                    <div className="pt-3 border-t border-indigo-300">
-                        <strong className="text-indigo-700">Average Case:</strong> <span className="text-gray-700">O(log n) for search, insert, delete</span>
-                        <span className="mx-2 text-gray-400">|</span>
-                        <strong className="text-blue-700">Worst Case:</strong> <span className="text-gray-700">O(n) for skewed trees</span>
-                        <span className="mx-2 text-gray-400">|</span>
-                        <strong className="text-cyan-700">Space:</strong> <span className="text-gray-700">O(n)</span>
-                    </div>
-                </div>
-
-                {/* Operations Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 text-sm border-2 border-blue-200">
-                        <h4 className="font-bold text-blue-800 mb-2 flex items-center gap-2">
-                            <span>➕</span> Insert & Search
-                        </h4>
-                        <p className="text-gray-700 text-xs leading-relaxed mb-2">
-                            <strong>Insert:</strong> Start at root. Compare value with current node. Go left if smaller, 
-                            right if larger. Insert at the first empty position found.
-                        </p>
-                        <p className="text-gray-700 text-xs leading-relaxed">
-                            <strong>Search:</strong> Similar to insert, but stop when value is found or reach a null node. 
-                            The path taken reveals the logarithmic search efficiency.
-                        </p>
                     </div>
 
-                    <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-4 text-sm border-2 border-red-200">
-                        <h4 className="font-bold text-red-800 mb-2 flex items-center gap-2">
-                            <span>🗑️</span> Delete Operation
-                        </h4>
-                        <p className="text-gray-700 text-xs leading-relaxed mb-1">
-                            <strong>3 Cases:</strong>
-                        </p>
-                        <p className="text-gray-700 text-xs leading-relaxed">
-                            • <strong>Leaf node:</strong> Simply remove<br/>
-                            • <strong>One child:</strong> Replace node with its child<br/>
-                            • <strong>Two children:</strong> Replace with inorder successor (smallest in right subtree), 
-                            then delete the successor
-                        </p>
-                    </div>
-                </div>
-
-                {/* Min/Max Operations */}
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 text-sm border-2 border-green-200">
-                    <div className="flex items-start gap-3">
-                        <span className="text-2xl">🎯</span>
-                        <div>
-                            <h4 className="font-bold text-green-900 mb-1">Finding Minimum & Maximum</h4>
-                            <p className="text-green-800">
-                                <strong>Minimum:</strong> Keep going left until you can't anymore (leftmost node). 
-                                <strong className="ml-3">Maximum:</strong> Keep going right until you can't anymore (rightmost node). 
-                                Both operations take O(h) time where h is the tree height.
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="bg-white dark:bg-white/[0.03] rounded-lg p-4 border border-slate-200 dark:border-white/[0.05] text-sm">
+                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/40 font-semibold mb-2">
+                                Min & Max
+                            </p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs">
+                                Minimum lives on the left-most branch, maximum on the right-most branch. Both operations run in O(h) where h is the height.
+                            </p>
+                        </div>
+                        <div className="bg-white dark:bg-white/[0.03] rounded-lg p-4 border border-slate-200 dark:border-white/[0.05] text-sm">
+                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/40 font-semibold mb-2">
+                                Why BSTs?
+                            </p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs">
+                                BSTs keep data sorted while still allowing dynamic updates. Self-balancing variants like AVL or Red-Black trees ensure O(log n) guaranteed performance.
                             </p>
                         </div>
                     </div>
                 </div>
-
-                {/* Advantages */}
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 text-sm border-2 border-purple-200">
-                    <div className="flex items-start gap-3">
-                        <span className="text-2xl">⚡</span>
-                        <div>
-                            <h4 className="font-bold text-purple-900 mb-1">Why Use BST?</h4>
-                            <p className="text-purple-800">
-                                BSTs combine the efficiency of binary search with the flexibility of linked structures. 
-                                Unlike sorted arrays, BSTs support fast insertions and deletions. Unlike hash tables, 
-                                BSTs maintain order and support range queries. Self-balancing variants (AVL, Red-Black) 
-                                guarantee O(log n) worst-case performance.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
+            )}
+        </div>
     );
 }

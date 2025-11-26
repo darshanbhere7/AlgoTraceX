@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { Info, Shuffle, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 
 class TreeNode {
     constructor(value) {
@@ -29,6 +29,7 @@ export default function BinaryTree() {
     const [visitedNodes, setVisitedNodes] = useState(new Set());
     const [traversalResult, setTraversalResult] = useState([]);
     const [currentTraversal, setCurrentTraversal] = useState("");
+    const [showInfo, setShowInfo] = useState(false);
 
     const delay = speedOptions[speedKey];
 
@@ -335,214 +336,215 @@ export default function BinaryTree() {
     const svgHeight = Math.max(300, treeHeight * 80 + 40);
 
     return (
-        <Card className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 text-gray-900 p-6 max-w-7xl mx-auto border-2 border-blue-200 shadow-2xl">
-            <CardContent className="space-y-6">
-                <div className="text-center mb-6">
-                    <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                        Binary Tree Visualizer
-                    </h2>
-                    <p className="text-sm text-gray-600">Explore tree structure and traversal algorithms</p>
-                </div>
+        <div className="w-full px-4 sm:px-6 lg:px-8 pt-24 sm:pt-24 pb-8 max-w-7xl mx-auto text-gray-900 dark:text-gray-100">
+            <div className="mb-6">
+                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">
+                    Binary Tree Visualizer
+                </h1>
+                <p className="text-sm text-slate-600 dark:text-white/50">
+                    Same layout as the Binary Search Tree page, but focused on general tree behavior.
+                </p>
+            </div>
 
-                {/* Input Panel */}
-                <div className="flex flex-col lg:flex-row items-center justify-center gap-4 flex-wrap">
-                    <div className="flex items-center gap-2">
+            <div className="space-y-4 mb-6">
+                <div className="grid gap-3 md:grid-cols-3">
+                    <div className="flex gap-2">
                         <Input
                             type="number"
-                            placeholder="Enter number (0-999)"
+                            placeholder="Value (0-999)"
                             value={currentInput}
                             disabled={animating}
                             onChange={(e) => setCurrentInput(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && handleAddValue()}
-                            className="w-48 border-blue-300 bg-white focus:border-blue-500 focus:ring-blue-500"
+                            className="flex-1 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 focus:border-slate-400 dark:focus:border-white/20 focus:ring-0 h-10"
                             min="0"
                             max="999"
                         />
-                        <Button onClick={handleAddValue} disabled={animating} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white shadow-md">
+                        <Button
+                            variant="ghost"
+                            onClick={handleAddValue}
+                            disabled={animating}
+                            className="h-10 px-4 bg-black hover:bg-slate-800 dark:bg-white/15 dark:hover:bg-white/25 text-white border-0 rounded-md shadow-sm disabled:opacity-60"
+                        >
                             Insert
                         </Button>
                     </div>
-                    
-                    <Button onClick={generateRandomTree} disabled={animating} className="bg-purple-600 hover:bg-purple-700 text-white shadow-md">
-                        Generate Random Tree
-                    </Button>
-                    
-                    <Button variant="outline" onClick={reset} disabled={animating} className="border-blue-300 text-blue-700 hover:bg-blue-50 shadow-md">
-                        Reset
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="ghost"
+                            onClick={generateRandomTree}
+                            disabled={animating}
+                            className="flex-1 h-10 bg-slate-200/80 hover:bg-slate-300 text-slate-700 dark:bg-white/15 dark:hover:bg-white/20 dark:text-white rounded-md"
+                        >
+                            <Shuffle className="h-4 w-4 mr-2" />
+                            Random Tree
+                        </Button>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="ghost"
+                            onClick={reset}
+                            disabled={animating}
+                            className="flex-1 h-10 border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-900 dark:text-white rounded-md hover:bg-slate-50 dark:hover:bg-white/10"
+                        >
+                            <RotateCcw className="h-4 w-4 mr-2" />
+                            Reset
+                        </Button>
+                    </div>
                 </div>
 
-                {/* Traversal Buttons */}
-                <div className="flex flex-wrap items-center justify-center gap-3">
+                <div className="flex flex-wrap gap-2">
                     <Button
+                        variant="ghost"
                         onClick={() => startTraversal("Preorder")}
                         disabled={animating || !root}
-                        className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white shadow-md"
+                        className="flex-1 sm:flex-none bg-rose-500/20 hover:bg-rose-500/30 dark:bg-rose-400/20 dark:hover:bg-rose-400/30 text-rose-700 dark:text-rose-300 border border-rose-500/20 h-10 rounded-md"
                     >
                         Preorder (Root-L-R)
                     </Button>
                     <Button
+                        variant="ghost"
                         onClick={() => startTraversal("Inorder")}
                         disabled={animating || !root}
-                        className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white shadow-md"
+                        className="flex-1 sm:flex-none bg-emerald-500/20 hover:bg-emerald-500/30 dark:bg-emerald-400/20 dark:hover:bg-emerald-400/30 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 h-10 rounded-md"
                     >
                         Inorder (L-Root-R)
                     </Button>
                     <Button
+                        variant="ghost"
                         onClick={() => startTraversal("Postorder")}
                         disabled={animating || !root}
-                        className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-md"
+                        className="flex-1 sm:flex-none bg-sky-500/20 hover:bg-sky-500/30 dark:bg-sky-400/20 dark:hover:bg-sky-400/30 text-sky-700 dark:text-sky-300 border border-sky-500/20 h-10 rounded-md"
                     >
                         Postorder (L-R-Root)
                     </Button>
                     <Button
+                        variant="ghost"
                         onClick={levelOrderTraversal}
                         disabled={animating || !root}
-                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-md"
+                        className="flex-1 sm:flex-none bg-violet-500/20 hover:bg-violet-500/30 dark:bg-violet-400/20 dark:hover:bg-violet-400/30 text-violet-700 dark:text-violet-300 border border-violet-500/20 h-10 rounded-md"
                     >
                         Level Order (BFS)
                     </Button>
                 </div>
 
-                {/* Speed Selection */}
-                <div className="flex flex-wrap items-center justify-center gap-3">
-                    <span className="text-sm font-medium text-gray-700">Animation Speed:</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-slate-900 dark:text-white/50 text-sm font-medium">Speed</span>
                     {Object.keys(speedOptions).map((key) => (
                         <Button
+                            variant="ghost"
                             key={key}
                             size="sm"
-                            variant={speedKey === key ? "default" : "outline"}
                             onClick={() => setSpeedKey(key)}
                             disabled={animating}
-                            className={speedKey === key ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md" : "border-blue-300 text-gray-700 hover:bg-blue-50"}
+                            className={`h-8 px-3 text-sm font-medium transition-all rounded-md ${
+                                speedKey === key
+                                    ? "bg-black hover:bg-slate-800 dark:bg-white/15 text-white shadow-sm"
+                                    : "bg-slate-100 hover:bg-slate-200 text-black border border-slate-300 dark:bg-transparent dark:text-white/50 dark:hover:text-white/80 dark:hover:bg-white/5 hover:shadow-sm"
+                            }`}
                         >
                             {key}
                         </Button>
                     ))}
                 </div>
+            </div>
 
-                {/* Current Step Display */}
-                {currentStep && (
-                    <div className="text-center p-4 bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 rounded-xl border-2 border-blue-300 shadow-md">
-                        <span className="text-lg font-semibold text-gray-800">{currentStep}</span>
+            {currentStep && (
+                <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm sm:text-base shadow-sm mb-4">
+                    {currentStep}
+                </div>
+            )}
+
+            {traversalResult.length > 0 && (
+                <div className="text-center p-4 bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 mb-4">
+                    <span className="text-sm font-semibold text-purple-700 dark:text-purple-300">{currentTraversal} Result: </span>
+                    <span className="text-lg font-bold text-slate-900 dark:text-white">
+                        [{traversalResult.join(", ")}]
+                    </span>
+                </div>
+            )}
+
+            <div className="bg-slate-100 dark:bg-white/[0.02] backdrop-blur-sm rounded-xl border border-slate-200 dark:border-white/[0.05] p-6 mb-4 shadow-lg overflow-auto min-h-[320px]">
+                {!root ? (
+                    <div className="flex items-center justify-center h-64 text-slate-500 dark:text-white/40">
+                        <div className="text-center">
+                            <span>Insert values to build your tree...</span>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="flex justify-center">
+                        <svg width="800" height={svgHeight} className="mx-auto">
+                            {renderTree(root)}
+                        </svg>
                     </div>
                 )}
+            </div>
 
-                {/* Traversal Result */}
-                {traversalResult.length > 0 && (
-                    <div className="text-center p-4 bg-white/70 rounded-xl border-2 border-purple-300 shadow-md">
-                        <span className="text-sm font-semibold text-purple-700">{currentTraversal} Result: </span>
-                        <span className="text-lg font-bold text-gray-800">
-                            [{traversalResult.join(", ")}]
-                        </span>
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs sm:text-sm text-slate-600 dark:text-white/60 mb-4">
+                <div className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded-full bg-blue-400 border border-blue-600" />
+                    <span>Unvisited</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded-full bg-amber-400 border border-amber-600" />
+                    <span>Current</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-4 h-4 rounded-full bg-emerald-400 border border-emerald-600" />
+                    <span>Visited</span>
+                </div>
+            </div>
+
+            <button
+                onClick={() => setShowInfo(!showInfo)}
+                className="w-full flex items-center justify-center gap-2 py-3 text-slate-500 hover:text-slate-700 dark:text-white/50 dark:hover:text-white/70 transition-colors text-sm font-medium"
+            >
+                <Info className="h-4 w-4" />
+                Algorithm Info
+                {showInfo ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </button>
+
+            {showInfo && (
+                <div className="bg-slate-100 dark:bg-white/[0.02] backdrop-blur-sm rounded-xl border border-slate-200 dark:border-white/[0.05] p-6 space-y-4 animate-in slide-in-from-top-2 duration-300 text-sm">
+                    <div>
+                        <h3 className="text-slate-900 dark:text-white font-semibold mb-2">Binary Tree Structure</h3>
+                        <p className="text-slate-600 dark:text-white/60">
+                            A binary tree allows up to two children per node without enforcing ordering rules. This visualizer keeps the tree roughly balanced
+                            by inserting into the smaller subtree when possible.
+                        </p>
                     </div>
-                )}
-
-                {/* Tree Visualizer */}
-                <div className="min-h-80 bg-white/70 backdrop-blur-sm rounded-2xl p-6 border-2 border-blue-200 shadow-inner overflow-auto">
-                    {!root ? (
-                        <div className="flex items-center justify-center h-80 text-gray-500">
-                            <div className="text-center">
-                                <div className="text-4xl mb-2">🌳</div>
-                                <span>Insert numbers to build your binary tree</span>
-                            </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-white dark:bg-white/5 rounded-lg border border-slate-200 dark:border-white/10 p-4">
+                            <h4 className="font-semibold text-red-700 dark:text-red-300 mb-2">Depth-First Traversals</h4>
+                            <p className="text-xs text-slate-600 dark:text-white/60 mb-2">
+                                <strong>Preorder:</strong> Root → Left → Right. Useful for copying trees or prefix notation.
+                            </p>
+                            <p className="text-xs text-slate-600 dark:text-white/60 mb-2">
+                                <strong>Inorder:</strong> Left → Root → Right. Produces sorted order only for BSTs.
+                            </p>
+                            <p className="text-xs text-slate-600 dark:text-white/60">
+                                <strong>Postorder:</strong> Left → Right → Root. Ideal for deleting trees or postfix notation.
+                            </p>
                         </div>
-                    ) : (
-                        <div className="flex justify-center">
-                            <svg width="800" height={svgHeight} className="mx-auto">
-                                {renderTree(root)}
-                            </svg>
-                        </div>
-                    )}
-                </div>
-
-                {/* Legend */}
-                <div className="flex flex-wrap justify-center gap-6 text-sm">
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-blue-400 border-2 border-blue-600 rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Unvisited</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-amber-500 border-2 border-amber-700 rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Currently Visiting</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-emerald-500 border-2 border-emerald-700 rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Visited</span>
-                    </div>
-                </div>
-
-                {/* Algorithm Info */}
-                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-5 text-sm border-2 border-blue-200 shadow-md">
-                    <h3 className="font-bold mb-3 text-gray-800 text-lg flex items-center gap-2">
-                        <span className="text-2xl">🌳</span>
-                        Binary Tree Structure
-                    </h3>
-                    <p className="text-gray-700 leading-relaxed mb-3">
-                        A binary tree is a hierarchical data structure where each node has at most two children, referred to as 
-                        the left child and right child. Unlike a binary search tree, a general binary tree doesn't maintain any 
-                        specific ordering property between parent and child nodes.
-                    </p>
-                    <div className="bg-white/50 rounded-lg p-3 mb-3">
-                        <p className="text-gray-700 text-xs leading-relaxed">
-                            <strong>Tree Properties:</strong> Height is the longest path from root to leaf. A complete binary tree 
-                            has all levels filled except possibly the last. This visualizer maintains balance by inserting new nodes 
-                            into the smaller subtree.
-                        </p>
-                    </div>
-                </div>
-
-                {/* Traversal Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-4 text-sm border-2 border-red-200">
-                        <h4 className="font-bold text-red-800 mb-2 flex items-center gap-2">
-                            <span>📍</span> Depth-First Traversals
-                        </h4>
-                        <p className="text-gray-700 text-xs leading-relaxed mb-2">
-                            <strong>Preorder (Root-Left-Right):</strong> Process root first, then recursively traverse left and right subtrees. 
-                            Useful for copying trees or prefix expressions.
-                        </p>
-                        <p className="text-gray-700 text-xs leading-relaxed mb-2">
-                            <strong>Inorder (Left-Root-Right):</strong> Traverse left subtree, process root, then right subtree. 
-                            For BSTs, this gives sorted order.
-                        </p>
-                        <p className="text-gray-700 text-xs leading-relaxed">
-                            <strong>Postorder (Left-Right-Root):</strong> Process children before parent. 
-                            Useful for deleting trees or postfix expressions.
-                        </p>
-                    </div>
-
-                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 text-sm border-2 border-purple-200">
-                        <h4 className="font-bold text-purple-800 mb-2 flex items-center gap-2">
-                            <span>🔄</span> Breadth-First Traversal
-                        </h4>
-                        <p className="text-gray-700 text-xs leading-relaxed mb-2">
-                            <strong>Level Order:</strong> Visit nodes level by level from top to bottom, left to right. 
-                            Uses a queue data structure (FIFO).
-                        </p>
-                        <p className="text-gray-700 text-xs leading-relaxed">
-                            Useful for finding shortest path, level-wise processing, or when you need to process nodes 
-                            in order of their distance from the root.
-                        </p>
-                    </div>
-                </div>
-
-                {/* Complexity Info */}
-                <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4 text-sm border-2 border-blue-200">
-                    <div className="flex items-start gap-3">
-                        <span className="text-2xl">⚡</span>
-                        <div>
-                            <h4 className="font-bold text-blue-900 mb-1">Time & Space Complexity</h4>
-                            <p className="text-blue-800">
-                                <strong>All traversals:</strong> O(n) time to visit each node once. 
-                                <strong> Space:</strong> O(h) for recursion stack where h is height. 
-                                For balanced trees h = O(log n), worst case h = O(n) for skewed trees.
-                                Level order uses O(w) space where w is maximum width.
+                        <div className="bg-white dark:bg-white/5 rounded-lg border border-slate-200 dark:border-white/10 p-4">
+                            <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">Breadth-First Traversal</h4>
+                            <p className="text-xs text-slate-600 dark:text-white/60 mb-2">
+                                Level order uses a queue to visit nodes top-down, left-to-right. Great for shortest-path discovery and level-wise processing.
+                            </p>
+                            <p className="text-xs text-slate-600 dark:text-white/60">
+                                Time is O(n) to visit each node; space is O(w) where w is the maximum width of the tree.
                             </p>
                         </div>
                     </div>
+                    <div className="bg-white dark:bg-white/5 rounded-lg border border-slate-200 dark:border-white/10 p-4">
+                        <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-2">Complexity Notes</h4>
+                        <p className="text-xs text-slate-600 dark:text-white/60">
+                            Traversals touch every node (O(n)). Recursive depth consumes O(h) stack space (h = tree height). Balanced trees keep h ≈ log n,
+                            while skewed trees degrade to O(n).
+                        </p>
+                    </div>
                 </div>
-            </CardContent>
-        </Card>
+            )}
+        </div>
     );
 }

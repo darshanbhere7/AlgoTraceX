@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { Info, Shuffle, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 
 const speedOptions = {
     "0.25x": 1500,
@@ -31,6 +31,7 @@ export default function DoublyLinkedList() {
     const [highlightedNode, setHighlightedNode] = useState(null);
     const [traversingNode, setTraversingNode] = useState(null);
     const [newNode, setNewNode] = useState(null);
+    const [showInfo, setShowInfo] = useState(false);
 
     const delay = speedOptions[speedKey];
 
@@ -531,193 +532,201 @@ export default function DoublyLinkedList() {
     };
 
     return (
-        <Card className="bg-white text-gray-900 p-6 max-w-7xl mx-auto border border-gray-200 shadow-lg">
-            <CardContent className="space-y-6">
-                <h2 className="text-3xl font-bold mb-4 text-center bg-gradient-to-r from-teal-600 to-orange-600 bg-clip-text text-transparent">
+        <div className="w-full px-4 sm:px-6 lg:px-8 pt-24 sm:pt-24 pb-8 max-w-7xl mx-auto text-gray-900 dark:text-gray-100">
+            <div className="mb-6">
+                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">
                     Doubly Linked List Visualizer
-                </h2>
+                </h1>
+                <p className="text-sm text-slate-600 dark:text-white/50">
+                    Matches the Binary Search Tree interface while focusing on bidirectional pointers.
+                </p>
+            </div>
 
-                {/* Input Panel */}
-                <div className="flex flex-col lg:flex-row items-center justify-center gap-4 flex-wrap">
-                    <div className="flex items-center gap-2">
+            <div className="space-y-4 mb-6">
+                <div className="grid gap-3 md:grid-cols-3">
+                    <div className="flex gap-2">
                         <Input
                             type="number"
-                            placeholder="Enter value (0-999)"
+                            placeholder="Value (0-999)"
                             value={currentInput}
                             disabled={operating}
                             onChange={(e) => setCurrentInput(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && handleAddValue()}
-                            className="w-48 bg-white border-gray-300"
+                            className="flex-1 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 focus:border-slate-400 dark:focus:border-white/20 focus:ring-0 h-10"
                             min="0"
                             max="999"
                         />
-                        <Button onClick={handleAddValue} disabled={operating || !currentInput.trim()} size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                        <Button
+                            variant="ghost"
+                            onClick={handleAddValue}
+                            disabled={operating || !currentInput.trim()}
+                            className="h-10 px-4 bg-black hover:bg-slate-800 dark:bg-white/15 dark:hover:bg-white/25 text-white border-0 rounded-md shadow-sm disabled:opacity-60"
+                        >
                             Add to Tail
                         </Button>
                     </div>
-                    
-                    <Button onClick={generateRandomList} disabled={operating} className="bg-orange-600 hover:bg-orange-700 text-white">
-                        Generate Random (5 nodes)
-                    </Button>
-                    
-                    <Button variant="outline" onClick={reset} disabled={operating} className="border-gray-300 text-gray-700 hover:bg-gray-50">
-                        Reset
-                    </Button>
-                </div>
-
-                {/* Operation Buttons */}
-                <div className="flex flex-wrap items-center justify-center gap-3">
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2">
                         <Input
                             type="number"
                             placeholder="Index"
                             value={indexInput}
                             disabled={operating}
                             onChange={(e) => setIndexInput(e.target.value)}
-                            className="w-20 bg-white border-gray-300"
+                            className="flex-1 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 focus:border-slate-400 dark:focus:border-white/20 focus:ring-0 h-10"
                             min="0"
                         />
                         <Button
-                            onClick={() => insertAtIndex(parseInt(currentInput), parseInt(indexInput))}
-                            disabled={operating || !currentInput.trim() || indexInput === ""}
-                            size="sm"
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                            variant="ghost"
+                            onClick={reset}
+                            disabled={operating}
+                            className="h-10 px-4 border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-900 dark:text-white rounded-md hover:bg-slate-50 dark:hover:bg-white/10"
                         >
-                            Insert at Index
+                            <RotateCcw className="h-4 w-4 mr-2" />
+                            Reset
                         </Button>
                     </div>
-                    
+                    <div className="flex gap-2">
+                        <Button
+                            variant="ghost"
+                            onClick={generateRandomList}
+                            disabled={operating}
+                            className="flex-1 h-10 bg-slate-200/80 hover:bg-slate-300 text-slate-700 dark:bg-white/15 dark:hover:bg-white/20 dark:text-white rounded-md"
+                        >
+                            <Shuffle className="h-4 w-4 mr-2" />
+                            Random DLL
+                        </Button>
+                    </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
                     <Button
+                        variant="ghost"
+                        onClick={() => insertAtIndex(parseInt(currentInput), parseInt(indexInput))}
+                        disabled={operating || !currentInput.trim() || indexInput === ""}
+                        className="flex-1 sm:flex-none bg-emerald-500/20 hover:bg-emerald-500/30 dark:bg-emerald-400/20 dark:hover:bg-emerald-400/30 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 h-10 rounded-md"
+                    >
+                        Insert at Index
+                    </Button>
+                    <Button
+                        variant="ghost"
                         onClick={() => insertAtHead(parseInt(currentInput))}
                         disabled={operating || !currentInput.trim()}
-                        size="sm"
-                        className="bg-teal-600 hover:bg-teal-700 text-white"
+                        className="flex-1 sm:flex-none bg-teal-500/20 hover:bg-teal-500/30 dark:bg-teal-400/20 dark:hover:bg-teal-400/30 text-teal-700 dark:text-teal-300 border border-teal-500/20 h-10 rounded-md"
                     >
                         Insert at Head
                     </Button>
-                    
                     <Button
+                        variant="ghost"
                         onClick={deleteAtHead}
                         disabled={operating || !head}
-                        size="sm"
-                        className="bg-rose-600 hover:bg-rose-700 text-white"
+                        className="flex-1 sm:flex-none bg-rose-500/20 hover:bg-rose-500/30 dark:bg-rose-400/20 dark:hover:bg-rose-400/30 text-rose-700 dark:text-rose-300 border border-rose-500/20 h-10 rounded-md"
                     >
                         Delete Head
                     </Button>
-                    
                     <Button
+                        variant="ghost"
                         onClick={deleteAtTail}
                         disabled={operating || !tail}
-                        size="sm"
-                        className="bg-rose-600 hover:bg-rose-700 text-white"
+                        className="flex-1 sm:flex-none bg-rose-500/20 hover:bg-rose-500/30 dark:bg-rose-400/20 dark:hover:bg-rose-400/30 text-rose-700 dark:text-rose-300 border border-rose-500/20 h-10 rounded-md"
                     >
                         Delete Tail
                     </Button>
-                    
                     <Button
+                        variant="ghost"
                         onClick={() => deleteAtIndex(parseInt(indexInput))}
                         disabled={operating || !head || indexInput === ""}
-                        size="sm"
-                        className="bg-rose-600 hover:bg-rose-700 text-white"
+                        className="flex-1 sm:flex-none bg-rose-500/20 hover:bg-rose-500/30 dark:bg-rose-400/20 dark:hover:bg-rose-400/30 text-rose-700 dark:text-rose-300 border border-rose-500/20 h-10 rounded-md"
                     >
                         Delete at Index
                     </Button>
-                    
                     <Button
+                        variant="ghost"
                         onClick={() => searchValue(parseInt(currentInput))}
                         disabled={operating || !head || !currentInput.trim()}
-                        size="sm"
-                        className="bg-amber-600 hover:bg-amber-700 text-white"
+                        className="flex-1 sm:flex-none bg-amber-500/20 hover:bg-amber-500/30 dark:bg-amber-400/20 dark:hover:bg-amber-400/30 text-amber-700 dark:text-amber-300 border border-amber-500/20 h-10 rounded-md"
                     >
                         Search Value
                     </Button>
-                    
                     <Button
+                        variant="ghost"
                         onClick={reverseList}
                         disabled={operating || !head}
-                        size="sm"
-                        className="bg-violet-600 hover:bg-violet-700 text-white"
+                        className="flex-1 sm:flex-none bg-violet-500/20 hover:bg-violet-500/30 dark:bg-violet-400/20 dark:hover:bg-violet-400/30 text-violet-700 dark:text-violet-300 border border-violet-500/20 h-10 rounded-md"
                     >
                         Reverse List
                     </Button>
                 </div>
 
-                {/* Speed Selection */}
-                <div className="flex flex-wrap items-center justify-center gap-3">
-                    <span className="text-sm text-gray-600">Animation Speed:</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-slate-900 dark:text-white/50 text-sm font-medium">Speed</span>
                     {Object.keys(speedOptions).map((key) => (
                         <Button
+                            variant="ghost"
                             key={key}
                             size="sm"
-                            variant={speedKey === key ? "default" : "outline"}
                             onClick={() => setSpeedKey(key)}
                             disabled={operating}
-                            className={speedKey === key 
-                                ? "bg-indigo-700 hover:bg-indigo-800 text-white" 
-                                : "text-gray-600 border-gray-300 hover:bg-gray-50 hover:text-gray-900"
-                            }
+                            className={`h-8 px-3 text-sm font-medium transition-all rounded-md ${
+                                speedKey === key
+                                    ? "bg-black hover:bg-slate-800 dark:bg-white/15 text-white shadow-sm"
+                                    : "bg-slate-100 hover:bg-slate-200 text-black border border-slate-300 dark:bg-transparent dark:text-white/50 dark:hover:text-white/80 dark:hover:bg-white/5 hover:shadow-sm"
+                            }`}
                         >
                             {key}
                         </Button>
                     ))}
                 </div>
+            </div>
 
-                {/* Current Step Display */}
-                {currentStep && (
-                    <div className="text-center p-4 bg-gradient-to-r from-teal-50 to-orange-50 rounded-lg border border-teal-200">
-                        <span className="text-lg font-semibold text-teal-700">{currentStep}</span>
-                    </div>
-                )}
-
-                {/* List Stats */}
-                {head && (
-                    <div className="text-center p-3 bg-gray-50 rounded-lg border">
-                        <span className="text-sm font-semibold text-gray-700">
-                            List Size: {getListSize(head)} nodes
-                        </span>
-                    </div>
-                )}
-
-                {/* LinkedList Visualization */}
-                <div className="min-h-48 bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl p-6 border border-gray-200">
-                    {renderLinkedList()}
+            {currentStep && (
+                <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm sm:text-base shadow-sm mb-4">
+                    {currentStep}
                 </div>
+            )}
 
-                {/* Legend */}
-                <div className="flex flex-wrap justify-center gap-6 text-sm">
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-white border-2 border-gray-400 rounded"></div>
-                        <span className="text-gray-600">Normal</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-teal-50 border-2 border-teal-600 rounded"></div>
-                        <span className="text-gray-600">Traversing</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-rose-50 border-2 border-rose-500 rounded"></div>
-                        <span className="text-gray-600">Target/Delete</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 bg-emerald-50 border-2 border-emerald-500 rounded"></div>
-                        <span className="text-gray-600">New Node</span>
-                    </div>
+            <div className="bg-slate-100 dark:bg-white/[0.02] backdrop-blur-sm rounded-xl border border-slate-200 dark:border-white/[0.05] p-4 sm:p-6 mb-4 shadow-lg min-h-[320px]">
+                {renderLinkedList()}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs sm:text-sm text-slate-600 dark:text-white/60 mb-4">
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-slate-300" />
+                    <span>Normal</span>
                 </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-teal-500" />
+                    <span>Traversing</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-rose-500" />
+                    <span>Target/Delete</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-emerald-500" />
+                    <span>New Node</span>
+                </div>
+            </div>
 
-                {/* Algorithm Info */}
-                <div className="bg-gradient-to-r from-teal-50 to-orange-50 rounded-lg p-4 text-sm border border-teal-200">
-                    <h3 className="font-bold mb-2 text-teal-700">Doubly Linked List Operations:</h3>
-                    <div className="text-gray-700 space-y-1">
-                        <p><strong>Insert at Head:</strong> O(1) - Direct insertion with prev pointer update</p>
-                        <p><strong>Insert at Tail:</strong> O(1) - Direct insertion using tail pointer</p>
-                        <p><strong>Insert at Index:</strong> O(n) - Must traverse to the specific position</p>
-                        <p><strong>Delete at Head:</strong> O(1) - Direct deletion with next.prev update</p>
-                        <p><strong>Delete at Tail:</strong> O(1) - Direct deletion using tail pointer</p>
-                        <p><strong>Delete at Index:</strong> O(n) - Must traverse to the specific position</p>
-                        <p><strong>Search:</strong> O(n) - Must check each node sequentially</p>
-                        <p><strong>Reverse:</strong> O(n) - Swap prev and next pointers for all nodes</p>
+            <button
+                onClick={() => setShowInfo(!showInfo)}
+                className="w-full flex items-center justify-center gap-2 py-3 text-slate-500 hover:text-slate-700 dark:text-white/50 dark:hover:text-white/70 transition-colors text-sm font-medium"
+            >
+                <Info className="h-4 w-4" />
+                Algorithm Info
+                {showInfo ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </button>
+
+            {showInfo && (
+                <div className="bg-slate-100 dark:bg-white/[0.02] backdrop-blur-sm rounded-xl border border-slate-200 dark:border-white/[0.05] p-6 space-y-4 animate-in slide-in-from-top-2 duration-300 text-sm">
+                    <div>
+                        <h3 className="text-slate-900 dark:text-white font-semibold mb-2">Doubly Linked List Insights</h3>
+                        <p className="text-slate-600 dark:text-white/60">
+                            Head/tail operations stay O(1) thanks to prev pointers. Insert/delete at arbitrary indices require traversal but allow starting from the nearest end.
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-white/40 mt-2">Current size: {getListSize(head)} nodes.</p>
                     </div>
                 </div>
-            </CardContent>
-        </Card>
+            )}
+        </div>
     );
 }

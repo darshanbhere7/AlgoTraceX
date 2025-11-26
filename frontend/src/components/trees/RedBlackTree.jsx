@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { Info, Shuffle, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 
 const RED = 'RED';
 const BLACK = 'BLACK';
@@ -35,6 +35,7 @@ export default function RedBlackTree() {
     const [recoloringNodes, setRecoloringNodes] = useState(new Set());
     const [traversalResult, setTraversalResult] = useState([]);
     const [currentTraversal, setCurrentTraversal] = useState("");
+    const [showInfo, setShowInfo] = useState(false);
 
     const delay = speedOptions[speedKey];
 
@@ -571,7 +572,7 @@ export default function RedBlackTree() {
         const isRed = node.color === RED;
 
         return (
-            <g key={`${node.value}-${x}-${y}`}>
+            <g key={`${node.value}-${x}-${y}`} className="tree-node">
                 {/* Lines to children */}
                 {node.left && (
                     <line
@@ -608,10 +609,8 @@ export default function RedBlackTree() {
                     fill={isRecoloring ? "#a855f7" : isHighlighted ? "#fbbf24" : isRed ? "#ef4444" : "#1f2937"}
                     stroke={isRecoloring ? "#7c3aed" : isHighlighted ? "#f59e0b" : isRed ? "#dc2626" : "#000000"}
                     strokeWidth="3"
-                    className="transition-all duration-300"
+                    className={`node-circle transition-all duration-300 ${isHighlighted ? "highlighted" : ""} ${isRecoloring ? "recoloring" : ""} ${isRed ? "red-node" : "black-node"}`}
                     style={{
-                        filter: isHighlighted || isRecoloring ? "drop-shadow(0 0 10px currentColor)" : "none",
-                        transform: isHighlighted || isRecoloring ? "scale(1.2)" : "scale(1)",
                         transformOrigin: `${x}px ${y}px`
                     }}
                 />
@@ -640,247 +639,255 @@ export default function RedBlackTree() {
     const svgHeight = Math.max(300, treeHeight * 80 + 60);
 
     return (
-        <Card className="bg-gradient-to-br from-rose-50 via-red-50 to-orange-50 text-gray-900 p-6 max-w-7xl mx-auto border-2 border-rose-200 shadow-2xl">
-            <CardContent className="space-y-6">
-                <div className="text-center mb-6">
-                    <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-rose-600 via-red-600 to-orange-600 bg-clip-text text-transparent">
-                        Red-Black Tree Visualizer
-                    </h2>
-                    <p className="text-sm text-gray-600">Self-balancing BST with color-based balancing rules</p>
-                </div>
+        <div className="w-full px-4 sm:px-6 lg:px-8 pt-24 sm:pt-24 pb-8 max-w-7xl mx-auto">
+            <style>{`
+                .node-circle {
+                    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+                    filter: drop-shadow(0 8px 16px rgba(15, 23, 42, 0.08));
+                }
+                .node-circle.highlighted,
+                .node-circle.recoloring {
+                    transform: scale(1.08);
+                    filter: drop-shadow(0 12px 20px rgba(251, 191, 36, 0.35));
+                }
+                .node-circle.recoloring {
+                    filter: drop-shadow(0 12px 20px rgba(168, 85, 247, 0.4));
+                }
+                @media (prefers-color-scheme: dark) {
+                    .node-circle {
+                        filter: drop-shadow(0 8px 16px rgba(15, 23, 42, 0.7));
+                    }
+                }
+            `}</style>
 
-                {/* Input Panel */}
-                <div className="flex flex-col lg:flex-row items-center justify-center gap-4 flex-wrap">
-                    <div className="flex items-center gap-2">
+            <div className="mb-6">
+                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">
+                    Red-Black Tree Visualizer
+                </h1>
+                <p className="text-sm text-slate-600 dark:text-white/50">
+                    Insert, delete, recolor, and rotate nodes while keeping the Red-Black properties intact.
+                </p>
+            </div>
+
+            <div className="space-y-4 mb-6">
+                <div className="grid gap-3 md:grid-cols-2">
+                    <div className="flex gap-2">
                         <Input
                             type="number"
-                            placeholder="Enter number (0-999)"
+                            placeholder="Insert value (0-999)"
                             value={currentInput}
                             disabled={animating}
                             onChange={(e) => setCurrentInput(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && handleAddValue()}
-                            className="w-48 border-rose-300 bg-white focus:border-rose-500 focus:ring-rose-500"
+                            className="flex-1 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 focus:border-slate-400 dark:focus:border-white/20 focus:ring-0 h-10"
                             min="0"
                             max="999"
                         />
-                        <Button onClick={handleAddValue} disabled={animating} size="sm" className="bg-rose-600 hover:bg-rose-700 text-white shadow-md">
+                        <Button
+                            variant="ghost"
+                            onClick={handleAddValue}
+                            disabled={animating}
+                            className="h-10 px-4 border border-rose-200 dark:border-rose-400/40 bg-rose-50/80 dark:bg-rose-950/30 text-rose-700 dark:text-rose-200 rounded-md shadow-sm disabled:opacity-60"
+                        >
                             Insert
                         </Button>
                     </div>
-
-                    <div className="flex items-center gap-2">
+                    <div className="flex gap-2">
                         <Input
                             type="number"
-                            placeholder="Delete number"
+                            placeholder="Delete value"
                             value={deleteInput}
                             disabled={animating}
                             onChange={(e) => setDeleteInput(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && handleDeleteValue()}
-                            className="w-48 border-orange-300 bg-white focus:border-orange-500 focus:ring-orange-500"
+                            className="flex-1 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 focus:border-slate-400 dark:focus:border-white/20 focus:ring-0 h-10"
                             min="0"
                             max="999"
                         />
-                        <Button onClick={handleDeleteValue} disabled={animating || !root} size="sm" className="bg-orange-600 hover:bg-orange-700 text-white shadow-md">
+                        <Button
+                            variant="ghost"
+                            onClick={handleDeleteValue}
+                            disabled={animating || !root}
+                            className="h-10 px-4 border border-orange-200 dark:border-orange-400/40 bg-orange-50/80 dark:bg-orange-950/30 text-orange-700 dark:text-orange-200 rounded-md shadow-sm disabled:opacity-60"
+                        >
                             Delete
                         </Button>
                     </div>
-                    
-                    <Button onClick={generateRandomTree} disabled={animating} className="bg-red-600 hover:bg-red-700 text-white shadow-md">
-                        Generate Random Tree
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                    <Button
+                        variant="ghost"
+                        onClick={generateRandomTree}
+                        disabled={animating}
+                        className="flex-1 sm:flex-none h-10 border border-slate-200 dark:border-white/10 bg-slate-200/70 dark:bg-white/10 text-slate-900 dark:text-white rounded-md shadow-sm disabled:opacity-60"
+                    >
+                        <Shuffle className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Random Tree</span>
                     </Button>
-                    
-                    <Button onClick={showInorderTraversal} disabled={animating || !root} className="bg-amber-600 hover:bg-amber-700 text-white shadow-md">
+                    <Button
+                        variant="ghost"
+                        onClick={showInorderTraversal}
+                        disabled={animating || !root}
+                        className="flex-1 sm:flex-none h-10 border border-amber-200 dark:border-amber-400/40 bg-amber-50/80 dark:bg-amber-950/30 text-amber-700 dark:text-amber-200 rounded-md shadow-sm disabled:opacity-60"
+                    >
                         Show Inorder
                     </Button>
-                    
-                    <Button variant="outline" onClick={reset} disabled={animating} className="border-rose-300 text-rose-700 hover:bg-rose-50 shadow-md">
-                        Reset
+                    <Button
+                        variant="ghost"
+                        onClick={reset}
+                        disabled={animating}
+                        className="flex-1 sm:flex-none h-10 border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-900 dark:text-white rounded-md shadow-sm disabled:opacity-60"
+                    >
+                        <RotateCcw className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">Reset</span>
                     </Button>
                 </div>
 
-                {/* Speed Selection */}
-                <div className="flex flex-wrap items-center justify-center gap-3">
-                    <span className="text-sm font-medium text-gray-700">Animation Speed:</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-slate-900 dark:text-white/50 text-sm font-medium">Speed</span>
                     {Object.keys(speedOptions).map((key) => (
                         <Button
                             key={key}
+                            variant="ghost"
                             size="sm"
-                            variant={speedKey === key ? "default" : "outline"}
                             onClick={() => setSpeedKey(key)}
                             disabled={animating}
-                            className={speedKey === key ? "bg-rose-600 text-white hover:bg-rose-700 shadow-md" : "border-rose-300 text-gray-700 hover:bg-rose-50"}
+                            className={`h-8 px-3 text-sm font-medium transition-all rounded-md ${
+                                speedKey === key
+                                    ? "bg-slate-900 hover:bg-slate-800 dark:bg-white/15 text-white shadow-sm"
+                                    : "bg-slate-100 hover:bg-slate-200 text-black border border-slate-300 dark:bg-transparent dark:text-white/50 dark:hover:text-white/80 dark:hover:bg-white/5"
+                            }`}
                         >
                             {key}
                         </Button>
                     ))}
                 </div>
+            </div>
 
-                {/* Current Step Display */}
+            <div className="space-y-4 mb-6">
                 {currentStep && (
-                    <div className="text-center p-4 bg-gradient-to-r from-rose-100 via-red-100 to-orange-100 rounded-xl border-2 border-rose-300 shadow-md">
-                        <span className="text-lg font-semibold text-gray-800">{currentStep}</span>
+                    <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm sm:text-base shadow-sm">
+                        {currentStep}
                     </div>
                 )}
-
-                {/* Traversal Result */}
                 {traversalResult.length > 0 && (
-                    <div className="text-center p-4 bg-white/70 rounded-xl border-2 border-red-300 shadow-md">
-                        <span className="text-sm font-semibold text-red-700">{currentTraversal} Result: </span>
-                        <span className="text-lg font-bold text-gray-800">
-                            [{traversalResult.join(", ")}]
+                    <div className="p-4 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm sm:text-base shadow-sm flex flex-wrap items-center gap-2">
+                        <span className="font-semibold text-slate-600 dark:text-white/60">
+                            {currentTraversal} Result:
                         </span>
+                        <span className="font-mono text-base">[{traversalResult.join(", ")}]</span>
                     </div>
                 )}
+            </div>
 
-                {/* Tree Visualizer */}
-                <div className="min-h-80 bg-white/70 backdrop-blur-sm rounded-2xl p-6 border-2 border-rose-200 shadow-inner overflow-auto">
-                    {!root ? (
-                        <div className="flex items-center justify-center h-80 text-gray-500">
-                            <div className="text-center">
-                                <div className="text-4xl mb-2">🔴⚫</div>
-                                <span>Insert numbers to build your Red-Black tree</span>
-                            </div>
+            <div className="bg-slate-100 dark:bg-white/[0.02] backdrop-blur-sm rounded-xl border border-slate-200 dark:border-white/[0.05] p-4 sm:p-6 mb-4 shadow-lg dark:shadow-2xl min-h-[320px]">
+                {!root ? (
+                    <div className="flex flex-col items-center justify-center h-64 text-slate-400 dark:text-white/40">
+                        <p className="text-base mb-2 text-center">Insert or randomize values to build your Red-Black tree</p>
+                        <p className="text-sm text-slate-400 dark:text-white/30 text-center">
+                            Root must stay black • No two red nodes adjacent • Equal black height on every path
+                        </p>
+                    </div>
+                ) : (
+                    <div className="flex justify-center overflow-x-auto py-2">
+                        <svg width="900" height={svgHeight} className="mx-auto">
+                            {renderTree(root)}
+                        </svg>
+                    </div>
+                )}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs sm:text-sm text-slate-600 dark:text-white/60 mb-4">
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-red-500" />
+                    <span>Red Node</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-slate-900" />
+                    <span>Black Node</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-amber-400" />
+                    <span>Current Case</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-purple-500" />
+                    <span>Recoloring</span>
+                </div>
+            </div>
+
+            <button
+                onClick={() => setShowInfo(!showInfo)}
+                className="w-full flex items-center justify-center gap-2 py-3 text-slate-500 hover:text-slate-700 dark:text-white/50 dark:hover:text-white/70 transition-colors text-sm font-medium"
+            >
+                <Info className="h-4 w-4" />
+                Algorithm Info
+                {showInfo ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </button>
+
+            {showInfo && (
+                <div className="bg-slate-100 dark:bg-white/[0.02] backdrop-blur-sm rounded-xl border border-slate-200 dark:border-white/[0.05] p-6 space-y-4 animate-in slide-in-from-top-2 duration-300">
+                    <div>
+                        <h3 className="text-slate-900 dark:text-white font-semibold mb-2 text-base">
+                            Red-Black Properties
+                        </h3>
+                        <p className="text-slate-600 dark:text-white/60 text-sm leading-relaxed">
+                            Every node is red or black, the root and leaves (NIL) are black, red nodes never have red children,
+                            and every root-to-leaf path contains the same number of black nodes. These invariants keep height ≤ 2·log₂(n+1).
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="bg-white dark:bg-white/[0.03] rounded-lg p-4 border border-slate-200 dark:border-white/[0.05] text-sm">
+                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/40 font-semibold mb-2">
+                                Insertion Cases
+                            </p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs mb-2">
+                                Case 1 – red uncle: recolor parent/uncle/grandparent and keep climbing.
+                            </p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs mb-2">
+                                Case 2 – triangle (LR/RL): rotate around parent to turn it into Case 3.
+                            </p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs">
+                                Case 3 – line (LL/RR): recolor and rotate grandparent to restore balance.
+                            </p>
                         </div>
-                    ) : (
-                        <div className="flex justify-center">
-                            <svg width="800" height={svgHeight} className="mx-auto">
-                                {renderTree(root)}
-                            </svg>
+                        <div className="bg-white dark:bg-white/[0.03] rounded-lg p-4 border border-slate-200 dark:border-white/[0.05] text-sm">
+                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/40 font-semibold mb-2">
+                                Deletion Cases
+                            </p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs">
+                                Handle red siblings (rotate first), black siblings with black kids (recolor and move up),
+                                or black siblings with a red child (rotate once more). Each branch preserves black height.
+                            </p>
                         </div>
-                    )}
-                </div>
-
-                {/* Legend */}
-                <div className="flex flex-wrap justify-center gap-6 text-sm">
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-red-500 border-2 border-red-700 rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Red Node</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-gray-800 border-2 border-black rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Black Node</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-amber-500 border-2 border-amber-700 rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Currently Processing</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-purple-500 border-2 border-purple-700 rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Recoloring</span>
-                    </div>
-                </div>
-
-                {/* Red-Black Tree Properties */}
-                <div className="bg-gradient-to-br from-rose-50 to-red-50 rounded-xl p-5 text-sm border-2 border-rose-200 shadow-md">
-                    <h3 className="font-bold mb-3 text-gray-800 text-lg flex items-center gap-2">
-                        <span className="text-2xl">🔴⚫</span>
-                        Red-Black Tree Properties
-                    </h3>
-                    <p className="text-gray-700 leading-relaxed mb-3">
-                        A Red-Black tree is a self-balancing binary search tree where each node has a color (red or black). 
-                        It maintains balance through five key properties that ensure the tree height remains O(log n).
-                    </p>
-                    <div className="bg-white/50 rounded-lg p-3 mb-3 space-y-1">
-                        <p className="text-gray-700 text-xs"><strong>1.</strong> Every node is either red or black</p>
-                        <p className="text-gray-700 text-xs"><strong>2.</strong> The root is always black</p>
-                        <p className="text-gray-700 text-xs"><strong>3.</strong> All leaves (NIL) are black</p>
-                        <p className="text-gray-700 text-xs"><strong>4.</strong> Red nodes cannot have red children (no two consecutive red nodes)</p>
-                        <p className="text-gray-700 text-xs"><strong>5.</strong> Every path from root to leaves contains the same number of black nodes</p>
-                    </div>
-                </div>
-
-                {/* Insertion Cases */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 text-sm border-2 border-blue-200">
-                        <h4 className="font-bold text-blue-800 mb-2 flex items-center gap-2">
-                            <span>➕</span> Insertion Cases
-                        </h4>
-                        <p className="text-gray-700 text-xs leading-relaxed mb-2">
-                            <strong>Case 1:</strong> Uncle is RED - Recolor parent, uncle, and grandparent. Move up the tree.
-                        </p>
-                        <p className="text-gray-700 text-xs leading-relaxed mb-2">
-                            <strong>Case 2:</strong> Uncle is BLACK and node is right child (or left) - Rotate to convert to Case 3.
-                        </p>
-                        <p className="text-gray-700 text-xs leading-relaxed">
-                            <strong>Case 3:</strong> Uncle is BLACK and node is left child (or right) - Recolor parent and grandparent, then rotate.
-                        </p>
                     </div>
 
-                    <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 text-sm border-2 border-orange-200">
-                        <h4 className="font-bold text-orange-800 mb-2 flex items-center gap-2">
-                            <span>➖</span> Deletion Cases
-                        </h4>
-                        <p className="text-gray-700 text-xs leading-relaxed mb-2">
-                            <strong>Case 1:</strong> Sibling is RED - Recolor and rotate to convert to other cases.
-                        </p>
-                        <p className="text-gray-700 text-xs leading-relaxed mb-2">
-                            <strong>Case 2:</strong> Sibling and its children are BLACK - Recolor sibling and move up.
-                        </p>
-                        <p className="text-gray-700 text-xs leading-relaxed">
-                            <strong>Case 3 & 4:</strong> Sibling is BLACK with RED child - Rotate and recolor to fix the tree.
-                        </p>
-                    </div>
-                </div>
-
-                {/* Complexity Info */}
-                <div className="bg-gradient-to-r from-rose-50 to-orange-50 rounded-xl p-4 text-sm border-2 border-rose-200">
-                    <div className="flex items-start gap-3">
-                        <span className="text-2xl">⚡</span>
-                        <div>
-                            <h4 className="font-bold text-rose-900 mb-1">Time & Space Complexity</h4>
-                            <p className="text-rose-800">
-                                <strong>Search, Insert, Delete:</strong> O(log n) guaranteed. 
-                                <strong> Space:</strong> O(n) for storing n nodes, O(log n) recursion stack. 
-                                Red-Black trees are less strictly balanced than AVL trees (height ≤ 2 × log(n+1)), 
-                                but require fewer rotations during insertion and deletion, making them faster for write-heavy workloads.
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="bg-white dark:bg-white/[0.03] rounded-lg p-4 border border-slate-200 dark:border-white/[0.05] text-sm">
+                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/40 font-semibold mb-2">
+                                Complexity
+                            </p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs">
+                                Search / insert / delete are O(log n). At most two rotations per insert,
+                                making RB trees great when writes happen frequently.
+                            </p>
+                        </div>
+                        <div className="bg-white dark:bg-white/[0.03] rounded-lg p-4 border border-slate-200 dark:border-white/[0.05] text-sm">
+                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/40 font-semibold mb-2">
+                                RB vs AVL
+                            </p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs mb-2">
+                                AVL stays tighter (faster reads) while RB uses fewer rotations (faster writes).
+                            </p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs">
+                                Used in C++ STL maps/sets, Java TreeMap/TreeSet, Linux schedulers, and many database indexes.
                             </p>
                         </div>
                     </div>
                 </div>
-
-                {/* Comparison Info */}
-                <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-4 text-sm border-2 border-red-200">
-                    <h4 className="font-bold text-red-800 mb-2 flex items-center gap-2">
-                        <span>⚖️</span> RB Tree vs AVL Tree
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                        <div className="bg-white/50 rounded-lg p-3">
-                            <strong className="text-rose-700">Red-Black Advantages:</strong>
-                            <ul className="mt-1 ml-4 list-disc text-gray-700 space-y-1">
-                                <li>Fewer rotations (max 2 for insertion)</li>
-                                <li>Faster insertions and deletions</li>
-                                <li>Better for write-intensive applications</li>
-                                <li>Used in Linux kernel, Java TreeMap</li>
-                            </ul>
-                        </div>
-                        <div className="bg-white/50 rounded-lg p-3">
-                            <strong className="text-emerald-700">AVL Advantages:</strong>
-                            <ul className="mt-1 ml-4 list-disc text-gray-700 space-y-1">
-                                <li>More strictly balanced (faster lookups)</li>
-                                <li>Better for read-intensive applications</li>
-                                <li>Simpler balance factor calculation</li>
-                                <li>Slightly better search performance</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Real-world Usage */}
-                <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-4 text-sm border-2 border-amber-200">
-                    <div className="flex items-start gap-3">
-                        <span className="text-2xl">🌍</span>
-                        <div>
-                            <h4 className="font-bold text-amber-900 mb-1">Real-World Applications</h4>
-                            <p className="text-amber-800 text-xs leading-relaxed">
-                                Red-Black trees are widely used in practice: <strong>C++ STL</strong> (map, set, multimap, multiset), 
-                                <strong>Java</strong> (TreeMap, TreeSet), <strong>Linux kernel</strong> (scheduler, virtual memory), 
-                                <strong>Databases</strong> (indexing structures), and more. Their balanced performance for both 
-                                reads and writes makes them a popular choice for general-purpose balanced trees.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
+            )}
+        </div>
     );
 }
