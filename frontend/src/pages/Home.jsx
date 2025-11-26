@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { AuroraBackground } from "../components/ui/aurora-background";
 import DisplayCards from "../components/ui/display-cards";
-import SplineSceneBasic from "./SplineSceneBasic";
 import shivam from "../assets/team/shivam_color.png";
 import darshan from "../assets/team/darshan.jpg";
 import bhagyashree from "../assets/team/bhagyashree.jpg";
@@ -29,9 +28,30 @@ import { cn } from "../lib/utils";
 import LandingNavbar from "../components/home/LandingNavbar.jsx";
 import LandingFooter from "../components/home/LandingFooter.jsx";
 
-// Hero Section - Now using SplineSceneBasic component
+const SplineSceneBasic = lazy(() => import("./SplineSceneBasic"));
+
+const HeroSkeleton = () => (
+  <div className="h-[520px] w-full bg-gradient-to-br from-gray-100 via-gray-50 to-white dark:from-neutral-900 dark:via-neutral-950 dark:to-black flex items-center justify-center text-gray-400 dark:text-neutral-500 animate-pulse">
+    Loading immersive scene...
+  </div>
+);
+
 const HeroSection = () => {
-  return <SplineSceneBasic />;
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return <HeroSkeleton />;
+  }
+
+  return (
+    <Suspense fallback={<HeroSkeleton />}>
+      <SplineSceneBasic />
+    </Suspense>
+  );
 };
 
 // Bento Grid Components for Features Section
