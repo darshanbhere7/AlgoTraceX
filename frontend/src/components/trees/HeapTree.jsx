@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { Info, Shuffle, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 
 const speedOptions = {
     "0.25x": 1500,
@@ -21,6 +21,7 @@ export default function HeapTree() {
     const [highlightedIndices, setHighlightedIndices] = useState(new Set());
     const [swappingIndices, setSwappingIndices] = useState(new Set());
     const [arrayView, setArrayView] = useState([]);
+    const [showInfo, setShowInfo] = useState(false);
 
     const delay = speedOptions[speedKey];
 
@@ -277,6 +278,20 @@ export default function HeapTree() {
         const isHighlighted = highlightedIndices.has(index);
         const isSwapping = swappingIndices.has(index);
         const isRoot = index === 0;
+        const fillColor = isSwapping
+            ? "#ec4899"
+            : isHighlighted
+            ? "#f59e0b"
+            : isRoot
+            ? "#8b5cf6"
+            : "#a78bfa";
+        const strokeColor = isSwapping
+            ? "#be185d"
+            : isHighlighted
+            ? "#d97706"
+            : isRoot
+            ? "#6d28d9"
+            : "#7c3aed";
 
         return (
             <g key={`node-${index}`}>
@@ -313,13 +328,13 @@ export default function HeapTree() {
                     cx={x}
                     cy={y}
                     r="28"
-                    fill={isSwapping ? "#ec4899" : isHighlighted ? "#f59e0b" : isRoot ? "#8b5cf6" : "#a78bfa"}
-                    stroke={isSwapping ? "#be185d" : isHighlighted ? "#d97706" : isRoot ? "#6d28d9" : "#7c3aed"}
+                    fill={fillColor}
+                    stroke={strokeColor}
                     strokeWidth="3"
-                    className="transition-all duration-300"
+                    className={`node-circle transition-all duration-300 ${isHighlighted ? "highlighted" : ""} ${
+                        isSwapping ? "swapping" : ""
+                    } ${isRoot ? "root-node" : ""}`}
                     style={{
-                        filter: isHighlighted || isSwapping ? "drop-shadow(0 0 10px currentColor)" : "none",
-                        transform: isHighlighted || isSwapping ? "scale(1.2)" : "scale(1)",
                         transformOrigin: `${x}px ${y}px`
                     }}
                 />
@@ -360,18 +375,42 @@ export default function HeapTree() {
     const svgHeight = Math.max(300, treeHeight * 80 + 60);
 
     return (
-        <Card className="bg-gradient-to-br from-purple-50 via-violet-50 to-fuchsia-50 text-gray-900 p-6 max-w-7xl mx-auto border-2 border-purple-200 shadow-2xl">
-            <CardContent className="space-y-6">
-                <div className="text-center mb-6">
-                    <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-purple-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-                        {heapType === "max" ? "Max" : "Min"} Heap Visualizer
-                    </h2>
-                    <p className="text-sm text-gray-600">Complete binary tree with heap property</p>
-                </div>
+        <div className="w-full px-4 sm:px-6 lg:px-8 pt-24 sm:pt-24 pb-8 max-w-7xl mx-auto">
+            <style>{`
+                .node-circle {
+                    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+                    filter: drop-shadow(0 8px 16px rgba(15, 23, 42, 0.08));
+                }
+                .node-circle.highlighted,
+                .node-circle.swapping {
+                    transform: scale(1.08);
+                    filter: drop-shadow(0 12px 20px rgba(251, 191, 36, 0.35));
+                }
+                .node-circle.swapping {
+                    filter: drop-shadow(0 12px 20px rgba(236, 72, 153, 0.35));
+                }
+                .node-circle.root-node {
+                    filter: drop-shadow(0 12px 18px rgba(139, 92, 246, 0.35));
+                }
+                @media (prefers-color-scheme: dark) {
+                    .node-circle {
+                        filter: drop-shadow(0 8px 16px rgba(15, 23, 42, 0.7));
+                    }
+                }
+            `}</style>
 
-                {/* Control Panel */}
-                <div className="flex flex-col lg:flex-row items-center justify-center gap-4 flex-wrap">
-                    <div className="flex items-center gap-2">
+            <div className="mb-6">
+                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">
+                    {heapType === "max" ? "Max Heap Visualizer" : "Min Heap Visualizer"}
+                </h1>
+                <p className="text-sm text-slate-600 dark:text-white/50">
+                    Insert, extract, sort, and switch heap types in a Bubble Sort inspired layout with full light/dark support.
+                </p>
+            </div>
+
+            <div className="space-y-4 mb-6">
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex gap-2 flex-1 max-w-md">
                         <Input
                             type="number"
                             placeholder="Enter number (0-999)"
@@ -379,86 +418,130 @@ export default function HeapTree() {
                             disabled={animating}
                             onChange={(e) => setCurrentInput(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && handleInsert()}
-                            className="w-48 border-purple-300 bg-white focus:border-purple-500 focus:ring-purple-500"
+                            className="flex-1 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 focus:border-slate-400 dark:focus:border-white/20 focus:ring-0 h-10"
                             min="0"
                             max="999"
                         />
-                        <Button onClick={handleInsert} disabled={animating} size="sm" className="bg-purple-600 hover:bg-purple-700 text-white shadow-md">
+                        <Button
+                            onClick={handleInsert}
+                            disabled={animating}
+                            className="h-10 px-4 bg-slate-900 hover:bg-slate-800 dark:bg-white/15 dark:hover:bg-white/25 text-white border-0 rounded-md shadow-sm disabled:opacity-60"
+                        >
                             Insert
                         </Button>
                     </div>
-                    
-                    <Button onClick={handleExtract} disabled={animating || heap.length === 0} className="bg-violet-600 hover:bg-violet-700 text-white shadow-md">
-                        Extract {heapType === "max" ? "Max" : "Min"}
-                    </Button>
-                    
-                    <Button onClick={generateRandomHeap} disabled={animating} className="bg-fuchsia-600 hover:bg-fuchsia-700 text-white shadow-md">
-                        Generate Random Heap
-                    </Button>
-                    
-                    <Button onClick={heapSort} disabled={animating || heap.length === 0} className="bg-pink-600 hover:bg-pink-700 text-white shadow-md">
-                        Heap Sort
-                    </Button>
-                    
-                    <Button onClick={toggleHeapType} disabled={animating} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">
-                        Switch to {heapType === "max" ? "Min" : "Max"} Heap
-                    </Button>
-                    
-                    <Button variant="outline" onClick={reset} disabled={animating} className="border-purple-300 text-purple-700 hover:bg-purple-50 shadow-md">
-                        Reset
-                    </Button>
+
+                    <div className="flex flex-wrap gap-2">
+                        <Button
+                            variant="ghost"
+                            onClick={handleExtract}
+                            disabled={animating || heap.length === 0}
+                            className="flex-1 sm:flex-none
+                                    bg-emerald-500/20 hover:bg-emerald-500/30
+                                    dark:bg-emerald-400/20 dark:hover:bg-emerald-400/30
+                                    text-emerald-700 dark:text-emerald-300
+                                    border border-emerald-500/20
+                                    h-10 rounded-md shadow-none
+                                    disabled:opacity-40"
+                        >
+                            Extract {heapType === "max" ? "Max" : "Min"}
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            onClick={heapSort}
+                            disabled={animating || heap.length === 0}
+                            className="flex-1 sm:flex-none
+                                    bg-indigo-500/20 hover:bg-indigo-500/30
+                                    dark:bg-indigo-400/20 dark:hover:bg-indigo-400/30
+                                    text-indigo-700 dark:text-indigo-300
+                                    border border-indigo-500/20
+                                    h-10 rounded-md shadow-none
+                                    disabled:opacity-40"
+                        >
+                            Heap Sort
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            onClick={toggleHeapType}
+                            disabled={animating}
+                            className="flex-1 sm:flex-none
+                                    bg-amber-500/20 hover:bg-amber-500/30
+                                    dark:bg-amber-400/20 dark:hover:bg-amber-400/30
+                                    text-amber-700 dark:text-amber-300
+                                    border border-amber-500/20
+                                    h-10 rounded-md shadow-none
+                                    disabled:opacity-40"
+                        >
+                            Switch to {heapType === "max" ? "Min" : "Max"} Heap
+                        </Button>
+                        <Button
+                        variant="ghost"
+                            onClick={generateRandomHeap}
+                            disabled={animating}
+                            className="flex-1 sm:flex-none h-10 border-0 relative transition-all duration-300 ease-out bg-slate-200 hover:bg-slate-300 text-slate-900 dark:bg-white/10 dark:hover:bg-white/15 dark:text-white hover:shadow-lg dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] shadow-[0_0_10px_rgba(0,0,0,0.05)] rounded-md"
+                        >
+                            <Shuffle className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Random Heap</span>
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            onClick={reset}
+                            disabled={animating}
+                            className="flex-1 sm:flex-none h-10 border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-900 dark:text-white rounded-md hover:bg-slate-50 dark:hover:bg-white/10 px-4"
+                        >
+                            <RotateCcw className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Reset</span>
+                        </Button>
+                    </div>
                 </div>
 
-                {/* Speed Selection */}
-                <div className="flex flex-wrap items-center justify-center gap-3">
-                    <span className="text-sm font-medium text-gray-700">Animation Speed:</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-slate-900 dark:text-white/50 text-sm font-medium">Speed</span>
                     {Object.keys(speedOptions).map((key) => (
                         <Button
                             key={key}
                             size="sm"
-                            variant={speedKey === key ? "default" : "outline"}
                             onClick={() => setSpeedKey(key)}
                             disabled={animating}
-                            className={speedKey === key ? "bg-purple-600 text-white hover:bg-purple-700 shadow-md" : "border-purple-300 text-gray-700 hover:bg-purple-50"}
+                            className={`h-8 px-3 text-sm font-medium transition-all rounded-md ${
+                                speedKey === key
+                                    ? "bg-slate-900 hover:bg-slate-800 dark:bg-white/15 text-white shadow-sm"
+                                    : "bg-slate-100 hover:bg-slate-200 text-black border border-slate-300 dark:bg-transparent dark:text-white/50 dark:hover:text-white/80 dark:hover:bg-white/5 hover:shadow-sm"
+                            }`}
                         >
                             {key}
                         </Button>
                     ))}
                 </div>
+            </div>
 
-                {/* Current Step Display */}
+            <div className="space-y-4 mb-6">
                 {currentStep && (
-                    <div className="text-center p-4 bg-gradient-to-r from-purple-100 via-violet-100 to-fuchsia-100 rounded-xl border-2 border-purple-300 shadow-md">
-                        <span className="text-lg font-semibold text-gray-800">{currentStep}</span>
+                    <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm sm:text-base shadow-sm">
+                        {currentStep}
                     </div>
                 )}
-
-                {/* Array View */}
                 {arrayView.length > 0 && (
-                    <div className="text-center p-4 bg-white/70 rounded-xl border-2 border-violet-300 shadow-md">
-                        <span className="text-sm font-semibold text-violet-700">Sorted Result: </span>
-                        <span className="text-lg font-bold text-gray-800">
-                            [{arrayView.join(", ")}]
-                        </span>
+                    <div className="p-4 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm sm:text-base shadow-sm flex flex-wrap items-center gap-2">
+                        <span className="font-semibold text-slate-600 dark:text-white/60">Sorted Result:</span>
+                        <span className="font-mono text-base">[{arrayView.join(", ")}]</span>
                     </div>
                 )}
-
-                {/* Heap Array Representation */}
                 {heap.length > 0 && (
-                    <div className="bg-white/70 rounded-xl border-2 border-purple-200 p-4">
-                        <h4 className="text-sm font-semibold text-purple-700 mb-2">Array Representation:</h4>
-                        <div className="flex flex-wrap gap-2 justify-center">
+                    <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-4 shadow-sm">
+                        <h4 className="text-sm font-semibold text-slate-700 dark:text-white/70 mb-2">Array Representation</h4>
+                        <div className="flex flex-wrap gap-2">
                             {heap.map((val, idx) => (
                                 <div
                                     key={idx}
-                                    className={`px-3 py-2 rounded-lg font-mono text-sm font-bold shadow-sm transition-all ${
+                                    className={`px-3 py-2 rounded-lg font-mono text-sm font-semibold shadow-sm transition-all ${
                                         highlightedIndices.has(idx)
-                                            ? "bg-amber-400 text-white scale-110"
+                                            ? "bg-amber-400 text-white scale-105 dark:bg-amber-500"
                                             : swappingIndices.has(idx)
-                                            ? "bg-pink-400 text-white scale-110"
+                                            ? "bg-pink-500 text-white scale-105 dark:bg-pink-500/90"
                                             : idx === 0
-                                            ? "bg-purple-500 text-white"
-                                            : "bg-purple-200 text-purple-900"
+                                            ? "bg-violet-600 text-white"
+                                            : "bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-white/80"
                                     }`}
                                 >
                                     {val}
@@ -468,168 +551,116 @@ export default function HeapTree() {
                         </div>
                     </div>
                 )}
+            </div>
 
-                {/* Tree Visualizer */}
-                <div className="min-h-80 bg-white/70 backdrop-blur-sm rounded-2xl p-6 border-2 border-purple-200 shadow-inner overflow-auto">
-                    {heap.length === 0 ? (
-                        <div className="flex items-center justify-center h-80 text-gray-500">
-                            <div className="text-center">
-                                <div className="text-4xl mb-2">🏔️</div>
-                                <span>Insert numbers to build your heap</span>
-                            </div>
+            <div className="bg-slate-100 dark:bg-white/[0.02] backdrop-blur-sm rounded-xl border border-slate-200 dark:border-white/[0.05] p-4 sm:p-6 mb-4 shadow-lg dark:shadow-2xl min-h-[320px]">
+                {heap.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-64 text-slate-400 dark:text-white/40">
+                        <p className="text-base mb-2 text-center">Insert numbers or generate a random heap to get started</p>
+                        <p className="text-sm text-slate-400 dark:text-white/30 text-center">
+                            Complete binary tree | Array-based storage | {heapType === "max" ? "Root is always max" : "Root is always min"}
+                        </p>
+                    </div>
+                ) : (
+                    <div className="flex justify-center overflow-x-auto py-2">
+                        <svg width="900" height={svgHeight} className="mx-auto">
+                            {renderNode(0, 400, 60, 0, 200)}
+                        </svg>
+                    </div>
+                )}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs sm:text-sm text-slate-600 dark:text-white/60 mb-4">
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-violet-600" />
+                    <span>Root ({heapType === "max" ? "Max" : "Min"})</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-slate-300" />
+                    <span>Internal Node</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-amber-400" />
+                    <span>Comparing</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-pink-500" />
+                    <span>Swapping</span>
+                </div>
+            </div>
+
+            <button
+                onClick={() => setShowInfo(!showInfo)}
+                className="w-full flex items-center justify-center gap-2 py-3 text-slate-500 hover:text-slate-700 dark:text-white/50 dark:hover:text-white/70 transition-colors text-sm font-medium"
+            >
+                <Info className="h-4 w-4" />
+                Algorithm Info
+                {showInfo ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </button>
+
+            {showInfo && (
+                <div className="bg-slate-100 dark:bg-white/[0.02] backdrop-blur-sm rounded-xl border border-slate-200 dark:border-white/[0.05] p-6 space-y-4 animate-in slide-in-from-top-2 duration-300">
+                    <div>
+                        <h3 className="text-slate-900 dark:text-white font-semibold mb-2 text-base">Heap Basics</h3>
+                        <p className="text-slate-600 dark:text-white/60 text-sm leading-relaxed">
+                            Heaps are complete binary trees stored inside arrays. Parent index = ⌊(i-1)/2⌋, children = 2i+1 and 2i+2.
+                            The {heapType === "max" ? "max" : "min"} heap property guarantees the root is always the {heapType === "max" ? "largest" : "smallest"} value.
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-white/40 mt-2">
+                            Complete trees fill every level left-to-right, so no pointers are needed—just math on indices.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="bg-white dark:bg-white/[0.03] rounded-lg p-4 border border-slate-200 dark:border-white/[0.05] text-sm">
+                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/40 font-semibold mb-2">Heapify Up</p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs">
+                                Used when inserting. The new node starts at the end and swaps with its parent until the heap property holds. O(log n).
+                            </p>
                         </div>
-                    ) : (
-                        <div className="flex justify-center">
-                            <svg width="800" height={svgHeight} className="mx-auto">
-                                {renderNode(0, 400, 60, 0, 200)}
-                            </svg>
-                        </div>
-                    )}
-                </div>
-
-                {/* Legend */}
-                <div className="flex flex-wrap justify-center gap-6 text-sm">
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-purple-600 border-2 border-purple-800 rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Root ({heapType === "max" ? "Maximum" : "Minimum"})</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-purple-300 border-2 border-purple-600 rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Internal Nodes</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-amber-500 border-2 border-amber-700 rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Comparing</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-pink-500 border-2 border-pink-700 rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Swapping</span>
-                    </div>
-                </div>
-
-                {/* Heap Info */}
-                <div className="bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl p-5 text-sm border-2 border-purple-200 shadow-md">
-                    <h3 className="font-bold mb-3 text-gray-800 text-lg flex items-center gap-2">
-                        <span className="text-2xl">🏔️</span>
-                        {heapType === "max" ? "Max" : "Min"} Heap Structure
-                    </h3>
-                    <p className="text-gray-700 leading-relaxed mb-3">
-                        A heap is a complete binary tree that satisfies the heap property. In a <strong>{heapType} heap</strong>, 
-                        {heapType === "max" 
-                            ? " every parent node is greater than or equal to its children (root is maximum)."
-                            : " every parent node is less than or equal to its children (root is minimum)."}
-                    </p>
-                    <div className="bg-white/50 rounded-lg p-3 mb-3">
-                        <p className="text-gray-700 text-xs leading-relaxed">
-                            <strong>Complete Binary Tree:</strong> All levels are fully filled except possibly the last level, 
-                            which is filled from left to right. This property allows heaps to be efficiently stored in arrays 
-                            without pointers.
-                        </p>
-                    </div>
-                    <div className="bg-white/50 rounded-lg p-3">
-                        <p className="text-gray-700 text-xs leading-relaxed">
-                            <strong>Array Indexing:</strong> For node at index i: Parent = ⌊(i-1)/2⌋, Left Child = 2i+1, Right Child = 2i+2
-                        </p>
-                    </div>
-                </div>
-
-                {/* Operations Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 text-sm border-2 border-blue-200">
-                        <h4 className="font-bold text-blue-800 mb-2 flex items-center gap-2">
-                            <span>⬆️</span> Heapify Up (Bubble Up)
-                        </h4>
-                        <p className="text-gray-700 text-xs leading-relaxed">
-                            Used during insertion. The new element is added at the end (bottom-right) and repeatedly 
-                            swapped with its parent if it violates the heap property, moving up the tree until the 
-                            correct position is found. Time complexity: O(log n).
-                        </p>
-                    </div>
-
-                    <div className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-4 text-sm border-2 border-rose-200">
-                        <h4 className="font-bold text-rose-800 mb-2 flex items-center gap-2">
-                            <span>⬇️</span> Heapify Down (Bubble Down)
-                        </h4>
-                        <p className="text-gray-700 text-xs leading-relaxed">
-                            Used during extraction. After removing the root, the last element replaces it and is 
-                            repeatedly swapped with its {heapType === "max" ? "larger" : "smaller"} child if it violates 
-                            the heap property, moving down until correct. Time complexity: O(log n).
-                        </p>
-                    </div>
-                </div>
-
-                {/* Complexity Info */}
-                <div className="bg-gradient-to-r from-purple-50 to-fuchsia-50 rounded-xl p-4 text-sm border-2 border-purple-200">
-                    <div className="flex items-start gap-3">
-                        <span className="text-2xl">⚡</span>
-                        <div>
-                            <h4 className="font-bold text-purple-900 mb-1">Time & Space Complexity</h4>
-                            <p className="text-purple-800">
-                                <strong>Insert:</strong> O(log n) - heapify up. 
-                                <strong> Extract {heapType === "max" ? "Max" : "Min"}:</strong> O(log n) - heapify down. 
-                                <strong> Peek:</strong> O(1) - just access root. 
-                                <strong> Build Heap:</strong> O(n) using bottom-up approach. 
-                                <strong> Space:</strong> O(n) for array storage. 
-                                <strong> Heap Sort:</strong> O(n log n) time, O(1) extra space.
+                        <div className="bg-white dark:bg-white/[0.03] rounded-lg p-4 border border-slate-200 dark:border-white/[0.05] text-sm">
+                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/40 font-semibold mb-2">Heapify Down</p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs">
+                                Used when extracting. The last node moves to the root and repeatedly swaps with the {heapType === "max" ? "larger" : "smaller"} child. O(log n).
                             </p>
                         </div>
                     </div>
-                </div>
 
-                {/* Applications */}
-                <div className="bg-gradient-to-br from-violet-50 to-purple-50 rounded-xl p-4 text-sm border-2 border-violet-200">
-                    <h4 className="font-bold text-violet-800 mb-2 flex items-center gap-2">
-                        <span>💡</span> Common Applications
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                        <div className="bg-white/50 rounded-lg p-3">
-                            <strong className="text-purple-700">Priority Queues:</strong>
-                            <ul className="mt-1 ml-4 list-disc text-gray-700 space-y-1">
-                                <li>Task scheduling systems</li>
-                                <li>Event-driven simulation</li>
-                                <li>Dijkstra's shortest path algorithm</li>
-                                <li>Huffman coding (data compression)</li>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="bg-white dark:bg-white/[0.03] rounded-lg p-4 border border-slate-200 dark:border-white/[0.05] text-sm">
+                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/40 font-semibold mb-2">Complexity</p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs">
+                                Insert/extract → O(log n), peek → O(1), build heap → O(n), heap sort → O(n log n) with O(1) extra space.
+                            </p>
+                        </div>
+                        <div className="bg-white dark:bg-white/[0.03] rounded-lg p-4 border border-slate-200 dark:border-white/[0.05] text-sm">
+                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/40 font-semibold mb-2">Applications</p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs">
+                                Priority queues, schedulers, Dijkstra, Huffman coding, finding top-K elements, median maintenance (two heaps), OS memory management.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="bg-white dark:bg-white/[0.03] rounded-lg p-4 border border-slate-200 dark:border-white/[0.05] text-sm">
+                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/40 font-semibold mb-2">Max Heap</p>
+                            <ul className="list-disc ml-4 text-slate-600 dark:text-white/65 text-xs space-y-1">
+                                <li>Root stores the maximum value</li>
+                                <li>Great for descending priority queues</li>
+                                <li>Heap sort outputs descending order</li>
                             </ul>
                         </div>
-                        <div className="bg-white/50 rounded-lg p-3">
-                            <strong className="text-fuchsia-700">Real-world Uses:</strong>
-                            <ul className="mt-1 ml-4 list-disc text-gray-700 space-y-1">
-                                <li>Heap sort algorithm</li>
-                                <li>Finding K largest/smallest elements</li>
-                                <li>Median maintenance (using two heaps)</li>
-                                <li>Memory management (OS heap allocation)</li>
+                        <div className="bg-white dark:bg-white/[0.03] rounded-lg p-4 border border-slate-200 dark:border-white/[0.05] text-sm">
+                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/40 font-semibold mb-2">Min Heap</p>
+                            <ul className="list-disc ml-4 text-slate-600 dark:text-white/65 text-xs space-y-1">
+                                <li>Root stores the minimum value</li>
+                                <li>Perfect for event schedulers / ascending queues</li>
+                                <li>Heap sort outputs ascending order</li>
                             </ul>
                         </div>
                     </div>
                 </div>
-
-                {/* Max vs Min Heap */}
-                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 text-sm border-2 border-indigo-200">
-                    <h4 className="font-bold text-indigo-800 mb-2 flex items-center gap-2">
-                        <span>⚖️</span> Max Heap vs Min Heap
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                        <div className="bg-white/50 rounded-lg p-3">
-                            <strong className="text-indigo-700">Max Heap:</strong>
-                            <ul className="mt-1 ml-4 list-disc text-gray-700 space-y-1">
-                                <li>Root is always the maximum element</li>
-                                <li>Parent ≥ Children at every node</li>
-                                <li>Used for descending priority queues</li>
-                                <li>Heap sort produces descending order</li>
-                            </ul>
-                        </div>
-                        <div className="bg-white/50 rounded-lg p-3">
-                            <strong className="text-purple-700">Min Heap:</strong>
-                            <ul className="mt-1 ml-4 list-disc text-gray-700 space-y-1">
-                                <li>Root is always the minimum element</li>
-                                <li>Parent ≤ Children at every node</li>
-                                <li>Used for ascending priority queues</li>
-                                <li>Heap sort produces ascending order</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
+            )}
+        </div>
     );
 }

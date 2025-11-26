@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { Info, Shuffle, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 
 const speedOptions = {
     "0.25x": 1200,
@@ -21,6 +21,7 @@ export default function ArrayVisualizer() {
     const [operation, setOperation] = useState("");
     const [operationComplete, setOperationComplete] = useState(false);
     const [lastOperationResult, setLastOperationResult] = useState("");
+    const [showInfo, setShowInfo] = useState(false);
 
     const delay = speedOptions[speedKey];
 
@@ -174,200 +175,249 @@ export default function ArrayVisualizer() {
 
 
     return (
-        <Card className="bg-white border border-gray-200 p-6">
-            <CardContent className="space-y-6">
-                <h2 className="text-2xl font-bold mb-4 text-gray-900">Array Operations Visualizer</h2>
+        <div className="w-full px-4 sm:px-6 lg:px-8 pt-24 sm:pt-24 pb-8 max-w-7xl mx-auto text-gray-900 dark:text-gray-100">
+            <div className="mb-6">
+                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">
+                    Array Operations Visualizer
+                </h1>
+                <p className="text-sm text-slate-600 dark:text-white/50">
+                    Enjoy the exact Binary Search Tree layout while manipulating contiguous memory operations.
+                </p>
+            </div>
 
-                {/* Input Panel */}
-                <div className="flex flex-col lg:flex-row items-center gap-4">
-                    <Input
-                        type="number"
-                        placeholder="Enter a number"
-                        value={currentInput}
-                        disabled={animating}
-                        onChange={(e) => setCurrentInput(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && handleAddValue()}
-                        className="w-full lg:w-32 border-gray-300"
-                    />
-                    <Button onClick={handleAddValue} disabled={animating} className="bg-gray-900 text-white hover:bg-gray-800">
-                        Add
-                    </Button>
-                    <Input
-                        type="number"
-                        placeholder="Index"
-                        value={indexInput}
-                        disabled={animating}
-                        onChange={(e) => setIndexInput(e.target.value)}
-                        className="w-full lg:w-24 border-gray-300"
-                    />
-                    <Button onClick={generateRandomArray} disabled={animating} className="bg-neutral-900 text-gray-900 border border-gray-300 hover:bg-neutral-800">
-                        Random
-                    </Button>
-                    <Button onClick={clearAll} disabled={animating} className="bg-neutral-500 text-gray-900 border border-gray-300 hover:bg-neutral-400">
-                        Clear
-                    </Button>
+            <div className="space-y-4 mb-6">
+                <div className="grid gap-3 md:grid-cols-3">
+                    <div className="flex gap-2">
+                        <Input
+                            type="number"
+                            placeholder="Value (0-999)"
+                            value={currentInput}
+                            disabled={animating}
+                            onChange={(e) => setCurrentInput(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleAddValue()}
+                            className="flex-1 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 focus:border-slate-400 dark:focus:border-white/20 focus:ring-0 h-10"
+                            min="0"
+                            max="999"
+                        />
+                        <Button
+                            variant="ghost"
+                            onClick={handleAddValue}
+                            disabled={animating}
+                            className="h-10 px-4 bg-black hover:bg-slate-800 dark:bg-white/15 dark:hover:bg-white/25 text-white border-0 rounded-md shadow-sm disabled:opacity-60"
+                        >
+                            Add
+                        </Button>
+                    </div>
+                    <div className="flex gap-2">
+                        <Input
+                            type="number"
+                            placeholder="Index"
+                            value={indexInput}
+                            disabled={animating}
+                            onChange={(e) => setIndexInput(e.target.value)}
+                            className="flex-1 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 focus:border-slate-400 dark:focus:border-white/20 focus:ring-0 h-10"
+                        />
+                        <Button
+                            variant="ghost"
+                            onClick={reset}
+                            disabled={animating}
+                            className="h-10 px-4 border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-900 dark:text-white rounded-md hover:bg-slate-50 dark:hover:bg-white/10"
+                        >
+                            Reset
+                        </Button>
+                    </div>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="ghost"
+                            onClick={generateRandomArray}
+                            disabled={animating}
+                            className="flex-1 h-10 bg-slate-200/80 hover:bg-slate-300 text-slate-700 dark:bg-white/15 dark:hover:bg-white/20 dark:text-white rounded-md"
+                        >
+                            <Shuffle className="h-4 w-4 mr-2" />
+                            Random Array
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            onClick={clearAll}
+                            disabled={animating}
+                            className="flex-1 h-10 border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-900 dark:text-white rounded-md hover:bg-slate-50 dark:hover:bg-white/10"
+                        >
+                            <RotateCcw className="h-4 w-4 mr-2" />
+                            Clear
+                        </Button>
+                    </div>
                 </div>
 
-                {/* Operation Buttons */}
                 <div className="flex flex-wrap gap-2">
                     <Button
+                        variant="ghost"
                         onClick={handlePush}
                         disabled={animating || !currentInput.trim()}
-                        className="bg-neutral-900 text-white hover:bg-green-500"
+                        className="flex-1 sm:flex-none bg-emerald-500/20 hover:bg-emerald-500/30 dark:bg-emerald-400/20 dark:hover:bg-emerald-400/30 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 h-10 rounded-md"
                     >
                         Push
                     </Button>
                     <Button
+                        variant="ghost"
                         onClick={handlePop}
                         disabled={animating || array.length === 0}
-                        className="bg-neutral-900 text-white hover:bg-red-500"
+                        className="flex-1 sm:flex-none bg-rose-500/20 hover:bg-rose-500/30 dark:bg-rose-400/20 dark:hover:bg-rose-400/30 text-rose-700 dark:text-rose-300 border border-rose-500/20 h-10 rounded-md"
                     >
                         Pop
                     </Button>
                     <Button
+                        variant="ghost"
                         onClick={handleInsertAt}
                         disabled={animating || !currentInput.trim() || !indexInput.trim()}
-                        className="bg-neutral-900 text-white hover:bg-blue-500"
+                        className="flex-1 sm:flex-none bg-sky-500/20 hover:bg-sky-500/30 dark:bg-sky-400/20 dark:hover:bg-sky-400/30 text-sky-700 dark:text-sky-300 border border-sky-500/20 h-10 rounded-md"
                     >
-                        Insert At
+                        Insert at Index
                     </Button>
                     <Button
+                        variant="ghost"
                         onClick={handleRemoveAt}
                         disabled={animating || !indexInput.trim() || array.length === 0}
-                        className="bg-neutral-900 text-white hover:bg-yellow-500"
+                        className="flex-1 sm:flex-none bg-amber-500/20 hover:bg-amber-500/30 dark:bg-amber-400/20 dark:hover:bg-amber-400/30 text-amber-700 dark:text-amber-300 border border-amber-500/20 h-10 rounded-md"
                     >
-                        Remove At
-                    </Button>
-                    <Button onClick={reset} disabled={animating} className="bg-neutral-400 text-neutral-900 border border-gray-300 hover:bg-gray-500">
-                        Reset
+                        Remove at Index
                     </Button>
                 </div>
 
-                {/* Speed Selection */}
-                <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-sm text-gray-600">Speed:</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-slate-900 dark:text-white/50 text-sm font-medium">Speed</span>
                     {Object.keys(speedOptions).map((key) => (
                         <Button
+                            variant="ghost"
                             key={key}
                             size="sm"
                             onClick={() => setSpeedKey(key)}
                             disabled={animating}
-                            className={
-                                speedKey === key 
-                                    ? "bg-neutral-900 text-white hover:bg-neutral-800" 
-                                    : "bg-gray-200 text-gray-900 border border-gray-300 hover:bg-gray-400"
-                            }
+                            className={`h-8 px-3 text-sm font-medium transition-all rounded-md ${
+                                speedKey === key
+                                    ? "bg-black hover:bg-slate-800 dark:bg-white/15 text-white shadow-sm"
+                                    : "bg-slate-100 hover:bg-slate-200 text-black border border-slate-300 dark:bg-transparent dark:text-white/50 dark:hover:text-white/80 dark:hover:bg-white/5 hover:shadow-sm"
+                            }`}
                         >
                             {key}
                         </Button>
                     ))}
                 </div>
+            </div>
 
-                {/* Info Banner */}
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                    <p className="text-sm text-gray-700">
-                        <strong>Array Length:</strong> {array.length} | 
-                        <strong> Operations:</strong> Push (add to end), Pop (remove from end), Insert At (add at index), Remove At (remove from index)
+            <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm sm:text-base shadow-sm mb-4">
+                {animating && (
+                    <p>
+                        Performing <span className="font-semibold text-indigo-600 dark:text-indigo-300">{operation}</span>...
                     </p>
-                </div>
+                )}
+                {operationComplete && lastOperationResult && (
+                    <p className="text-emerald-600 dark:text-emerald-300">{lastOperationResult}</p>
+                )}
+                {!animating && !operationComplete && array.length === 0 && (
+                    <p>Insert numbers to populate the array.</p>
+                )}
+                {!animating && !operationComplete && array.length > 0 && (
+                    <p>Select an operation to manipulate the array in-place.</p>
+                )}
+            </div>
 
-                {/* Array Visualizer */}
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                    <div className="flex flex-wrap gap-2 justify-center">
-                        {array.length === 0 ? (
-                            <div className="text-gray-500 text-center py-8">
-                                Array is empty. Add some elements to get started!
-                            </div>
-                        ) : (
-                            array.map((val, idx) => {
-                                let bgColor = "bg-white";
-                                let textColor = "text-gray-900";
-                                let borderColor = "border-gray-300";
-                                
-                                // Highlight current operation element
-                                if (idx === highlightedIndex) {
-                                    switch (operation) {
-                                        case "push":
-                                            bgColor = "bg-green-500";
-                                            textColor = "text-white";
-                                            borderColor = "border-green-500";
-                                            break;
-                                        case "pop":
-                                            bgColor = "bg-red-500";
-                                            textColor = "text-white";
-                                            borderColor = "border-red-500";
-                                            break;
-                                        case "insert":
-                                            bgColor = "bg-blue-500";
-                                            textColor = "text-white";
-                                            borderColor = "border-blue-500";
-                                            break;
-                                        case "remove":
-                                            bgColor = "bg-orange-500";
-                                            textColor = "text-white";
-                                            borderColor = "border-orange-500";
-                                            break;
-                                        default:
-                                            bgColor = "bg-yellow-400";
-                                            textColor = "text-gray-900";
-                                            borderColor = "border-yellow-400";
-                                    }
-                                }
-
-                                return (
-                                    <div
-                                        key={`${idx}-${val}`}
-                                        className={`${bgColor} ${textColor} border ${borderColor} rounded px-4 py-3 min-w-12 text-center font-mono transition-all duration-300`}
-                                    >
-                                        <div className="text-sm font-bold">{val}</div>
-                                        <div className="text-xs text-gray-500">{idx}</div>
-                                    </div>
-                                );
-                            })
-                        )}
+            <div className="bg-slate-100 dark:bg-white/[0.02] backdrop-blur-sm rounded-xl border border-slate-200 dark:border-white/[0.05] p-4 sm:p-6 mb-4 shadow-lg min-h-[320px]">
+                {array.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-48 text-slate-400 dark:text-white/40">
+                        <p className="text-base mb-2 text-center">Array is empty. Add or randomize values to begin.</p>
+                        <p className="text-sm text-slate-400 dark:text-white/30 text-center">Watch how contiguous memory shifts during inserts/removals.</p>
                     </div>
+                ) : (
+                    <div className="flex flex-wrap gap-3 justify-center">
+                        {array.map((val, idx) => {
+                            let bgColor = "bg-white dark:bg-slate-800";
+                            let textColor = "text-slate-900 dark:text-white";
+                            let borderColor = "border-slate-300 dark:border-slate-700";
 
-                    {/* Legend */}
-                    {animating && operation && (
-                        <div className="flex flex-wrap justify-center gap-4 mt-4 text-sm text-gray-700">
-                            <div className="flex items-center gap-2">
-                                <div className={`w-4 h-4 rounded ${
-                                    operation === "push" ? "bg-green-500" :
-                                    operation === "pop" ? "bg-red-500" :
-                                    operation === "insert" ? "bg-blue-500" :
-                                    operation === "remove" ? "bg-orange-500" :
-                                    "bg-yellow-400"
-                                }`}></div>
-                                <span>Current operation: {operation}</span>
-                            </div>
-                        </div>
-                    )}
-                </div>
+                            if (idx === highlightedIndex) {
+                                switch (operation) {
+                                    case "push":
+                                        bgColor = "bg-emerald-500/20";
+                                        textColor = "text-emerald-700 dark:text-emerald-200";
+                                        borderColor = "border-emerald-500/60";
+                                        break;
+                                    case "pop":
+                                        bgColor = "bg-rose-500/20";
+                                        textColor = "text-rose-700 dark:text-rose-200";
+                                        borderColor = "border-rose-500/60";
+                                        break;
+                                    case "insert":
+                                        bgColor = "bg-sky-500/20";
+                                        textColor = "text-sky-700 dark:text-sky-200";
+                                        borderColor = "border-sky-500/60";
+                                        break;
+                                    case "remove":
+                                        bgColor = "bg-amber-500/20";
+                                        textColor = "text-amber-700 dark:text-amber-200";
+                                        borderColor = "border-amber-500/60";
+                                        break;
+                                    default:
+                                        bgColor = "bg-indigo-500/20";
+                                        textColor = "text-indigo-700 dark:text-indigo-200";
+                                        borderColor = "border-indigo-500/60";
+                                }
+                            }
 
-                {/* Status Display */}
-                <div className="text-center p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                    {animating && (
-                        <p className="text-lg text-gray-900">
-                            Performing <span className="font-bold">{operation}</span> operation...
-                        </p>
-                    )}
-                    {operationComplete && lastOperationResult && (
-                        <p className="text-lg text-green-600">
-                            {lastOperationResult}
-                        </p>
-                    )}
-                    {!animating && !operationComplete && array.length > 0 && (
-                        <p className="text-gray-600">
-                            Choose an operation to perform on the array
-                        </p>
-                    )}
-                    {array.length === 0 && !animating && (
-                        <p className="text-gray-600">
-                            Add elements to the array to begin operations
-                        </p>
-                    )}
+                            return (
+                                <div
+                                    key={`${idx}-${val}`}
+                                    className={`${bgColor} ${textColor} border ${borderColor} rounded-xl px-5 py-4 min-w-16 text-center font-mono text-lg shadow transition-all duration-300`}
+                                >
+                                    <div className="font-bold">{val}</div>
+                                    <div className="text-xs text-slate-500 dark:text-slate-400">[{idx}]</div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs sm:text-sm text-slate-600 dark:text-white/60 mb-4">
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-slate-300" />
+                    <span>Normal</span>
                 </div>
-            </CardContent>
-        </Card>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-emerald-400" />
+                    <span>Push target</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-rose-400" />
+                    <span>Pop/remove target</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-sky-400" />
+                    <span>Insert point</span>
+                </div>
+            </div>
+
+            <button
+                onClick={() => setShowInfo(!showInfo)}
+                className="w-full flex items-center justify-center gap-2 py-3 text-slate-500 hover:text-slate-700 dark:text-white/50 dark:hover:text-white/70 transition-colors text-sm font-medium"
+            >
+                <Info className="h-4 w-4" />
+                Algorithm Info
+                {showInfo ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </button>
+
+            {showInfo && (
+                <div className="bg-slate-100 dark:bg-white/[0.02] backdrop-blur-sm rounded-xl border border-slate-200 dark:border-white/[0.05] p-6 space-y-4 animate-in slide-in-from-top-2 duration-300 text-sm">
+                    <div>
+                        <h3 className="text-slate-900 dark:text-white font-semibold mb-2">Array Operation Notes</h3>
+                        <p className="text-slate-600 dark:text-white/60">
+                            Arrays store data contiguously, so push/pop at the tail remain O(1) while inserts and deletes in the middle require shifting elements (O(n)).
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-white/40 mt-2">
+                            Current length: {array.length}. Use slower speeds to observe how shifts propagate.
+                        </p>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }

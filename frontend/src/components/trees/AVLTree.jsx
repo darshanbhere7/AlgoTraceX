@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { Info, Shuffle, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 
 class AVLNode {
     constructor(value) {
@@ -30,6 +30,7 @@ export default function AVLTree() {
     const [rotationNodes, setRotationNodes] = useState(new Set());
     const [traversalResult, setTraversalResult] = useState([]);
     const [currentTraversal, setCurrentTraversal] = useState("");
+    const [showInfo, setShowInfo] = useState(false);
 
     const delay = speedOptions[speedKey];
 
@@ -197,14 +198,14 @@ export default function AVLTree() {
         setAnimating(true);
         let newRoot = null;
         const values = Array.from({ length: 10 }, () => Math.floor(Math.random() * 90) + 10);
-        
+
         setCurrentStep("Generating random AVL tree...");
         await sleep(delay);
 
         for (const val of values) {
             newRoot = await insertNode(newRoot, val, false);
         }
-        
+
         setRoot(newRoot);
         setTraversalResult([]);
         setCurrentStep("Random tree generated!");
@@ -254,7 +255,7 @@ export default function AVLTree() {
         const isBalanced = Math.abs(balance) <= 1;
 
         return (
-            <g key={`${node.value}-${x}-${y}`}>
+            <g key={`${node.value}-${x}-${y}`} className="tree-node">
                 {/* Lines to children */}
                 {node.left && (
                     <line
@@ -291,10 +292,8 @@ export default function AVLTree() {
                     fill={isRotating ? "#ec4899" : isHighlighted ? "#f59e0b" : isBalanced ? "#10b981" : "#ef4444"}
                     stroke={isRotating ? "#be185d" : isHighlighted ? "#d97706" : isBalanced ? "#059669" : "#dc2626"}
                     strokeWidth="3"
-                    className="transition-all duration-300"
+                    className={`node-circle transition-all duration-300 ${isHighlighted ? "highlighted" : ""} ${isRotating ? "rotating" : ""} ${isBalanced ? "balanced" : "imbalanced"}`}
                     style={{
-                        filter: isHighlighted || isRotating ? "drop-shadow(0 0 10px currentColor)" : "none",
-                        transform: isHighlighted || isRotating ? "scale(1.2)" : "scale(1)",
                         transformOrigin: `${x}px ${y}px`
                     }}
                 />
@@ -310,7 +309,7 @@ export default function AVLTree() {
                 >
                     {node.value}
                 </text>
-                
+
                 {/* Balance factor */}
                 <text
                     x={x}
@@ -323,7 +322,7 @@ export default function AVLTree() {
                 >
                     BF: {balance}
                 </text>
-                
+
                 {/* Height */}
                 <text
                     x={x + 35}
@@ -348,18 +347,39 @@ export default function AVLTree() {
     const svgHeight = Math.max(300, treeHeight * 80 + 60);
 
     return (
-        <Card className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 text-gray-900 p-6 max-w-7xl mx-auto border-2 border-emerald-200 shadow-2xl">
-            <CardContent className="space-y-6">
-                <div className="text-center mb-6">
-                    <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
-                        AVL Tree Visualizer
-                    </h2>
-                    <p className="text-sm text-gray-600">Self-balancing binary search tree with automatic rotations</p>
-                </div>
+        <div className="w-full px-4 sm:px-6 lg:px-8 pt-24 sm:pt-24 pb-8 max-w-7xl mx-auto">
+            <style>{`
+                .node-circle {
+                    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+                    filter: drop-shadow(0 8px 16px rgba(15, 23, 42, 0.08));
+                }
+                .node-circle.highlighted,
+                .node-circle.rotating {
+                    transform: scale(1.08);
+                    filter: drop-shadow(0 12px 20px rgba(16, 185, 129, 0.35));
+                }
+                .node-circle.rotating {
+                    filter: drop-shadow(0 12px 20px rgba(236, 72, 153, 0.35));
+                }
+                @media (prefers-color-scheme: dark) {
+                    .node-circle {
+                        filter: drop-shadow(0 8px 16px rgba(15, 23, 42, 0.7));
+                    }
+                }
+            `}</style>
 
-                {/* Input Panel */}
-                <div className="flex flex-col lg:flex-row items-center justify-center gap-4 flex-wrap">
-                    <div className="flex items-center gap-2">
+            <div className="mb-6">
+                <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-2">
+                    AVL Tree Visualizer
+                </h1>
+                <p className="text-sm text-slate-600 dark:text-white/50">
+                    Watch how rotations keep the tree balanced while maintaining the Bubble Sort inspired UI.
+                </p>
+            </div>
+
+            <div className="space-y-4 mb-6">
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex gap-2 flex-1 max-w-md">
                         <Input
                             type="number"
                             placeholder="Enter number (0-999)"
@@ -367,194 +387,211 @@ export default function AVLTree() {
                             disabled={animating}
                             onChange={(e) => setCurrentInput(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && handleAddValue()}
-                            className="w-48 border-emerald-300 bg-white focus:border-emerald-500 focus:ring-emerald-500"
+                            className="flex-1 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 focus:border-slate-400 dark:focus:border-white/20 focus:ring-0 h-10"
                             min="0"
                             max="999"
                         />
-                        <Button onClick={handleAddValue} disabled={animating} size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-md">
+                        <Button
+                            onClick={handleAddValue}
+                            disabled={animating}
+                            className="h-10 px-4 bg-slate-900 hover:bg-slate-800 dark:bg-white/15 dark:hover:bg-white/25 text-white dark:text-white border-0 rounded-md shadow-sm disabled:opacity-60"
+                        >
                             Insert
                         </Button>
                     </div>
-                    
-                    <Button onClick={generateRandomTree} disabled={animating} className="bg-teal-600 hover:bg-teal-700 text-white shadow-md">
-                        Generate Random Tree
-                    </Button>
-                    
-                    <Button onClick={showInorderTraversal} disabled={animating || !root} className="bg-cyan-600 hover:bg-cyan-700 text-white shadow-md">
-                        Show Inorder
-                    </Button>
-                    
-                    <Button variant="outline" onClick={reset} disabled={animating} className="border-emerald-300 text-emerald-700 hover:bg-emerald-50 shadow-md">
-                        Reset
-                    </Button>
+
+                    <div className="flex gap-2">
+                        <Button
+                            variant="ghost"
+                            onClick={generateRandomTree}
+                            disabled={animating}
+                            className="flex-1 sm:flex-none h-10 relative transition-all duration-300 ease-out
+                                        bg-slate-200/80 hover:bg-slate-300
+                                        text-slate-700
+                                        dark:bg-white/15 dark:hover:bg-white/15 dark:text-white
+                                        rounded-md shadow-sm dark:hover:shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                        >
+                            <Shuffle className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Random</span>
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            onClick={showInorderTraversal}
+                            disabled={animating || !root}
+                            className="flex-1 sm:flex-none
+                                    bg-emerald-500/20 hover:bg-emerald-500/30
+                                    dark:bg-emerald-400/20 dark:hover:bg-emerald-400/30
+                                    text-emerald-700 dark:text-emerald-300
+                                    border border-emerald-500/20
+                                    h-10 rounded-md shadow-none
+                                    disabled:opacity-40"
+                        >
+                            Show Inorder
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            onClick={reset}
+                            disabled={animating}
+                            className="flex-1 sm:flex-none h-10 
+                                        border border-slate-300 dark:border-white/10
+                                        bg-white dark:bg-white/5
+                                        text-slate-700 dark:text-white
+                                        rounded-md 
+                                        hover:bg-slate-100 dark:hover:bg-white/10
+                                        px-4"
+                        >
+                            <RotateCcw className="h-4 w-4 sm:mr-2" />
+                            <span className="hidden sm:inline">Reset</span>
+                        </Button>
+                    </div>
                 </div>
 
-                {/* Speed Selection */}
-                <div className="flex flex-wrap items-center justify-center gap-3">
-                    <span className="text-sm font-medium text-gray-700">Animation Speed:</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-slate-900 dark:text-white/50 text-sm font-medium">Speed</span>
                     {Object.keys(speedOptions).map((key) => (
                         <Button
+                            variant="ghost"
                             key={key}
                             size="sm"
-                            variant={speedKey === key ? "default" : "outline"}
                             onClick={() => setSpeedKey(key)}
                             disabled={animating}
-                            className={speedKey === key ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md" : "border-emerald-300 text-gray-700 hover:bg-emerald-50"}
+                            className={`h-8 px-3 text-sm font-medium transition-all rounded-md ${speedKey === key
+                                    ? "bg-slate-900 hover:bg-slate-800 dark:bg-white/15 text-white shadow-sm"
+                                    : "bg-slate-100 hover:bg-slate-200 text-black border border-slate-300 dark:bg-transparent dark:text-white/50 dark:hover:text-white/80 dark:hover:bg-white/5 hover:shadow-sm"
+                                }`}
                         >
                             {key}
                         </Button>
                     ))}
                 </div>
+            </div>
 
-                {/* Current Step Display */}
+            <div className="space-y-4 mb-6">
                 {currentStep && (
-                    <div className="text-center p-4 bg-gradient-to-r from-emerald-100 via-teal-100 to-cyan-100 rounded-xl border-2 border-emerald-300 shadow-md">
-                        <span className="text-lg font-semibold text-gray-800">{currentStep}</span>
+                    <div className="p-4 rounded-xl bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm sm:text-base shadow-sm">
+                        {currentStep}
                     </div>
                 )}
-
-                {/* Traversal Result */}
                 {traversalResult.length > 0 && (
-                    <div className="text-center p-4 bg-white/70 rounded-xl border-2 border-teal-300 shadow-md">
-                        <span className="text-sm font-semibold text-teal-700">{currentTraversal} Result: </span>
-                        <span className="text-lg font-bold text-gray-800">
+                    <div className="p-4 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm sm:text-base shadow-sm flex flex-wrap items-center gap-2">
+                        <span className="font-semibold text-slate-600 dark:text-white/60">
+                            {currentTraversal} Result:
+                        </span>
+                        <span className="font-mono text-base">
                             [{traversalResult.join(", ")}]
                         </span>
                     </div>
                 )}
+            </div>
 
-                {/* Tree Visualizer */}
-                <div className="min-h-80 bg-white/70 backdrop-blur-sm rounded-2xl p-6 border-2 border-emerald-200 shadow-inner overflow-auto">
-                    {!root ? (
-                        <div className="flex items-center justify-center h-80 text-gray-500">
-                            <div className="text-center">
-                                <div className="text-4xl mb-2">⚖️</div>
-                                <span>Insert numbers to build your AVL tree</span>
-                            </div>
+            <div className="bg-slate-100 dark:bg-white/[0.02] backdrop-blur-sm rounded-xl border border-slate-200 dark:border-white/[0.05] p-4 sm:p-6 mb-4 shadow-lg dark:shadow-2xl min-h-[320px]">
+                {!root ? (
+                    <div className="flex flex-col items-center justify-center h-64 text-slate-400 dark:text-white/40">
+                        <p className="text-base mb-2 text-center">Insert values or generate a tree to see AVL rotations</p>
+                        <p className="text-sm text-slate-400 dark:text-white/30 text-center">
+                            AVL keeps |balance factor| ≤ 1 at every node by performing rotations automatically
+                        </p>
+                    </div>
+                ) : (
+                    <div className="flex justify-center overflow-x-auto py-2">
+                        <svg width="900" height={svgHeight} className="mx-auto">
+                            {renderTree(root)}
+                        </svg>
+                    </div>
+                )}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs sm:text-sm text-slate-600 dark:text-white/60 mb-4">
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-emerald-500" />
+                    <span>Balanced</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-amber-400" />
+                    <span>Processing</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-pink-500" />
+                    <span>Rotating</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-rose-500" />
+                    <span>Imbalanced</span>
+                </div>
+            </div>
+
+            <button
+                onClick={() => setShowInfo(!showInfo)}
+                className="w-full flex items-center justify-center gap-2 py-3 text-slate-500 hover:text-slate-700 dark:text-white/50 dark:hover:text-white/70 transition-colors text-sm font-medium"
+            >
+                <Info className="h-4 w-4" />
+                Algorithm Info
+                {showInfo ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </button>
+
+            {showInfo && (
+                <div className="bg-slate-100 dark:bg-white/[0.02] backdrop-blur-sm rounded-xl border border-slate-200 dark:border-white/[0.05] p-6 space-y-4 animate-in slide-in-from-top-2 duration-300">
+                    <div>
+                        <h3 className="text-slate-900 dark:text-white font-semibold mb-2 text-base">
+                            AVL Tree Structure
+                        </h3>
+                        <p className="text-slate-600 dark:text-white/60 text-sm leading-relaxed">
+                            AVL trees keep the difference between left and right subtree heights within one.
+                            Each insertion may trigger single or double rotations, but guarantees the height stays O(log n).
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-white/40 mt-2">
+                            Balance Factor (BF) = height(left) − height(right). Valid values: −1, 0, +1. Rotations fire when |BF| &gt; 1.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="bg-white dark:bg-white/[0.03] rounded-lg p-4 border border-slate-200 dark:border-white/[0.05] text-sm">
+                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/40 font-semibold mb-2">
+                                Single Rotations
+                            </p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs mb-2">
+                                <strong>LL:</strong> Heavy on left-left → perform right rotation.
+                            </p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs">
+                                <strong>RR:</strong> Heavy on right-right → perform left rotation.
+                            </p>
                         </div>
-                    ) : (
-                        <div className="flex justify-center">
-                            <svg width="800" height={svgHeight} className="mx-auto">
-                                {renderTree(root)}
-                            </svg>
+                        <div className="bg-white dark:bg-white/[0.03] rounded-lg p-4 border border-slate-200 dark:border-white/[0.05] text-sm">
+                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/40 font-semibold mb-2">
+                                Double Rotations
+                            </p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs mb-2">
+                                <strong>LR:</strong> Left heavy but inserted on left-right → left rotation on child, then right rotation.
+                            </p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs">
+                                <strong>RL:</strong> Right heavy but inserted on right-left → right rotation on child, then left rotation.
+                            </p>
                         </div>
-                    )}
-                </div>
-
-                {/* Legend */}
-                <div className="flex flex-wrap justify-center gap-6 text-sm">
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-emerald-500 border-2 border-emerald-700 rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Balanced (|BF| ≤ 1)</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-amber-500 border-2 border-amber-700 rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Currently Processing</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-pink-500 border-2 border-pink-700 rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Rotating</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-red-500 border-2 border-red-700 rounded-full shadow-sm"></div>
-                        <span className="text-gray-700 font-medium">Imbalanced (|BF| &gt; 1)</span>
-                    </div>
-                </div>
-
-                {/* AVL Tree Info */}
-                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-5 text-sm border-2 border-emerald-200 shadow-md">
-                    <h3 className="font-bold mb-3 text-gray-800 text-lg flex items-center gap-2">
-                        <span className="text-2xl">⚖️</span>
-                        AVL Tree Structure
-                    </h3>
-                    <p className="text-gray-700 leading-relaxed mb-3">
-                        An AVL tree is a self-balancing binary search tree where the heights of the left and right subtrees 
-                        of any node differ by at most one. Named after inventors Adelson-Velsky and Landis, it maintains 
-                        balance through rotations during insertion and deletion operations.
-                    </p>
-                    <div className="bg-white/50 rounded-lg p-3 mb-3">
-                        <p className="text-gray-700 text-xs leading-relaxed">
-                            <strong>Balance Factor (BF):</strong> BF = Height(Left Subtree) - Height(Right Subtree). 
-                            For an AVL tree, BF must be -1, 0, or +1 for every node. If |BF| &gt; 1, rotations are performed 
-                            to restore balance.
-                        </p>
-                    </div>
-                </div>
-
-                {/* Rotation Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 text-sm border-2 border-blue-200">
-                        <h4 className="font-bold text-blue-800 mb-2 flex items-center gap-2">
-                            <span>🔄</span> Single Rotations
-                        </h4>
-                        <p className="text-gray-700 text-xs leading-relaxed mb-2">
-                            <strong>Left-Left (LL):</strong> When left subtree is too heavy and insertion was in left child's 
-                            left subtree. Fix: Single right rotation.
-                        </p>
-                        <p className="text-gray-700 text-xs leading-relaxed">
-                            <strong>Right-Right (RR):</strong> When right subtree is too heavy and insertion was in right child's 
-                            right subtree. Fix: Single left rotation.
-                        </p>
                     </div>
 
-                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 text-sm border-2 border-purple-200">
-                        <h4 className="font-bold text-purple-800 mb-2 flex items-center gap-2">
-                            <span>↔️</span> Double Rotations
-                        </h4>
-                        <p className="text-gray-700 text-xs leading-relaxed mb-2">
-                            <strong>Left-Right (LR):</strong> When left subtree is heavy but insertion was in left child's 
-                            right subtree. Fix: Left rotation on left child, then right rotation on root.
-                        </p>
-                        <p className="text-gray-700 text-xs leading-relaxed">
-                            <strong>Right-Left (RL):</strong> When right subtree is heavy but insertion was in right child's 
-                            left subtree. Fix: Right rotation on right child, then left rotation on root.
-                        </p>
-                    </div>
-                </div>
-
-                {/* Complexity Info */}
-                <div className="bg-gradient-to-r from-emerald-50 to-cyan-50 rounded-xl p-4 text-sm border-2 border-emerald-200">
-                    <div className="flex items-start gap-3">
-                        <span className="text-2xl">⚡</span>
-                        <div>
-                            <h4 className="font-bold text-emerald-900 mb-1">Time & Space Complexity</h4>
-                            <p className="text-emerald-800">
-                                <strong>Search, Insert, Delete:</strong> O(log n) guaranteed due to balanced height. 
-                                <strong> Space:</strong> O(n) for storing n nodes, O(log n) recursion stack. 
-                                The strict balancing ensures height never exceeds 1.44 × log n, making AVL trees ideal 
-                                for lookup-intensive applications like databases and file systems.
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="bg-white dark:bg-white/[0.03] rounded-lg p-4 border border-slate-200 dark:border-white/[0.05] text-sm">
+                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/40 font-semibold mb-2">
+                                Complexity
+                            </p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs">
+                                Search/Insert/Delete all run in O(log n). Height never exceeds ≈1.44·log₂n, so lookup-heavy workloads remain fast.
+                            </p>
+                        </div>
+                        <div className="bg-white dark:bg-white/[0.03] rounded-lg p-4 border border-slate-200 dark:border-white/[0.05] text-sm">
+                            <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-white/40 font-semibold mb-2">
+                                AVL vs BST
+                            </p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs mb-2">
+                                AVL trades more rotations and stored height metadata for guaranteed balance.
+                            </p>
+                            <p className="text-slate-600 dark:text-white/65 text-xs">
+                                Ideal for read-heavy systems (databases, file indexes) where consistent performance matters.
                             </p>
                         </div>
                     </div>
                 </div>
-
-                {/* Advantages Info */}
-                <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl p-4 text-sm border-2 border-teal-200">
-                    <h4 className="font-bold text-teal-800 mb-2 flex items-center gap-2">
-                        <span>✨</span> AVL vs Regular BST
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                        <div className="bg-white/50 rounded-lg p-3">
-                            <strong className="text-emerald-700">AVL Advantages:</strong>
-                            <ul className="mt-1 ml-4 list-disc text-gray-700 space-y-1">
-                                <li>Guaranteed O(log n) operations</li>
-                                <li>Better for search-heavy workloads</li>
-                                <li>Predictable performance</li>
-                                <li>More strictly balanced than Red-Black trees</li>
-                            </ul>
-                        </div>
-                        <div className="bg-white/50 rounded-lg p-3">
-                            <strong className="text-orange-700">Trade-offs:</strong>
-                            <ul className="mt-1 ml-4 list-disc text-gray-700 space-y-1">
-                                <li>More rotations during insertion/deletion</li>
-                                <li>Slightly slower insertions vs Red-Black trees</li>
-                                <li>Additional storage for height info</li>
-                                <li>More complex implementation</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
+            )}
+        </div>
     );
 }

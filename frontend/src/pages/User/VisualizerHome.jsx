@@ -20,15 +20,18 @@ const stats = [
   { value: "40+", label: "Algorithms" },
   { value: "7", label: "Categories" },
   { value: "∞", label: "Learning" },
-  { value: "✨", label: "Interactive" }
+  { value: "✦", label: "Interactive" }
 ];
 
-const ActionButton = ({ icon: Icon, children, onClick }) => (
+const ActionButton = ({ icon: Icon, children, onClick, disabled = false }) => (
   <motion.button
-    onClick={onClick}
+    onClick={disabled ? undefined : onClick}
     whileHover={{ y: -2 }}
     whileTap={{ scale: 0.98 }}
-    className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center justify-center gap-2 shadow-sm hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
+    disabled={disabled}
+    className={`w-full rounded-lg border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center justify-center gap-2 shadow-sm transition-colors ${
+      disabled ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:bg-gray-50 dark:hover:bg-neutral-800"
+    }`}
   >
     {Icon && <Icon className="h-4 w-4" />}
     {children}
@@ -58,6 +61,9 @@ export default function VisualizerHome() {
   const handleItemSelect = (item) => {
     setSelectedItem(item);
   };
+
+  const selectedComingSoon = selectedItem?.comingSoon;
+  const selectedHasPath = Boolean(selectedItem?.path);
 
   const dsaCategories = useMemo(() => [
     {
@@ -118,10 +124,10 @@ export default function VisualizerHome() {
       icon: Layers,
       description: "High-level strategies for complex problems.",
       items: [
-        { name: "Dynamic Programming", path: "/user/topics", complexity: "Various", description: "Cache overlapping subproblems for speed." },
-        { name: "Backtracking", path: "/user/topics", complexity: "Exponential", description: "DFS-style exploration with constraint pruning." },
-        { name: "Greedy Algorithms", path: "/user/topics", complexity: "Various", description: "Locally optimal steps for global goals." },
-        { name: "Divide & Conquer", path: "/user/topics", complexity: "Various", description: "Split, solve, and merge subproblems." }
+        { name: "Dynamic Programming", path: null, complexity: "Various", description: "Cache overlapping subproblems for speed.", comingSoon: true },
+        { name: "Backtracking", path: null, complexity: "Exponential", description: "DFS-style exploration with constraint pruning.", comingSoon: true },
+        { name: "Greedy Algorithms", path: null, complexity: "Various", description: "Locally optimal steps for global goals.", comingSoon: true },
+        { name: "Divide & Conquer", path: null, complexity: "Various", description: "Split, solve, and merge subproblems.", comingSoon: true }
       ]
     }
   ], []);
@@ -254,30 +260,41 @@ export default function VisualizerHome() {
                       className="border-t border-gray-200 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-950"
                     >
                       <div className="p-4 space-y-2">
-                        {category.items.map((item) => (
-                          <motion.div
-                            key={item.name}
-                            whileHover={{ scale: 1.02 }}
-                            className={`p-4 bg-white dark:bg-neutral-900 rounded-lg border cursor-pointer transition-all duration-200 ${
-                              selectedItem?.name === item.name 
-                                ? 'border-gray-900 dark:border-neutral-600 bg-gray-50 dark:bg-neutral-800'
-                                : 'border-gray-200 dark:border-neutral-800 hover:border-gray-300 dark:hover:border-neutral-700'
-                            }`}
-                            onClick={() => handleItemSelect(item)}
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-medium text-gray-900 dark:text-white">
-                                {item.name}
-                              </h3>
-                              <span className="text-xs bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 px-2 py-1 rounded font-mono border border-gray-200 dark:border-neutral-700">
-                                {item.complexity}
-                              </span>
-                            </div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              {item.description}
-                            </p>
-                          </motion.div>
-                        ))}
+                        {category.items.map((item) => {
+                          const isSelected = selectedItem?.name === item.name;
+                          const isComingSoon = item.comingSoon;
+                          return (
+                            <motion.div
+                              key={item.name}
+                              whileHover={{ scale: 1.02 }}
+                              className={`p-4 bg-white dark:bg-neutral-900 rounded-lg border transition-all duration-200 ${
+                                isSelected
+                                  ? 'border-gray-900 dark:border-neutral-600 bg-gray-50 dark:bg-neutral-800'
+                                  : 'border-gray-200 dark:border-neutral-800 hover:border-gray-300 dark:hover:border-neutral-700'
+                              } ${isComingSoon ? 'opacity-90' : 'cursor-pointer'}`}
+                              onClick={() => handleItemSelect(item)}
+                            >
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <h3 className="font-medium text-gray-900 dark:text-white">
+                                    {item.name}
+                                  </h3>
+                                  {isComingSoon && (
+                                    <span className="text-xs font-semibold text-amber-600 dark:text-amber-300 bg-amber-100 dark:bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-400/30">
+                                      Coming Soon
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-xs bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-gray-300 px-2 py-1 rounded font-mono border border-gray-200 dark:border-neutral-700">
+                                  {item.complexity}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {item.description}
+                              </p>
+                            </motion.div>
+                          );
+                        })}
                       </div>
                     </motion.div>
                   )}
@@ -306,9 +323,14 @@ export default function VisualizerHome() {
                         {selectedItem.complexity}
                       </span>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-400 mb-6">
+                    <p className={`text-gray-600 dark:text-gray-400 ${selectedComingSoon ? "mb-2" : "mb-6"}`}>
                       {selectedItem.description}
                     </p>
+                    {selectedComingSoon && (
+                      <p className="text-sm text-amber-600 dark:text-amber-500 mb-6">
+                        Coming soon, stay tuned!
+                      </p>
+                    )}
                     
                     {/* Visualization Area */}
                     <div className="bg-gray-50 dark:bg-neutral-950 rounded-lg p-8 mb-6 text-center border border-gray-200 dark:border-neutral-800">
@@ -321,13 +343,17 @@ export default function VisualizerHome() {
                     </div>
                     
                     <div className="space-y-3">
-                      <ActionButton icon={Play} onClick={() => selectedItem.path && handleNavigate(selectedItem.path)}>
+                      <ActionButton
+                        icon={Play}
+                        onClick={() => selectedItem.path && handleNavigate(selectedItem.path)}
+                        disabled={!selectedHasPath}
+                      >
                         Go to {selectedItem.name}
                       </ActionButton>
-                      <ActionButton icon={Code}>
+                      <ActionButton icon={Code} disabled={selectedComingSoon}>
                         View Code
                       </ActionButton>
-                      <ActionButton icon={Activity}>
+                      <ActionButton icon={Activity} disabled={selectedComingSoon}>
                         Step Through
                       </ActionButton>
                     </div>
