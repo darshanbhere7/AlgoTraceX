@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Bookmark,
@@ -32,15 +39,18 @@ import {
 const getDifficultyColor = (difficulty) => {
   switch (difficulty?.toLowerCase()) {
     case 'easy':
-      return 'bg-green-100 text-green-800 border-green-200';
+      return 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-700/60';
     case 'medium':
-      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-700/60';
     case 'hard':
-      return 'bg-red-100 text-red-800 border-red-200';
+      return 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-100 dark:border-rose-800/60';
     default:
-      return 'bg-gray-100 text-gray-800 border-gray-200';
+      return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/60 dark:text-gray-200 dark:border-gray-700/60';
   }
 };
+
+const FILTER_SELECT_CLASSES =
+  'w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/70 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-white/20 transition-colors shadow-sm';
 
 const PracticeQuestions = () => {
   const [questions, setQuestions] = useState([]);
@@ -54,6 +64,14 @@ const PracticeQuestions = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedTopics, setExpandedTopics] = useState(new Set());
   const [progressData, setProgressData] = useState(() => getProgress());
+  const deferredSearch = useDeferredValue(searchQuery.trim());
+  const [isFiltering, startTransition] = useTransition();
+
+  const handleFilterChange = useCallback((key, value) => {
+    startTransition(() => {
+      setFilters((prev) => ({ ...prev, [key]: value }));
+    });
+  }, [startTransition]);
 
   // Sync progress data when localStorage changes
   useEffect(() => {
@@ -132,6 +150,7 @@ const PracticeQuestions = () => {
   const filteredQuestions = useMemo(() => {
     const completedSet = new Set(progressData.completed);
     const bookmarkedSet = new Set(progressData.bookmarked);
+    const normalizedSearch = deferredSearch.toLowerCase();
     
     return questions
       .filter((topic) => {
@@ -141,7 +160,7 @@ const PracticeQuestions = () => {
       .map((topic) => ({
         ...topic,
         questions: topic.questions.filter((q) => {
-          const matchesSearch = q.question.toLowerCase().includes(searchQuery.toLowerCase());
+          const matchesSearch = q.question.toLowerCase().includes(normalizedSearch);
           const matchesStatus =
             filters.status === 'all'
               ? true
@@ -159,29 +178,29 @@ const PracticeQuestions = () => {
         }),
       }))
       .filter((topic) => topic.questions.length > 0);
-  }, [questions, filters, searchQuery, progressData]);
+  }, [questions, filters, deferredSearch, progressData]);
 
-  const topicOptions = [
+  const topicOptions = useMemo(() => [
     { value: 'all', label: 'All Topics' },
     ...questions.map((topic) => ({
       value: topic.topic,
       label: topic.topic,
     })),
-  ];
+  ], [questions]);
 
-  const difficultyOptions = [
+  const difficultyOptions = useMemo(() => [
     { value: 'all', label: 'All Difficulties' },
     { value: 'easy', label: 'Easy' },
     { value: 'medium', label: 'Medium' },
     { value: 'hard', label: 'Hard' },
-  ];
+  ], []);
 
-  const statusOptions = [
+  const statusOptions = useMemo(() => [
     { value: 'all', label: 'All Status' },
     { value: 'completed', label: 'Completed' },
     { value: 'pending', label: 'Pending' },
     { value: 'bookmarked', label: 'Bookmarked' },
-  ];
+  ], []);
 
   if (loading) {
     return (
@@ -254,13 +273,13 @@ const PracticeQuestions = () => {
             transition={{ delay: 0.1 }}
           >
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5" />
               <input
                 type="text"
                 placeholder="Search questions..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white focus:border-transparent text-gray-900 dark:text-white"
+                className="w-full pl-10 pr-4 py-3 bg-white/80 dark:bg-neutral-900/70 border border-gray-200 dark:border-neutral-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/15 dark:focus:ring-white/15 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 shadow-sm transition-colors"
               />
             </div>
           </motion.div>
@@ -272,14 +291,14 @@ const PracticeQuestions = () => {
             transition={{ delay: 0.2 }}
           >
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-4 space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Topic</label>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Topic</label>
                     <select
                       value={filters.topic}
-                      onChange={(e) => setFilters((prev) => ({ ...prev, topic: e.target.value }))}
-                      className="w-full px-3 py-2 bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white text-gray-900 dark:text-white"
+                      onChange={(e) => handleFilterChange('topic', e.target.value)}
+                      className={FILTER_SELECT_CLASSES}
                     >
                       {topicOptions.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -288,14 +307,12 @@ const PracticeQuestions = () => {
                       ))}
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Difficulty</label>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Difficulty</label>
                     <select
                       value={filters.difficulty}
-                      onChange={(e) =>
-                        setFilters((prev) => ({ ...prev, difficulty: e.target.value }))
-                      }
-                      className="w-full px-3 py-2 bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white text-gray-900 dark:text-white"
+                      onChange={(e) => handleFilterChange('difficulty', e.target.value)}
+                      className={FILTER_SELECT_CLASSES}
                     >
                       {difficultyOptions.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -304,12 +321,12 @@ const PracticeQuestions = () => {
                       ))}
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Status</label>
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
                     <select
                       value={filters.status}
-                      onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
-                      className="w-full px-3 py-2 bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white text-gray-900 dark:text-white"
+                      onChange={(e) => handleFilterChange('status', e.target.value)}
+                      className={FILTER_SELECT_CLASSES}
                     >
                       {statusOptions.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -319,6 +336,12 @@ const PracticeQuestions = () => {
                     </select>
                   </div>
                 </div>
+                {isFiltering && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                    <span className="inline-flex h-2 w-2 rounded-full bg-gray-500 dark:bg-gray-300 animate-pulse"></span>
+                    Updating results...
+                  </p>
+                )}
               </CardContent>
             </Card>
           </motion.div>
@@ -331,6 +354,7 @@ const PracticeQuestions = () => {
                 return (
                   <motion.div
                     key={`topic-${topic.topic}-${topicIndex}`}
+                    layout
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: topicIndex * 0.1 }}
@@ -338,16 +362,16 @@ const PracticeQuestions = () => {
                     <Card className="overflow-hidden">
                       <button
                         onClick={() => toggleTopic(topicIndex)}
-                        className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                        className="w-full px-6 py-4 flex items-center justify-between bg-white/70 dark:bg-neutral-950/30 border-b border-gray-100/70 dark:border-neutral-800/70 hover:bg-gray-50/80 dark:hover:bg-neutral-900/50 transition-colors backdrop-blur-sm"
                       >
                         <div className="flex items-center gap-3">
-                          <h2 className="text-xl font-semibold text-gray-900">{topic.topic}</h2>
-                          <Badge variant="secondary">
+                          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{topic.topic}</h2>
+                          <Badge variant="secondary" className="bg-gray-900/10 text-gray-900 dark:bg-white/10 dark:text-white">
                             {topic.questions.length} question{topic.questions.length !== 1 ? 's' : ''}
                           </Badge>
                         </div>
                         <ChevronDown
-                          className={`h-5 w-5 text-gray-500 transition-transform ${
+                          className={`h-5 w-5 text-gray-500 dark:text-gray-400 transition-transform ${
                             isExpanded ? 'rotate-180' : ''
                           }`}
                         />
@@ -374,15 +398,16 @@ const PracticeQuestions = () => {
                                   return (
                                     <motion.div
                                       key={questionKey}
-                                      initial={{ opacity: 0, scale: 0.95 }}
+                                      layout
+                                      initial={{ opacity: 0, scale: 0.97 }}
                                       animate={{ opacity: 1, scale: 1 }}
-                                      transition={{ delay: qIndex * 0.05 }}
+                                      transition={{ delay: qIndex * 0.03 }}
                                       whileHover={{ y: -4 }}
                                     >
-                                      <Card className="h-full hover:shadow-md transition-all duration-300 border-l-4 border-l-gray-900 dark:border-l-white bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-sm">
-                                        <CardContent className="p-5">
-                                          <div className="flex justify-between items-start mb-3">
-                                            <h3 className="font-semibold text-lg text-gray-900 flex-1 pr-2">
+                                      <Card className="h-full hover:shadow-xl hover:border-gray-900/20 dark:hover:border-white/30 transition-all duration-300 border-l-4 border-l-gray-900 dark:border-l-white bg-gradient-to-b from-white/95 to-white dark:from-neutral-900/85 dark:to-neutral-950/60 border border-gray-200/80 dark:border-neutral-800/70 shadow-lg shadow-gray-900/5">
+                                        <CardContent className="p-5 space-y-3">
+                                          <div className="flex justify-between items-start gap-3">
+                                            <h3 className="font-semibold text-lg text-gray-900 dark:text-white flex-1 pr-2">
                                               {question.question}
                                             </h3>
                                             <div className="flex gap-2 flex-shrink-0">
@@ -392,8 +417,8 @@ const PracticeQuestions = () => {
                                                 onClick={() => handleBookmark(question.url)}
                                                 className={`p-2 rounded-full transition-colors ${
                                                   isBookmarked
-                                                    ? 'bg-yellow-100 text-yellow-600'
-                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200'
+                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700'
                                                 }`}
                                                 title={isBookmarked ? 'Remove Bookmark' : 'Add Bookmark'}
                                               >
@@ -407,8 +432,8 @@ const PracticeQuestions = () => {
                                                 onClick={() => handleComplete(question.url)}
                                                 className={`p-2 rounded-full transition-colors ${
                                                   isCompleted
-                                                    ? 'bg-green-100 text-green-600'
-                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200'
+                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-neutral-800 dark:text-gray-300 dark:hover:bg-neutral-700'
                                                 }`}
                                                 title={
                                                   isCompleted ? 'Mark as Pending' : 'Mark as Completed'
@@ -423,26 +448,26 @@ const PracticeQuestions = () => {
                                             </div>
                                           </div>
 
-                                          <div className="flex flex-wrap gap-2 mb-3">
+                                          <div className="flex flex-wrap gap-2">
                                             <Badge
                                               className={`${getDifficultyColor(difficulty)} border`}
                                             >
                                               {difficulty}
                                             </Badge>
                                             {isCompleted && (
-                                              <Badge className="bg-green-100 text-green-800 border-green-200">
+                                              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-100 dark:border-emerald-600/50">
                                                 Completed
                                               </Badge>
                                             )}
                                             {isBookmarked && (
-                                              <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+                                              <Badge className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-500/20 dark:text-amber-100 dark:border-amber-600/50">
                                                 Bookmarked
                                               </Badge>
                                             )}
                                           </div>
 
                                           {metadata.lastOpened && (
-                                            <div className="text-xs text-gray-500 mb-2 flex items-center gap-1">
+                                            <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                               <Clock className="h-3 w-3" />
                                               Last opened:{' '}
                                               {new Date(metadata.lastOpened).toLocaleDateString()}
@@ -450,11 +475,11 @@ const PracticeQuestions = () => {
                                           )}
 
                                           {(attempts.successCount > 0 || attempts.failureCount > 0) && (
-                                            <div className="text-xs text-gray-600 mb-3">
-                                              <span className="text-green-600">
+                                            <div className="text-xs text-gray-600 dark:text-gray-300">
+                                              <span className="text-emerald-600 dark:text-emerald-300">
                                                 ✓ {attempts.successCount}
                                               </span>{' '}
-                                              <span className="text-red-600">
+                                              <span className="text-rose-500 dark:text-rose-300">
                                                 ✗ {attempts.failureCount}
                                               </span>
                                             </div>
@@ -488,7 +513,7 @@ const PracticeQuestions = () => {
 
             {filteredQuestions.length === 0 && (
               <Card>
-                <CardContent className="p-8 text-center text-gray-500">
+                <CardContent className="p-8 text-center text-gray-500 dark:text-gray-400">
                   <p>No questions found matching your filters.</p>
                 </CardContent>
               </Card>
@@ -504,14 +529,14 @@ const PracticeQuestions = () => {
             transition={{ delay: 0.3 }}
             className="sticky top-6 space-y-4"
           >
-            <Card>
+            <Card className='pt-5 pb-5'>
               <CardHeader>
-                <CardTitle className="text-lg">Analytics</CardTitle>
+                <CardTitle className="text-lg text-gray-900 dark:text-white">Analytics</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-gray-700">Overall Progress</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Overall Progress</span>
                     <span className="text-sm font-bold text-gray-900 dark:text-white">
                       {analytics.overallProgress.toFixed(1)}%
                     </span>
@@ -522,9 +547,9 @@ const PracticeQuestions = () => {
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-gray-200">
+                <div className="pt-4 border-t border-gray-200 dark:border-neutral-800">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700">Completed</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Completed</span>
                     <span className="text-lg font-bold text-gray-900 dark:text-white">
                       {analytics.completedCount}
                     </span>
@@ -537,16 +562,16 @@ const PracticeQuestions = () => {
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-gray-200">
-                  <h4 className="text-sm font-semibold text-gray-900 mb-3">Topic Progress</h4>
-                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                <div className="pt-4 border-t border-gray-200 dark:border-neutral-800">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Topic Progress</h4>
+                  <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-hide">
                     {analytics.topicProgress.map((stat) => (
                       <div key={stat.topic}>
                         <div className="flex justify-between items-center mb-1">
-                          <span className="text-xs font-medium text-gray-700 truncate">
+                          <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">
                             {stat.topic}
                           </span>
-                          <span className="text-xs text-gray-600">
+                          <span className="text-xs text-gray-600 dark:text-gray-400">
                             {stat.completed}/{stat.total}
                           </span>
                         </div>

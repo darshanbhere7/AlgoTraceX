@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -6,32 +6,48 @@ import { ChevronDown, ChevronUp, Leaf, Zap, Flame } from 'lucide-react';
 import QuickActions from './QuickActions';
 import TopicRoadmap from './TopicRoadmap';
 import { generateLearningInsight, extractMicroConcepts, truncateDescription } from '@/utils/topicUtils';
+import { cn } from '@/lib/utils';
 
 const DIFFICULTY_CONFIG = {
   beginner: {
     icon: Leaf,
-    color: 'green',
-    bgGradient: 'from-green-50 to-emerald-50',
-    borderColor: 'border-green-300',
-    badgeClass: 'bg-green-100 text-green-800 border-green-200'
+    gradient: 'from-emerald-50 via-white to-emerald-50 dark:from-emerald-950/60 dark:via-neutral-950 dark:to-emerald-900/50',
+    border: 'border-l-4 border-emerald-200 dark:border-emerald-500/40',
+    badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-100 dark:border-emerald-800/60',
+    iconBg: 'bg-emerald-100/80 dark:bg-emerald-900/60',
+    iconColor: 'text-emerald-600 dark:text-emerald-200',
+    bulletColor: 'text-emerald-500 dark:text-emerald-200',
+    insightBg: 'bg-emerald-50/80 dark:bg-emerald-950/50',
+    insightBorder: 'border-emerald-200 dark:border-emerald-700/70',
+    insightText: 'text-emerald-800 dark:text-emerald-100'
   },
   intermediate: {
     icon: Zap,
-    color: 'yellow',
-    bgGradient: 'from-yellow-50 to-amber-50',
-    borderColor: 'border-yellow-300',
-    badgeClass: 'bg-yellow-100 text-yellow-800 border-yellow-200'
+    gradient: 'from-amber-50 via-white to-yellow-50 dark:from-amber-950/55 dark:via-neutral-950 dark:to-yellow-900/40',
+    border: 'border-l-4 border-amber-200 dark:border-amber-500/40',
+    badgeClass: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/50 dark:text-amber-100 dark:border-amber-800/60',
+    iconBg: 'bg-amber-100/80 dark:bg-amber-900/60',
+    iconColor: 'text-amber-600 dark:text-amber-200',
+    bulletColor: 'text-amber-500 dark:text-amber-200',
+    insightBg: 'bg-amber-50/80 dark:bg-amber-950/50',
+    insightBorder: 'border-amber-200 dark:border-amber-700/70',
+    insightText: 'text-amber-800 dark:text-amber-100'
   },
   advanced: {
     icon: Flame,
-    color: 'red',
-    bgGradient: 'from-red-50 to-orange-50',
-    borderColor: 'border-red-300',
-    badgeClass: 'bg-red-100 text-red-800 border-red-200'
+    gradient: 'from-rose-50 via-white to-orange-50 dark:from-rose-950/55 dark:via-neutral-950 dark:to-orange-900/40',
+    border: 'border-l-4 border-rose-200 dark:border-rose-500/40',
+    badgeClass: 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/50 dark:text-rose-100 dark:border-rose-800/60',
+    iconBg: 'bg-rose-100/80 dark:bg-rose-900/60',
+    iconColor: 'text-rose-600 dark:text-rose-200',
+    bulletColor: 'text-rose-500 dark:text-rose-200',
+    insightBg: 'bg-rose-50/80 dark:bg-rose-950/50',
+    insightBorder: 'border-rose-200 dark:border-rose-700/70',
+    insightText: 'text-rose-800 dark:text-rose-100'
   }
 };
 
-const TopicCard = ({ 
+const TopicCardComponent = ({ 
   topic, 
   onBookmark, 
   onPin, 
@@ -82,18 +98,28 @@ const TopicCard = ({
       className="relative"
     >
       <Card
-        className={`overflow-hidden border-l-4 ${config.borderColor} bg-gradient-to-r ${config.bgGradient} hover:shadow-xl transition-all duration-300`}
+        className={cn(
+          'relative overflow-hidden rounded-2xl border border-gray-200 dark:border-neutral-800 shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl bg-white/95 dark:bg-neutral-900/80',
+          config.border
+        )}
       >
-        <CardContent className="p-6">
+        <div
+          className={cn(
+            'pointer-events-none absolute inset-0 opacity-80 dark:opacity-35 bg-gradient-to-br',
+            config.gradient
+          )}
+          aria-hidden="true"
+        />
+        <CardContent className="relative p-6 space-y-4 rounded-2xl border border-white/70 dark:border-white/5 bg-white/85 dark:bg-neutral-950/70 backdrop-blur-sm shadow-[0_20px_45px_rgba(15,23,42,0.08)] dark:shadow-[0_30px_60px_rgba(0,0,0,0.55)]">
           {/* Header */}
-          <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-3 flex-1">
-              <div className={`p-2 rounded-lg bg-white/80 ${config.badgeClass.replace('bg-', 'bg-').replace('text-', 'text-')}`}>
-                <Icon className={`w-5 h-5 text-${config.color}-600`} />
+              <div className={cn('p-2 rounded-lg shadow-inner', config.iconBg)}>
+                <Icon className={cn('w-5 h-5', config.iconColor)} />
               </div>
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-gray-900 mb-1">{topic.title}</h3>
-                <Badge className={config.badgeClass}>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{topic.title}</h3>
+                <Badge className={cn('border', config.badgeClass)}>
                   {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
                 </Badge>
               </div>
@@ -101,19 +127,17 @@ const TopicCard = ({
           </div>
 
           {/* Summary */}
-          <div className="mb-4">
-            <p className="text-sm text-gray-700 leading-relaxed">{summary}</p>
-          </div>
+          <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-200">{summary}</p>
 
           {/* Key Concepts */}
           {keyConcepts.length > 0 && (
-            <div className="mb-4">
-              <p className="text-xs font-semibold text-gray-600 mb-2">Key Concepts:</p>
-              <ul className="space-y-1">
+            <div>
+              <p className="text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2">Key Concepts:</p>
+              <ul className="space-y-1.5">
                 {keyConcepts.map((concept, idx) => (
-                  <li key={idx} className="text-xs text-gray-600 flex items-start gap-2">
-                    <span className="text-blue-500 mt-1">•</span>
-                    <span>{concept}</span>
+                  <li key={idx} className="text-xs text-gray-600 dark:text-gray-300 flex items-start gap-2">
+                    <span className={cn('mt-1 text-base', config.bulletColor)}>•</span>
+                    <span className="flex-1">{concept}</span>
                   </li>
                 ))}
               </ul>
@@ -130,8 +154,8 @@ const TopicCard = ({
                 transition={{ duration: 0.3 }}
                 className="overflow-hidden"
               >
-                <div className="mt-4 p-4 bg-white/60 rounded-lg border border-gray-200">
-                  <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
+                <div className="mt-2 p-4 rounded-lg border border-gray-200/70 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/60 shadow-inner">
+                  <p className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
                     {topic.description}
                   </p>
                 </div>
@@ -143,7 +167,7 @@ const TopicCard = ({
           {topic.description && topic.description.length > 150 && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="mt-3 flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors"
+              className="flex items-center gap-1 text-xs font-medium text-blue-600 dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-200 transition-colors"
             >
               {isExpanded ? (
                 <>
@@ -160,9 +184,15 @@ const TopicCard = ({
           )}
 
           {/* Learning Insight */}
-          <div className="mt-4 p-3 rounded-lg border-l-4 bg-blue-50 border-blue-200">
-            <p className="text-xs font-semibold text-blue-800 mb-1">Learning Insight</p>
-            <p className="text-xs leading-relaxed text-blue-700">{learningInsight}</p>
+          <div
+            className={cn(
+              'p-3 rounded-lg border-l-4 shadow-sm transition-colors',
+              config.insightBg,
+              config.insightBorder
+            )}
+          >
+            <p className={cn('text-xs font-semibold mb-1', config.insightText)}>Learning Insight</p>
+            <p className={cn('text-xs leading-relaxed', config.insightText)}>{learningInsight}</p>
           </div>
 
           {/* Topic Roadmap */}
@@ -185,5 +215,5 @@ const TopicCard = ({
   );
 };
 
-export default TopicCard;
+export default memo(TopicCardComponent);
 

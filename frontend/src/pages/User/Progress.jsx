@@ -71,7 +71,7 @@ const getJSON = (key, defaultValue) => {
 };
 
 const COLORS = {
-  primary: '#3b82f6',
+  primary: '#f97316',
   success: '#10b981',
   warning: '#f59e0b',
   danger: '#ef4444',
@@ -257,9 +257,9 @@ const ProgressPage = () => {
   const achievements = useMemo(() => {
     const allBadges = Object.values(badges).flat();
     const uniqueBadges = Array.from(new Set(allBadges));
-    
+
     const calculated = [];
-    
+
     // Overall progress badges
     if (overallProgress >= 100) calculated.push({ name: 'Master', icon: Award, color: COLORS.purple });
     else if (overallProgress >= 75) calculated.push({ name: 'Expert', icon: Award, color: COLORS.primary });
@@ -451,10 +451,10 @@ const ProgressPage = () => {
   const handleDownloadPDF = async () => {
     try {
       toast.info('Generating PDF report...', { duration: 2000 });
-      
+
       // Wait a bit to ensure DOM is ready
       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
       const reportData = {
         overallProgress,
         completedCount,
@@ -465,9 +465,9 @@ const ProgressPage = () => {
         achievements,
         recentActivity,
       };
-      
+
       const result = await generatePDFReport(reportData);
-      
+
       if (result && result.success) {
         toast.success(`PDF report generated successfully!`, {
           description: `File: ${result.fileName}`,
@@ -480,7 +480,7 @@ const ProgressPage = () => {
       console.error('PDF Generation Error:', error);
       const errorMessage = error.message || 'Failed to generate PDF report';
       toast.error('Failed to generate PDF report', {
-        description: errorMessage.includes('not available') 
+        description: errorMessage.includes('not available')
           ? 'Please install required packages: npm install jspdf html2canvas'
           : errorMessage,
         duration: 5000,
@@ -536,570 +536,574 @@ const ProgressPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950">
       <div className="p-6 pt-24 pb-12 max-w-7xl mx-auto space-y-6">
-      {/* Header Section */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
-      >
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Your Learning Progress</h1>
-          <p className="text-gray-600 dark:text-gray-400">Track your DSA journey and achievements</p>
-        </div>
-        <motion.button
-          onClick={handleDownloadPDF}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="flex items-center gap-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 py-2.5 px-5 rounded-lg transition-colors shadow-sm w-full md:w-auto"
-        >
-          <Download className="h-4 w-4" />
-          Download Report (PDF)
-        </motion.button>
-      </motion.div>
-
-      {/* Stats Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Header Section */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
         >
-          <Card className="h-full">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Overall Progress</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{overallProgress.toFixed(1)}%</p>
-                </div>
-                <div className="bg-gray-100 dark:bg-neutral-800 rounded-full p-3">
-                  <PieChart className="h-6 w-6 text-gray-600 dark:text-gray-400" />
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-2">
-                {completedCount} of {totalQuestions} questions
-              </p>
-            </CardContent>
-          </Card>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Your Learning Progress</h1>
+            <p className="text-gray-600 dark:text-gray-400">Track your DSA journey and achievements</p>
+          </div>
+          <motion.button
+            onClick={handleDownloadPDF}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="flex items-center gap-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 py-2.5 px-5 rounded-lg transition-colors shadow-sm w-full md:w-auto"
+          >
+            <Download className="h-4 w-4" />
+            Download Report (PDF)
+          </motion.button>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card className="h-full">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Daily Streak</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{displayStreak || 0} days</p>
-                </div>
-                <div className="bg-gray-100 dark:bg-neutral-800 rounded-full p-3">
-                  <Flame className="h-6 w-6 text-gray-600 dark:text-gray-400" />
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-2">Keep the fire burning!</p>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <Card className="h-full">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Tests Completed</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{testResults.length}</p>
-                </div>
-                <div className="bg-gray-100 dark:bg-neutral-800 rounded-full p-3">
-                  <Target className="h-6 w-6 text-gray-600 dark:text-gray-400" />
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-2">Weekly assessments</p>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <Card className="h-full">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Achievements</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{achievements.length}</p>
-                </div>
-                <div className="bg-gray-100 dark:bg-neutral-800 rounded-full p-3">
-                  <Award className="h-6 w-6 text-gray-600 dark:text-gray-400" />
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 mt-2">Badges unlocked</p>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-
-      {/* Overall Progress with Donut Chart */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <PieChart className="h-5 w-5" />
-              Overall DSA Progress
-            </CardTitle>
-            <CardDescription>Your complete learning journey overview</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <div className="text-5xl font-bold text-gray-900 dark:text-white">{overallProgress.toFixed(1)}%</div>
-                  <div className="flex-1">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${overallProgress}%` }}
-                      transition={{ duration: 1, ease: 'easeOut' }}
-                    >
-                      <Progress value={overallProgress} className="h-4" />
-                    </motion.div>
-                    <p className="text-sm text-gray-600 mt-2">
-                      {completedCount} of {totalQuestions} questions completed
-                    </p>
+        {/* Stats Overview Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="h-full">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">Overall Progress</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{overallProgress.toFixed(1)}%</p>
+                  </div>
+                  <div className="bg-gray-100 dark:bg-neutral-800 rounded-full p-3">
+                    <PieChart className="h-6 w-6 text-gray-600 dark:text-gray-400" />
                   </div>
                 </div>
-              </div>
-              <div id="pdf-overall-chart" className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RechartsPieChart>
-                    <Pie
-                      data={donutChartData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {donutChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </RechartsPieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+                <p className="text-xs text-gray-500 mt-2">
+                  {completedCount} of {totalQuestions} questions
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-      {/* Topic-wise Progress with Bar Chart */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-      >
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Topic-wise Progress
-                </CardTitle>
-                <CardDescription>Breakdown by topic areas</CardDescription>
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <Filter className="h-4 w-4 text-gray-500" />
-                <select
-                  value={topicFilter}
-                  onChange={(e) => setTopicFilter(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="all">All Topics</option>
-                  <option value="high">High Progress (≥70%)</option>
-                  <option value="low">Low Progress (&lt;50%)</option>
-                  <option value="completed">Completed (100%)</option>
-                </select>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {filteredTopics.length > 0 ? (
-              <div className="space-y-6">
-                <div id="pdf-topic-chart" className="h-64">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <Card className="h-full">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">Daily Streak</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{displayStreak || 0} days</p>
+                  </div>
+                  <div className="bg-gray-100 dark:bg-neutral-800 rounded-full p-3">
+                    <Flame className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">Keep the fire burning!</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card className="h-full">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">Tests Completed</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{testResults.length}</p>
+                  </div>
+                  <div className="bg-gray-100 dark:bg-neutral-800 rounded-full p-3">
+                    <Target className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">Weekly assessments</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Card className="h-full">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">Achievements</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{achievements.length}</p>
+                  </div>
+                  <div className="bg-gray-100 dark:bg-neutral-800 rounded-full p-3">
+                    <Award className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">Badges unlocked</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
+        {/* Overall Progress with Donut Chart */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center pt-5 gap-2">
+                <PieChart className="h-5 w-5" />
+                Overall DSA Progress
+              </CardTitle>
+              <CardDescription>Your complete learning journey overview</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="pb-5 grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-4">
+                    <div className="text-5xl font-bold text-gray-900 dark:text-white">{overallProgress.toFixed(1)}%</div>
+                    <div className="flex-1">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${overallProgress}%` }}
+                        transition={{ duration: 1, ease: 'easeOut' }}
+                      >
+                        <Progress value={overallProgress} className="h-4" />
+                      </motion.div>
+                      <p className="text-sm text-gray-600 mt-2">
+                        {completedCount} of {totalQuestions} questions completed
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div id="pdf-overall-chart" className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={barChartData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
-                      <YAxis />
+                    <RechartsPieChart>
+                      <Pie
+                        data={donutChartData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {donutChartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
                       <Tooltip />
                       <Legend />
-                      <Bar dataKey="progress" fill={COLORS.primary} name="Progress %" />
-                    </BarChart>
+                    </RechartsPieChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="space-y-4">
-                  {filteredTopics.map((topic, index) => (
-                    <motion.div
-                      key={topic.topic}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                        <div className="w-full sm:w-48 font-medium text-gray-900">{topic.topic}</div>
-                        <div className="flex-1">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${topic.progress}%` }}
-                            transition={{ duration: 0.8, delay: index * 0.1 }}
-                          >
-                            <Progress value={topic.progress} className="h-3" />
-                          </motion.div>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {topic.completed} / {topic.total} ({topic.progress.toFixed(1)}%)
-                          </p>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Topic-wise Progress with Bar Chart */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className='pb-5'>
+                  <CardTitle className="flex items-center pt-5 gap-2">
+                    <BarChart3 className="h-5 w-5" />
+                    Topic-wise Progress
+                  </CardTitle>
+                  <CardDescription>Breakdown by topic areas</CardDescription>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Filter className="h-4 w-4 text-gray-500" />
+                  <select
+                    value={topicFilter}
+                    onChange={(e) => setTopicFilter(e.target.value)}
+                    className="px-3 py-2 border border-gray-200 dark:border-neutral-800 rounded-md text-sm bg-white dark:bg-neutral-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500/40 dark:focus:ring-blue-400/40 transition-colors"
+                  >
+                    <option value="all">All Topics</option>
+                    <option value="high">High Progress (≥70%)</option>
+                    <option value="low">Low Progress (&lt;50%)</option>
+                    <option value="completed">Completed (100%)</option>
+                  </select>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {filteredTopics.length > 0 ? (
+                <div className="space-y-6">
+                  <div id="pdf-topic-chart" className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={barChartData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="progress" fill={COLORS.primary} name="Progress %" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="space-y-4">
+                    {filteredTopics.map((topic, index) => (
+                      <motion.div
+                        key={topic.topic}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                          <div className="w-full sm:w-48 font-medium text-gray-900 dark:text-gray-100">{topic.topic}</div>
+                          <div className="flex-1">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${topic.progress}%` }}
+                              transition={{ duration: 0.8, delay: index * 0.1 }}
+                            >
+                              <Progress value={topic.progress} className="h-3" />
+                            </motion.div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              {topic.completed} / {topic.total} ({topic.progress.toFixed(1)}%)
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </motion.div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-500 dark:text-gray-400 text-center py-8">No topics found for the selected filter.</p>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Weekly Test Trends with Line Chart */}
+        {testResults.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <LineChart className="h-5 w-5" />
+                  Weekly Test Score Trends
+                </CardTitle>
+                <CardDescription>Your performance over time</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div id="pdf-test-chart" className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartsLineChart data={lineChartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis domain={[0, 100]} />
+                      <Tooltip />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="score"
+                        stroke={COLORS.primary}
+                        strokeWidth={2}
+                        name="Score %"
+                        dot={{ fill: COLORS.primary, r: 4 }}
+                      />
+                    </RechartsLineChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="mt-6 overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-800">
+                    <thead className="bg-gray-50 dark:bg-neutral-900/60">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Test
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Score
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Accuracy
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Date
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-neutral-900/40 divide-y divide-gray-200 dark:divide-neutral-800">
+                      {testResults.map((test, index) => (
+                        <tr key={test.id || index} className="hover:bg-gray-50 dark:hover:bg-neutral-900/70">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                            {test.name}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm">
+                            <Badge
+                              variant={
+                                test.score >= 80
+                                  ? 'default'
+                                  : test.score >= 60
+                                    ? 'secondary'
+                                    : 'destructive'
+                              }
+                            >
+                              {test.score}%
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            {test.correctAnswers || 0} / {test.totalQuestions || 0}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{test.dateString}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Achievements Section */}
+        {achievements.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Award className="h-5 w-5" />
+                  Achievements & Badges
+                </CardTitle>
+                <CardDescription>Unlock your potential, one badge at a time</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {achievements.map((achievement, index) => {
+                    const Icon = achievement.icon;
+                    return (
+                      <motion.div
+                        key={achievement.name}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.1 }}
+                        whileHover={{ scale: 1.05 }}
+                        className="flex flex-col items-center p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200"
+                      >
+                        <div
+                          className="rounded-full p-3 mb-2"
+                          style={{ backgroundColor: `${achievement.color}20` }}
+                        >
+                          <Icon className="h-6 w-6" style={{ color: achievement.color }} />
+                        </div>
+                        <p className="text-sm font-semibold text-gray-900 text-center">{achievement.name}</p>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Difficulty-wise Radar Chart */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center pt-5 gap-2">
+                <Target className="h-5 w-5" />
+                Difficulty-wise Performance
+              </CardTitle>
+              <CardDescription>Your progress across different difficulty levels</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-120 pb-5">
+                <RadarChart data={difficultyData} dataKey="value" color={COLORS.primary} name="Completion %" />
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Daily Streak Heatmap */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.0 }}
+        >
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <CardTitle className="flex items-center pt-5 gap-2">
+                    <Flame className="h-5 w-5" />
+                    Activity Heatmap
+                  </CardTitle>
+                  <CardDescription>Your daily learning activity over the last {heatmapRange} days</CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                  {[30, 60].map((range) => (
+                    <button
+                      key={range}
+                      onClick={() => setHeatmapRange(range)}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-md border ${heatmapRange === range
+                        ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/30'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-orange-300 dark:bg-neutral-900 dark:text-gray-300 dark:border-neutral-800 dark:hover:border-orange-400/60'
+                        }`}
+                    >
+                      Last {range}d
+                    </button>
                   ))}
                 </div>
               </div>
-            ) : (
-              <p className="text-gray-500 text-center py-8">No topics found for the selected filter.</p>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Weekly Test Trends with Line Chart */}
-      {testResults.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <LineChart className="h-5 w-5" />
-                Weekly Test Score Trends
-              </CardTitle>
-              <CardDescription>Your performance over time</CardDescription>
             </CardHeader>
             <CardContent>
-              <div id="pdf-test-chart" className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RechartsLineChart data={lineChartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis domain={[0, 100]} />
-                    <Tooltip />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="score"
-                      stroke={COLORS.primary}
-                      strokeWidth={2}
-                      name="Score %"
-                      dot={{ fill: COLORS.primary, r: 4 }}
-                    />
-                  </RechartsLineChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="mt-6 overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Test
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Score
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Accuracy
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Date
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {testResults.map((test, index) => (
-                      <tr key={test.id || index} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {test.name}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm">
-                          <Badge
-                            variant={
-                              test.score >= 80
-                                ? 'default'
-                                : test.score >= 60
-                                ? 'secondary'
-                                : 'destructive'
-                            }
-                          >
-                            {test.score}%
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {test.correctAnswers || 0} / {test.totalQuestions || 0}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{test.dateString}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className='pt-5 pb-5'>
+                <StreakHeatmap data={streakHeatmapData} range={heatmapRange} />
               </div>
             </CardContent>
           </Card>
         </motion.div>
-      )}
 
-      {/* Achievements Section */}
-      {achievements.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Award className="h-5 w-5" />
-                Achievements & Badges
-              </CardTitle>
-              <CardDescription>Unlock your potential, one badge at a time</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {achievements.map((achievement, index) => {
-                  const Icon = achievement.icon;
-                  return (
-                    <motion.div
-                      key={achievement.name}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                      whileHover={{ scale: 1.05 }}
-                      className="flex flex-col items-center p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200"
-                    >
-                      <div
-                        className="rounded-full p-3 mb-2"
-                        style={{ backgroundColor: `${achievement.color}20` }}
-                      >
-                        <Icon className="h-6 w-6" style={{ color: achievement.color }} />
-                      </div>
-                      <p className="text-sm font-semibold text-gray-900 text-center">{achievement.name}</p>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-
-      {/* Difficulty-wise Radar Chart */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.9 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5" />
-              Difficulty-wise Performance
-            </CardTitle>
-            <CardDescription>Your progress across different difficulty levels</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80">
-              <RadarChart data={difficultyData} dataKey="value" color={COLORS.primary} name="Completion %" />
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Daily Streak Heatmap */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.0 }}
-      >
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Flame className="h-5 w-5" />
-                  Activity Heatmap
+        {/* Smart Insights */}
+        {insights.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.1 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center pt-5 gap-2">
+                  <Lightbulb className="h-5 w-5" />
+                  Smart Insights
                 </CardTitle>
-                <CardDescription>Your daily learning activity over the last {heatmapRange} days</CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
-                {[30, 60].map((range) => (
-                  <button
-                    key={range}
-                    onClick={() => setHeatmapRange(range)}
-                    className={`px-3 py-1.5 text-xs font-semibold rounded-md border ${
-                      heatmapRange === range
-                        ? 'bg-orange-500 text-white border-orange-500'
-                        : 'bg-white text-gray-600 border-gray-200 hover:border-orange-300'
-                    }`}
-                  >
-                    Last {range}d
-                  </button>
-                ))}
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <StreakHeatmap data={streakHeatmapData} range={heatmapRange} />
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Smart Insights */}
-      {insights.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.1 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lightbulb className="h-5 w-5" />
-                Smart Insights
-              </CardTitle>
-              <CardDescription>Personalized recommendations based on your progress</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {insights.map((insight, index) => {
-                  const Icon = insight.icon;
-                  return (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className={`p-4 rounded-lg border-l-4 ${
-                        insight.type === 'success'
+                <div className='pb-5'>
+                  <CardDescription>Personalized recommendations based on your progress</CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4 pb-5">
+                  {insights.map((insight, index) => {
+                    const Icon = insight.icon;
+                    return (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className={`p-4 rounded-lg border-l-4 ${insight.type === 'success'
                           ? 'bg-gray-100 dark:bg-neutral-800 border-gray-900 dark:border-white'
                           : insight.type === 'warning'
-                          ? 'bg-gray-100 dark:bg-neutral-800 border-gray-700 dark:border-gray-300'
-                          : 'bg-gray-100 dark:bg-neutral-800 border-gray-600 dark:border-gray-400'
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div
-                          className="rounded-full p-2 bg-gray-200 dark:bg-neutral-700"
-                        >
-                          <Icon
-                            className="h-5 w-5 text-gray-900 dark:text-white"
-                          />
+                            ? 'bg-gray-100 dark:bg-neutral-800 border-gray-700 dark:border-gray-300'
+                            : 'bg-gray-100 dark:bg-neutral-800 border-gray-600 dark:border-gray-400'
+                          }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div
+                            className="rounded-full p-2 bg-gray-200 dark:bg-neutral-700"
+                          >
+                            <Icon
+                              className="h-5 w-5 text-gray-900 dark:text-white"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-gray-900 dark:text-gray-100">{insight.title}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{insight.message}</p>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <p className="font-semibold text-gray-900">{insight.title}</p>
-                          <p className="text-sm text-gray-600 mt-1">{insight.message}</p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-
-      {/* Comparison Analytics */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.2 }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Comparison Analytics
-            </CardTitle>
-            <CardDescription>Last 7 days vs Previous 7 days</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center p-4 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg shadow-sm">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Last 7 Days</p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">{comparisonData.last7Days}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Activities</p>
-              </div>
-              <div className="text-center p-4 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg shadow-sm">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Previous 7 Days</p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">{comparisonData.previous7Days}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Activities</p>
-              </div>
-              <div className="text-center p-4 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg shadow-sm">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Change</p>
-                <div className="flex items-center justify-center gap-2">
-                  {comparisonData.trend === 'up' ? (
-                    <TrendingUp className="h-5 w-5 text-gray-900 dark:text-white" />
-                  ) : comparisonData.trend === 'down' ? (
-                    <TrendingDown className="h-5 w-5 text-gray-900 dark:text-white" />
-                  ) : null}
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                    {comparisonData.change > 0 ? '+' : ''}
-                    {comparisonData.change}
-                  </p>
+                      </motion.div>
+                    );
+                  })}
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {comparisonData.changePercent}% {comparisonData.trend === 'up' ? 'increase' : comparisonData.trend === 'down' ? 'decrease' : 'change'}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
-      {/* Recent Activity Timeline */}
-      {recentActivity.length > 0 && (
+        {/* Comparison Analytics */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.3 }}
+          transition={{ delay: 1.2 }}
         >
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                Recent Activity
+              <CardTitle className="flex items-center pt-5 gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Comparison Analytics
               </CardTitle>
-              <CardDescription>Your latest learning milestones</CardDescription>
+              <div className='pb-5'>
+                <CardDescription>Last 7 days vs Previous 7 days</CardDescription>
+              </div>
             </CardHeader>
             <CardContent>
-              <ActivityTimeline activities={recentActivity} />
+              <div className="pb-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center p-4 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg shadow-sm">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Last 7 Days</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{comparisonData.last7Days}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Activities</p>
+                </div>
+                <div className="text-center p-4 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg shadow-sm">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Previous 7 Days</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{comparisonData.previous7Days}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Activities</p>
+                </div>
+                <div className="text-center p-4 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg shadow-sm">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Change</p>
+                  <div className="flex items-center justify-center gap-2">
+                    {comparisonData.trend === 'up' ? (
+                      <TrendingUp className="h-5 w-5 text-gray-900 dark:text-white" />
+                    ) : comparisonData.trend === 'down' ? (
+                      <TrendingDown className="h-5 w-5 text-gray-900 dark:text-white" />
+                    ) : null}
+                    <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                      {comparisonData.change > 0 ? '+' : ''}
+                      {comparisonData.change}
+                    </p>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {comparisonData.changePercent}% {comparisonData.trend === 'up' ? 'increase' : comparisonData.trend === 'down' ? 'decrease' : 'change'}
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
-      )}
+
+        {/* Recent Activity Timeline */}
+        {recentActivity.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.3 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  Recent Activity
+                </CardTitle>
+                <CardDescription>Your latest learning milestones</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ActivityTimeline activities={recentActivity} />
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
       </div>
     </div>
   );
