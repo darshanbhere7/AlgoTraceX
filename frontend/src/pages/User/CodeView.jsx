@@ -566,7 +566,7 @@ const CodeView = () => {
           <CardContent className="space-y-4">
             <div className="flex flex-col gap-4 md:flex-row">
               <div className="flex-1">
-                <label className="text-sm font-semibold text-gray-700">Source Language</label>
+                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Source Language</label>
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
@@ -576,7 +576,7 @@ const CodeView = () => {
                 </select>
               </div>
               <div className="flex-1">
-                <label className="text-sm font-semibold text-gray-700">Target Language (for Conversion)</label>
+                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Target Language (for Conversion)</label>
                 <select
                   value={targetLanguage}
                   onChange={(e) => setTargetLanguage(e.target.value)}
@@ -596,7 +596,7 @@ const CodeView = () => {
             />
             
             <div className="border-t border-gray-200 pt-4">
-              <p className="mb-3 text-sm font-semibold text-gray-700">Quick Actions</p>
+              <p className="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Quick Actions</p>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <Button onClick={handlers.conversion} disabled={loadingAction === 'conversion'} className="flex items-center justify-center gap-2">
                   {loadingAction === 'conversion' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Languages className="h-4 w-4" />}
@@ -661,7 +661,7 @@ const CodeView = () => {
             </div>
             
             <div className="mt-4 pt-4 border-t border-gray-200">
-              <label className="text-sm font-semibold text-gray-700">Simulator Input (for Simulate button)</label>
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Simulator Input (for Simulate button)</label>
               <Textarea
                 value={simulationInput}
                 onChange={(e) => setSimulationInput(e.target.value)}

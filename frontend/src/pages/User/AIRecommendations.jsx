@@ -750,7 +750,7 @@ const AIRecommendations = () => {
               </Button>
             )}
           </div>
-          <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-secondary/10">
+          <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-secondary/10 scrollbar-hide">
             {!conv && (
               <motion.div
                 initial="hidden"
