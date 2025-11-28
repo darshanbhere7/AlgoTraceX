@@ -50,6 +50,9 @@ import DoublyLinkedList from './components/linear/DoublyLinkedList';
 import Queue from './components/linear/Queue';
 import VisualizerRoute from './components/VisualizerRoute';
 
+//Google translate API widget
+import CustomTranslator from "./components/GoogleTranslateWidget";
+
 // Create a simple NotFound component
 const NotFound = () => {
   return (
@@ -71,6 +74,7 @@ function App() {
     <Router>
       <Toaster position="top-right" />
       <AuthProvider>
+        <CustomTranslator />
         <Routes>
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
