@@ -229,6 +229,9 @@ export default function JumpSearch() {
                             onChange={(e) => setCurrentInput(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && handleAddValue()}
                             className="flex-1 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 focus:border-slate-400 dark:focus:border-white/20 focus:ring-0 h-10"
+                            inputMode="numeric"
+                            pattern="\\d+"
+                            title="Enter a valid integer."
                         />
                         <Button
                             onClick={handleAddValue}
@@ -272,6 +275,9 @@ export default function JumpSearch() {
                             onChange={(e) => setSearchValue(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && jumpSearch()}
                             className="flex-1 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 focus:border-slate-400 dark:focus:border-white/20 focus:ring-0 h-10"
+                            inputMode="numeric"
+                            pattern="\\d+"
+                            title="Enter a valid integer."
                         />
                     </div>
 

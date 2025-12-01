@@ -296,6 +296,9 @@ export default function Stack() {
                             className="flex-1 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/40 focus:border-slate-400 dark:focus:border-white/20 focus:ring-0 h-10"
                             min="0"
                             max="999"
+                            inputMode="numeric"
+                            pattern="\\d{1,3}"
+                            title="Enter an integer between 0 and 999."
                         />
                         <Button
                             variant="ghost"
@@ -315,6 +318,9 @@ export default function Stack() {
                             className="flex-1 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white focus:border-slate-400 dark:focus:border-white/20 focus:ring-0 h-10"
                             min="1"
                             max="20"
+                            inputMode="numeric"
+                            pattern="\\d+"
+                            title="Enter a size between 1 and 20."
                         />
                         <Button
                             variant="ghost"
