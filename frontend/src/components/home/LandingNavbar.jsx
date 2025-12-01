@@ -117,7 +117,7 @@ const LandingNavbar = () => {
                 to="/register"
                 className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                   isScrolled
-                    ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100"
+                    ? "bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-100"
                     : isDark
                     ? "bg-white text-gray-900 hover:bg-gray-100"
                     : "bg-gray-900 text-white hover:bg-gray-800"
