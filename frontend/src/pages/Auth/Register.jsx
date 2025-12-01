@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronRight, Mail, Lock, User, Loader2, Home } from 'lucide-react';
+import { ChevronRight, Mail, Lock, User, Loader2, Home, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import DarkVeil from '../../components/DarkVeil';
 
-// Centralized regex constraints keep the UI unchanged while enforcing input rules.
-const NAME_REGEX = /^[A-Za-z][A-Za-z\s]{2,49}$/;
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Centralized regex constraints keep the UI unchanged while enforcing sensible input rules.
+// Allow common real-world name characters: letters, spaces, dots, apostrophes and hyphens.
+const NAME_REGEX = /^[A-Za-z][A-Za-z .'-]{1,49}$/;
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
 
 const Register = () => {
@@ -17,6 +17,8 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [validationError, setValidationError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const { register, error } = useAuth();
 
@@ -28,12 +30,9 @@ const Register = () => {
     const trimmedEmail = email.trim();
 
     if (!NAME_REGEX.test(trimmedName)) {
-      setValidationError('Name must be 3-50 letters and spaces only.');
-      return;
-    }
-
-    if (!EMAIL_REGEX.test(trimmedEmail)) {
-      setValidationError('Enter a valid email address.');
+      setValidationError(
+        'Name must be 2-50 characters and can include letters, spaces, dots, apostrophes, and hyphens.'
+      );
       return;
     }
 
@@ -113,8 +112,8 @@ const Register = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-md text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent transition-all duration-300"
-                  pattern="[A-Za-z][A-Za-z\\s]{2,49}"
-                  title="Name must be 3-50 alphabetic characters (spaces allowed)."
+                  pattern="[A-Za-z][A-Za-z .'-]{1,49}"
+                  title="Name must be 2-50 characters (letters, spaces, dots, apostrophes, and hyphens)."
                   autoComplete="name"
                   required
                 />
@@ -134,7 +133,6 @@ const Register = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-md text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent transition-all duration-300"
-                  pattern="^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
                   title="Enter a valid email address."
                   autoComplete="email"
                   required
@@ -150,16 +148,23 @@ const Register = () => {
                 <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-300" />
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-md text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent transition-all duration-300"
-                  pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^\\w\\s]).{8,}"
-                  title="Min 8 chars with uppercase, lowercase, number & symbol."
+                  className="w-full pl-10 pr-12 py-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-md text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent transition-all duration-300"
+                  title="Password should be at least 8 characters with uppercase, lowercase, number & symbol."
                   autoComplete="new-password"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-300 hover:text-white transition-colors"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
             </div>
 
@@ -171,16 +176,23 @@ const Register = () => {
                 <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-300" />
                 <input
                   id="confirmPassword"
-                  type="password"
+                  type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-md text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent transition-all duration-300"
-                  pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^\\w\\s]).{8,}"
+                  className="w-full pl-10 pr-12 py-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-md text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent transition-all duration-300"
                   title="Must match the password requirements."
                   autoComplete="new-password"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-300 hover:text-white transition-colors"
+                  aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                >
+                  {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
             </div>
             

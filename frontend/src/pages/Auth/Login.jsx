@@ -1,18 +1,16 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronRight, Mail, Lock, Loader2, Home } from 'lucide-react';
+import { ChevronRight, Mail, Lock, Loader2, Home, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import DarkVeil from '../../components/DarkVeil';
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [validationError, setValidationError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { login, error } = useAuth();
 
   const handleSubmit = async (e) => {
@@ -21,13 +19,13 @@ const Login = () => {
 
     const trimmedEmail = email.trim();
 
-    if (!EMAIL_REGEX.test(trimmedEmail)) {
-      setValidationError('Enter a valid email address.');
+    if (!trimmedEmail) {
+      setValidationError('Email is required.');
       return;
     }
 
-    if (!PASSWORD_REGEX.test(password)) {
-      setValidationError('Password must be 8+ chars with upper, lower, number & symbol.');
+    if (!password) {
+      setValidationError('Password is required.');
       return;
     }
 
@@ -99,7 +97,6 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-md text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent transition-all duration-300"
-                  pattern="^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
                   title="Enter a valid email address."
                   autoComplete="email"
                   required
@@ -123,16 +120,22 @@ const Login = () => {
                 <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-300" />
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-md text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent transition-all duration-300"
-                  pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^\\w\\s]).{8,}"
-                  title="Min 8 chars with uppercase, lowercase, number & symbol."
+                  className="w-full pl-10 pr-12 py-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-md text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent transition-all duration-300"
                   autoComplete="current-password"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-300 hover:text-white transition-colors"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
             </div>
             
