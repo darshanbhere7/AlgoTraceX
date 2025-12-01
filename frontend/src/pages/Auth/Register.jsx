@@ -5,6 +5,11 @@ import { ChevronRight, Mail, Lock, User, Loader2, Home } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import DarkVeil from '../../components/DarkVeil';
 
+// Centralized regex constraints keep the UI unchanged while enforcing input rules.
+const NAME_REGEX = /^[A-Za-z][A-Za-z\s]{2,49}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
+
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -19,18 +24,31 @@ const Register = () => {
     e.preventDefault();
     setValidationError(null);
 
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+
+    if (!NAME_REGEX.test(trimmedName)) {
+      setValidationError('Name must be 3-50 letters and spaces only.');
+      return;
+    }
+
+    if (!EMAIL_REGEX.test(trimmedEmail)) {
+      setValidationError('Enter a valid email address.');
+      return;
+    }
+
+    if (!PASSWORD_REGEX.test(password)) {
+      setValidationError('Password must be 8+ chars with upper, lower, number & symbol.');
+      return;
+    }
+
     if (password !== confirmPassword) {
       setValidationError('Passwords do not match');
       return;
     }
 
-    if (password.length < 6) {
-      setValidationError('Password must be at least 6 characters');
-      return;
-    }
-
     setIsLoading(true);
-    await register(name, email, password);
+    await register(trimmedName, trimmedEmail, password);
     setIsLoading(false);
   };
 
@@ -95,6 +113,9 @@ const Register = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-md text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent transition-all duration-300"
+                  pattern="[A-Za-z][A-Za-z\\s]{2,49}"
+                  title="Name must be 3-50 alphabetic characters (spaces allowed)."
+                  autoComplete="name"
                   required
                 />
               </div>
@@ -113,6 +134,9 @@ const Register = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-md text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent transition-all duration-300"
+                  pattern="^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+                  title="Enter a valid email address."
+                  autoComplete="email"
                   required
                 />
               </div>
@@ -131,6 +155,9 @@ const Register = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-md text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent transition-all duration-300"
+                  pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^\\w\\s]).{8,}"
+                  title="Min 8 chars with uppercase, lowercase, number & symbol."
+                  autoComplete="new-password"
                   required
                 />
               </div>
@@ -149,6 +176,9 @@ const Register = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-md text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent transition-all duration-300"
+                  pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^\\w\\s]).{8,}"
+                  title="Must match the password requirements."
+                  autoComplete="new-password"
                   required
                 />
               </div>

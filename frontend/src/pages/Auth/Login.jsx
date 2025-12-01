@@ -5,17 +5,35 @@ import { ChevronRight, Mail, Lock, Loader2, Home } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import DarkVeil from '../../components/DarkVeil';
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
+
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [validationError, setValidationError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const { login, error } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setValidationError(null);
+
+    const trimmedEmail = email.trim();
+
+    if (!EMAIL_REGEX.test(trimmedEmail)) {
+      setValidationError('Enter a valid email address.');
+      return;
+    }
+
+    if (!PASSWORD_REGEX.test(password)) {
+      setValidationError('Password must be 8+ chars with upper, lower, number & symbol.');
+      return;
+    }
+
     setIsLoading(true);
     
-    await login(email, password);
+    await login(trimmedEmail, password);
     
     setIsLoading(false);
   };
@@ -54,7 +72,7 @@ const Login = () => {
             </p>
           </div>
 
-          {error && (
+          {(validationError || error) && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
@@ -62,7 +80,7 @@ const Login = () => {
               className="mb-4"
             >
               <div className="border border-red-500/50 bg-red-950/50 text-red-400 rounded-md p-3 text-sm">
-                {error}
+                {validationError || error}
               </div>
             </motion.div>
           )}
@@ -81,6 +99,9 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-md text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent transition-all duration-300"
+                  pattern="^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"
+                  title="Enter a valid email address."
+                  autoComplete="email"
                   required
                 />
               </div>
@@ -107,6 +128,9 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-md text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent transition-all duration-300"
+                  pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^\\w\\s]).{8,}"
+                  title="Min 8 chars with uppercase, lowercase, number & symbol."
+                  autoComplete="current-password"
                   required
                 />
               </div>
