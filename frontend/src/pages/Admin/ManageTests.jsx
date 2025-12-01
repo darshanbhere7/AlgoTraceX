@@ -115,12 +115,26 @@ const ManageTests = () => {
 
   const handleAddTest = async (event) => {
     event.preventDefault();
+
+    const trimmedTitle = newTest.title.trim();
+
+    if (!trimmedTitle) {
+      toast.error('Test title cannot be empty.');
+      return;
+    }
+
     if (newTest.timeLimit < 1) {
       toast.error('Time limit must be at least 1 minute');
       return;
     }
+
     try {
-      const { data } = await axios.post(buildApiUrl('/tests'), newTest, {
+      const payload = {
+        ...newTest,
+        title: trimmedTitle,
+      };
+
+      const { data } = await axios.post(buildApiUrl('/tests'), payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setTests((prev) => [...prev, data]);
@@ -206,6 +220,8 @@ const ManageTests = () => {
                         }
                         placeholder="Week 05 - Recursion"
                         required
+                        pattern=".{3,160}"
+                        title="Title should be between 3 and 160 characters."
                         className="bg-white dark:bg-neutral-800 border-gray-300 dark:border-neutral-700 text-gray-900 dark:text-white"
                       />
                     </div>
@@ -241,6 +257,9 @@ const ManageTests = () => {
                         }
                         placeholder="5"
                         required
+                        inputMode="numeric"
+                        pattern="\\d+"
+                        title="Enter a valid week number (positive integer)."
                         className="bg-white dark:bg-neutral-800 border-gray-300 dark:border-neutral-700 text-gray-900 dark:text-white"
                       />
                     </div>
@@ -253,11 +272,14 @@ const ManageTests = () => {
                         onChange={(event) =>
                           setNewTest((prev) => ({
                             ...prev,
-                            timeLimit: parseInt(event.target.value) || 10,
+                            timeLimit: parseInt(event.target.value, 10) || 10,
                           }))
                         }
                         placeholder="10"
                         required
+                        inputMode="numeric"
+                        pattern="\\d+"
+                        title="Enter a valid time limit in minutes (positive integer)."
                         className="bg-white dark:bg-neutral-800 border-gray-300 dark:border-neutral-700 text-gray-900 dark:text-white"
                       />
                     </div>
@@ -295,6 +317,8 @@ const ManageTests = () => {
                           }
                           placeholder="Enter question prompt"
                           required
+                          pattern=".{5,500}"
+                          title="Question text should be between 5 and 500 characters."
                           className="bg-white dark:bg-neutral-900 border-gray-300 dark:border-neutral-700 text-gray-900 dark:text-white"
                         />
                         <div className="mt-3 grid gap-3 md:grid-cols-2">
@@ -307,6 +331,8 @@ const ManageTests = () => {
                               }
                               placeholder={`Option ${optionIndex + 1}`}
                               required
+                              pattern=".{1,200}"
+                              title="Option text should be between 1 and 200 characters."
                               className="bg-white dark:bg-neutral-900 border-gray-300 dark:border-neutral-700 text-gray-900 dark:text-white"
                             />
                           ))}

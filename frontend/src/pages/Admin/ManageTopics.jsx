@@ -79,10 +79,19 @@ const ManageTopics = () => {
 
   const handleAddTopic = async (event) => {
     event.preventDefault();
+
+    const trimmedTitle = newTopic.title.trim();
+    const trimmedDescription = newTopic.description.trim();
+
+    if (!trimmedTitle) {
+      toast.error('Title cannot be empty.');
+      return;
+    }
+
     try {
       const { data } = await axios.post(
         buildApiUrl('/admin/topics'),
-        newTopic,
+        { ...newTopic, title: trimmedTitle, description: trimmedDescription },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setTopics((prev) => [...prev, data]);
@@ -160,6 +169,8 @@ const ManageTopics = () => {
                       }
                       placeholder="Binary Search fundamentals"
                       required
+                      pattern=".{3,120}"
+                      title="Title should be between 3 and 120 characters."
                       className="bg-white dark:bg-neutral-800 border-gray-300 dark:border-neutral-700 text-gray-900 dark:text-white"
                     />
                   </div>

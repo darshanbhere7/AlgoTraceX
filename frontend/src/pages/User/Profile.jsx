@@ -5,6 +5,10 @@ import { motion } from 'framer-motion';
 import { FaUser, FaEnvelope, FaEdit, FaSave, FaTimes, FaCamera, FaCheck } from 'react-icons/fa';
 import { buildApiUrl } from '@/config/api';
 
+// Reuse similar constraints as auth to keep profile data clean and consistent
+const NAME_REGEX = /^[A-Za-z][A-Za-z\s]{2,49}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const Profile = () => {
   const { user, loading: userLoading } = useAuth();
   const [profileData, setProfileData] = useState(null);
@@ -71,6 +75,22 @@ const Profile = () => {
   const handleSave = async () => {
     setSaving(true);
     setError(null);
+
+    const trimmedName = (editData.name || '').trim();
+    const trimmedEmail = (editData.email || '').trim();
+
+    if (!NAME_REGEX.test(trimmedName)) {
+      setSaving(false);
+      setError('Name must be 3-50 letters and spaces only.');
+      return;
+    }
+
+    if (!EMAIL_REGEX.test(trimmedEmail)) {
+      setSaving(false);
+      setError('Please enter a valid email address.');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
       const headers = { 
@@ -78,7 +98,13 @@ const Profile = () => {
         'Content-Type': 'application/json'
       };
 
-      const response = await axios.put(buildApiUrl('/user/profile'), editData, { headers });
+      const payload = {
+        ...editData,
+        name: trimmedName,
+        email: trimmedEmail,
+      };
+
+      const response = await axios.put(buildApiUrl('/user/profile'), payload, { headers });
 
       setProfileData(response.data);
       setIsEditing(false);
@@ -286,6 +312,9 @@ const Profile = () => {
                     onChange={(e) => handleInputChange('name', e.target.value)}
                     className="w-full px-4 py-3 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white text-gray-900 dark:text-white"
                     placeholder="Enter your name"
+                    pattern="[A-Za-z][A-Za-z\s]{2,49}"
+                    title="Name must be 3-50 alphabetic characters (letters and spaces only)."
+                    autoComplete="name"
                   />
                 ) : (
                   <p className="text-lg text-gray-900 dark:text-white">{profileData?.name}</p>
@@ -305,6 +334,9 @@ const Profile = () => {
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     className="w-full px-4 py-3 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white text-gray-900 dark:text-white"
                     placeholder="Enter your email"
+                    pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"
+                    title="Enter a valid email address."
+                    autoComplete="email"
                   />
                 ) : (
                   <p className="text-lg text-gray-900 dark:text-white">{profileData?.email}</p>

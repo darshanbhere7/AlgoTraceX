@@ -151,9 +151,28 @@ const ManagePracticeQuestions = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const trimmedTitle = formData.title.trim();
+    const trimmedSourceUrl = formData.sourceUrl.trim();
+
+    if (!trimmedTitle) {
+      toast.error('Title cannot be empty.');
+      return;
+    }
+
+    const urlPattern = /^https?:\/\/.+/;
+    if (!urlPattern.test(trimmedSourceUrl)) {
+      toast.error('Please enter a valid source URL starting with http:// or https://');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
-      const dataToSubmit = { ...formData };
+      const dataToSubmit = { 
+        ...formData,
+        title: trimmedTitle,
+        sourceUrl: trimmedSourceUrl,
+      };
 
       if (editingQuestion) {
         await axios.put(
@@ -348,6 +367,8 @@ const TopicBadge = ({ topic }) => {
                   onChange={handleInputChange}
                   placeholder="Question title"
                   required
+                  pattern=".{3,160}"
+                  title="Title should be between 3 and 160 characters."
                 />
               </div>
 
@@ -395,6 +416,8 @@ const TopicBadge = ({ topic }) => {
                   onChange={handleInputChange}
                   placeholder="https://leetcode.com/problems/..."
                   required
+                  pattern="https?://.+"
+                  title="Enter a valid URL starting with http:// or https://"
                 />
               </div>
 
@@ -419,6 +442,8 @@ const TopicBadge = ({ topic }) => {
                       value={hint}
                       onChange={(e) => handleHintChange(index, e.target.value)}
                       placeholder={`Hint ${index + 1}`}
+                      pattern=".{0,200}"
+                      title="Hint should be at most 200 characters."
                     />
                     <motion.button
                       type="button"

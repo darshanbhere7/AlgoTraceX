@@ -1044,12 +1044,12 @@ const WeeklyTest = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: qIndex * 0.02 }}
     >
-      <Card className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all">
+      <Card className="pt-5 pb-5 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-sm hover:shadow-md transition-all">
         <CardHeader className="space-y-1">
           <Badge variant="outline" className="w-fit text-xs uppercase tracking-wide">
             Question {qIndex + 1}
           </Badge>
-          <CardTitle className="text-base font-semibold text-gray-900 dark:text-white">
+          <CardTitle className="pb-5 text-base font-semibold text-gray-900 dark:text-white">
             {question.question}
           </CardTitle>
         </CardHeader>

@@ -517,7 +517,7 @@ const FeaturesSection = () => {
           </div>
           <div className="grid md:grid-cols-2 gap-6">
             <motion.div variants={fadeInUp} className="md:col-span-1">
-              <BentoCard item={bentoItems[2]} />
+              <BentoCard item={bentoItems[2]}/>
             </motion.div>
             <motion.div
               variants={fadeInUp}
