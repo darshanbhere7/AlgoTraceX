@@ -154,7 +154,7 @@ const ManageTopics = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
           >
-            <Card className="bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 shadow-sm">
+            <Card className="pt-5 pb-5 bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Add Topic</CardTitle>
               </CardHeader>
@@ -285,7 +285,7 @@ const ManageTopics = () => {
                       transition={{ duration: 0.3, delay: index * 0.05 }}
                       whileHover={{ y: -4 }}
                     >
-                      <Card className="bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 shadow-sm">
+                      <Card className="pt-4 pb-2 bg-white dark:bg-neutral-900 border-gray-200 dark:border-neutral-800 shadow-sm">
                         <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
                           <div className="flex-1 min-w-0">
                             <CardTitle className="text-base font-semibold text-gray-900 dark:text-white mb-2">

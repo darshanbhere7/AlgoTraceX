@@ -125,7 +125,7 @@ const ManageUsers = () => {
             whileTap={{ scale: 0.98 }}
             className="px-4 py-2 bg-white dark:bg-neutral-800 text-gray-900 dark:text-white rounded hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 dark:border-neutral-700 transition-colors shadow-sm"
           >
-            Refresh Users
+            Refresh
           </motion.button>
           </div>
         </motion.div>
