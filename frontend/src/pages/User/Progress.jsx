@@ -56,6 +56,7 @@ import {
   getDisplayStreak,
   getActivitySeries,
 } from '@/utils/progressUtils';
+import { useAuth } from '../../context/AuthContext';
 
 const STORAGE_KEYS = {
   badges: 'weeklyTest.badges',
@@ -82,34 +83,34 @@ const COLORS = {
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316'];
 
 const ProgressPage = () => {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [allQuestions, setAllQuestions] = useState([]);
   const [testResults, setTestResults] = useState([]);
   const [topicFilter, setTopicFilter] = useState('all'); // 'all', 'high', 'low', 'completed'
-  const [badges, setBadges] = useState(() => getJSON(STORAGE_KEYS.badges, {}));
+  const [badges, setBadges] = useState({});
   const [recentActivity, setRecentActivity] = useState([]);
-  const [progressData, setProgressData] = useState(() => getProgress());
+  const [progressData, setProgressData] = useState(() => getProgress(user?.id));
   const [heatmapRange, setHeatmapRange] = useState(60);
+
+  const getUserScopedKey = (baseKey) => (user?.id ? `${baseKey}::${user.id}` : baseKey);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
       try {
-        const token = localStorage.getItem('token');
-        const headers = { Authorization: `Bearer ${token}` };
-
         // Fetch all practice questions
         const questionsResponse = await axios.get(buildApiUrl('/questions'));
         setAllQuestions(questionsResponse.data);
 
         // Load unified progress data from localStorage
-        const unifiedProgress = getProgress();
+        const unifiedProgress = getProgress(user?.id);
         setProgressData(unifiedProgress);
 
         // Fetch test results from localStorage
-        const savedScores = localStorage.getItem('testScores');
+        const savedScores = localStorage.getItem(getUserScopedKey('testScores'));
         let formattedTestResults = [];
         if (savedScores) {
           const parsedScores = JSON.parse(savedScores);
@@ -126,7 +127,7 @@ const ProgressPage = () => {
         }
 
         // Load badges
-        const savedBadges = getJSON(STORAGE_KEYS.badges, {});
+        const savedBadges = getJSON(getUserScopedKey(STORAGE_KEYS.badges), {});
         setBadges(savedBadges);
 
         // Build recent activity timeline from unified progress
@@ -140,20 +141,21 @@ const ProgressPage = () => {
     };
 
     fetchData();
-  }, []);
+  }, [user]);
 
-  // Sync progress data when localStorage changes
+  // Sync progress data when localStorage or user changes
   useEffect(() => {
     const handleStorageChange = () => {
-      setProgressData(getProgress());
+      setProgressData(getProgress(user?.id));
     };
+    handleStorageChange();
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('focus', handleStorageChange);
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('focus', handleStorageChange);
     };
-  }, []);
+  }, [user]);
 
   const buildRecentActivity = useCallback((progressSnapshot, testsSnapshot = []) => {
     const activities = [];

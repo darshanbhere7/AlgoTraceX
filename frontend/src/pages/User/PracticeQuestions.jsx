@@ -35,6 +35,7 @@ import {
   getQuestionAttemptSummary,
   calculateProgressStats,
 } from '@/utils/progressUtils';
+import { useAuth } from '../../context/AuthContext';
 
 const getDifficultyColor = (difficulty) => {
   switch (difficulty?.toLowerCase()) {
@@ -53,6 +54,7 @@ const FILTER_SELECT_CLASSES =
   'w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/70 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-900/10 dark:focus:ring-white/20 transition-colors shadow-sm';
 
 const PracticeQuestions = () => {
+  const { user } = useAuth();
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -63,7 +65,7 @@ const PracticeQuestions = () => {
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedTopics, setExpandedTopics] = useState(new Set());
-  const [progressData, setProgressData] = useState(() => getProgress());
+  const [progressData, setProgressData] = useState(() => getProgress(user?.id));
   const deferredSearch = useDeferredValue(searchQuery.trim());
   const [isFiltering, startTransition] = useTransition();
 
@@ -73,19 +75,21 @@ const PracticeQuestions = () => {
     });
   }, [startTransition]);
 
-  // Sync progress data when localStorage changes
+  // Load progress when user changes and sync when localStorage changes
   useEffect(() => {
-    const handleStorageChange = () => {
-      setProgressData(getProgress());
+    const syncProgress = () => {
+      setProgressData(getProgress(user?.id));
     };
-    window.addEventListener('storage', handleStorageChange);
-    // Also check on focus in case of same-tab updates
-    window.addEventListener('focus', handleStorageChange);
+
+    syncProgress();
+
+    window.addEventListener('storage', syncProgress);
+    window.addEventListener('focus', syncProgress);
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('focus', handleStorageChange);
+      window.removeEventListener('storage', syncProgress);
+      window.removeEventListener('focus', syncProgress);
     };
-  }, []);
+  }, [user]);
 
   const fetchQuestions = async () => {
     setLoading(true);
@@ -110,12 +114,12 @@ const PracticeQuestions = () => {
   }, []);
 
   const handleQuestionOpen = (questionUrl) => {
-    recordQuestionOpened(questionUrl);
-    setProgressData(getProgress());
+    recordQuestionOpened(questionUrl, user?.id);
+    setProgressData(getProgress(user?.id));
   };
 
   const handleBookmark = (questionUrl) => {
-    const { progress, isBookmarked } = toggleQuestionBookmarked(questionUrl);
+    const { progress, isBookmarked } = toggleQuestionBookmarked(questionUrl, user?.id);
     setProgressData(progress);
     toast.success(isBookmarked ? 'Question bookmarked' : 'Bookmark removed');
   };
@@ -123,7 +127,7 @@ const PracticeQuestions = () => {
   const handleComplete = (questionUrl, isCorrect = true) => {
     const { progress, isCompleted } = toggleQuestionCompleted(questionUrl, {
       success: isCorrect,
-    });
+    }, user?.id);
     setProgressData(progress);
     toast[isCompleted ? 'success' : 'info'](
       isCompleted ? 'Question marked as completed' : 'Question marked as pending'
