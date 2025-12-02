@@ -8,8 +8,12 @@ import { toast } from 'sonner';
 import { Timer } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { buildApiUrl } from '@/config/api';
+import { useAuth } from '../../context/AuthContext';
 
 const Tests = () => {
+  const { user } = useAuth();
+  const userId = user?.id;
+  const getUserScopedKey = (baseKey) => (userId ? `${baseKey}::${userId}` : baseKey);
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,7 +23,7 @@ const Tests = () => {
   const [timeLeft, setTimeLeft] = useState(null);
   const [startTime, setStartTime] = useState(null);
   const [scores, setScores] = useState(() => {
-    const savedScores = localStorage.getItem('testScores');
+    const savedScores = localStorage.getItem(getUserScopedKey('testScores'));
     return savedScores ? JSON.parse(savedScores) : {};
   });
 
@@ -105,7 +109,7 @@ const Tests = () => {
         }
       };
       setScores(newScores);
-      localStorage.setItem('testScores', JSON.stringify(newScores));
+      localStorage.setItem(getUserScopedKey('testScores'), JSON.stringify(newScores));
 
       // Show detailed success message
       toast.success(
@@ -139,7 +143,7 @@ const Tests = () => {
           }
         };
         setScores(newScores);
-        localStorage.setItem('testScores', JSON.stringify(newScores));
+        localStorage.setItem(getUserScopedKey('testScores'), JSON.stringify(newScores));
         setSelectedTest(null);
         setAnswers({});
         setTimeLeft(null);

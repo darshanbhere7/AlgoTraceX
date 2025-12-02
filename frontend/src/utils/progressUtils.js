@@ -16,6 +16,12 @@ const isPlainObject = (value) =>
 
 const cloneDefaults = () => JSON.parse(JSON.stringify(DEFAULT_PROGRESS));
 
+// Helper to namespace progress by user while keeping a safe fallback
+const getStorageKeyForUser = (userId) => {
+  if (!userId) return STORAGE_KEY;
+  return `${STORAGE_KEY}::${userId}`;
+};
+
 export const getTodayDate = (date = new Date()) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -34,11 +40,11 @@ const normalizeProgress = (data = {}) => ({
   },
 });
 
-export const loadProgress = () => {
+export const loadProgress = (userId) => {
   if (typeof window === 'undefined') return cloneDefaults();
 
   try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
+    const stored = window.localStorage.getItem(getStorageKeyForUser(userId));
     if (!stored) return cloneDefaults();
     return normalizeProgress(JSON.parse(stored));
   } catch (error) {
@@ -47,13 +53,14 @@ export const loadProgress = () => {
   }
 };
 
-export const getProgress = loadProgress;
+// Default export keeps backward compatibility but is now user-aware when an id is provided
+export const getProgress = (userId) => loadProgress(userId);
 
-export const saveProgress = (progress, { dispatchEvent = true } = {}) => {
+export const saveProgress = (progress, { dispatchEvent = true } = {}, userId) => {
   if (typeof window === 'undefined') return progress;
 
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    window.localStorage.setItem(getStorageKeyForUser(userId), JSON.stringify(progress));
     if (dispatchEvent) {
       window.dispatchEvent(new Event('storage'));
     }
@@ -130,8 +137,8 @@ export const getDisplayStreak = (
   return diff === 0 ? progress.streak.current : 0;
 };
 
-export const toggleQuestionBookmarked = (questionUrl) => {
-  const progress = loadProgress();
+export const toggleQuestionBookmarked = (questionUrl, userId) => {
+  const progress = loadProgress(userId);
   const wasBookmarked = progress.bookmarked.includes(questionUrl);
   const today = getTodayDate();
 
@@ -142,15 +149,16 @@ export const toggleQuestionBookmarked = (questionUrl) => {
     updateActivity(progress, today, 'bookmarked');
   }
 
-  saveProgress(progress);
+  saveProgress(progress, undefined, userId);
   return { progress, isBookmarked: !wasBookmarked };
 };
 
 export const toggleQuestionCompleted = (
   questionUrl,
-  { success = true, timeSpent = 0, date = getTodayDate() } = {}
+  { success = true, timeSpent = 0, date = getTodayDate() } = {},
+  userId
 ) => {
-  const progress = loadProgress();
+  const progress = loadProgress(userId);
   const wasCompleted = progress.completed.includes(questionUrl);
 
   if (wasCompleted) {
@@ -181,21 +189,21 @@ export const toggleQuestionCompleted = (
     updateStreak(progress, date);
   }
 
-  saveProgress(progress);
+  saveProgress(progress, undefined, userId);
   return { progress, isCompleted: !wasCompleted };
 };
 
-export const recordQuestionOpened = (questionUrl) => {
-  const progress = loadProgress();
+export const recordQuestionOpened = (questionUrl, userId) => {
+  const progress = loadProgress(userId);
   const attempt = ensureAttemptEntry(progress, questionUrl);
   attempt.lastOpened = new Date().toISOString();
   progress.attempts[questionUrl] = attempt;
-  saveProgress(progress, { dispatchEvent: false });
+  saveProgress(progress, { dispatchEvent: false }, userId);
   return attempt;
 };
 
-export const getQuestionMeta = (questionUrl) => {
-  const progress = loadProgress();
+export const getQuestionMeta = (questionUrl, userId) => {
+  const progress = loadProgress(userId);
   const attempt = progress.attempts[questionUrl];
   return {
     lastOpened: attempt?.lastOpened || null,
@@ -204,8 +212,8 @@ export const getQuestionMeta = (questionUrl) => {
   };
 };
 
-export const getQuestionAttemptSummary = (questionUrl) => {
-  const progress = loadProgress();
+export const getQuestionAttemptSummary = (questionUrl, userId) => {
+  const progress = loadProgress(userId);
   const attempt = progress.attempts[questionUrl];
   return {
     totalAttempts: attempt?.totalAttempts || 0,

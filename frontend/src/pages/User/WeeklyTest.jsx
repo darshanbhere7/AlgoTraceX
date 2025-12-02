@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/Progress';
 import { buildApiUrl } from '@/config/api';
+import { useAuth } from '../../context/AuthContext';
 
 const STORAGE_KEYS = {
   activeState: 'weeklyTest.activeState',
@@ -174,6 +175,13 @@ const evaluateBadges = ({ accuracy, timeRatio, zeroMistakes, streak }) => {
 
 
 const WeeklyTest = () => {
+  const { user } = useAuth();
+  const userId = user?.id;
+  const getUserScopedKey = useCallback(
+    (baseKey) => (userId ? `${baseKey}::${userId}` : baseKey),
+    [userId]
+  );
+
   const [tests, setTests] = useState([]);
   const [selectedTest, setSelectedTest] = useState(null);
   const [answers, setAnswers] = useState({});
@@ -186,19 +194,17 @@ const WeeklyTest = () => {
   const [reviewOpen, setReviewOpen] = useState(false);
   const [practiceMode, setPracticeMode] = useState(false);
   const [lastResult, setLastResult] = useState(null);
-  const [scores, setScores] = useState(() => {
-    const savedScores = localStorage.getItem('testScores');
-    return savedScores ? JSON.parse(savedScores) : {};
-  });
+  const [scores, setScores] = useState({});
   const [cheatingWarnings, setCheatingWarnings] = useState(0);
   const [autoSubmitTriggered, setAutoSubmitTriggered] = useState(false);
   const [randomizationMeta, setRandomizationMeta] = useState(null);
   const [practiceRevealData, setPracticeRevealData] = useState(null);
-  const [testAnalytics, setTestAnalytics] = useState(() => getJSON(STORAGE_KEYS.analytics, {}));
-  const [testBadges, setTestBadges] = useState(() => getJSON(STORAGE_KEYS.badges, {}));
-  const [streakData, setStreakData] = useState(() =>
-    getJSON(STORAGE_KEYS.streak, { streak: 0, lastWeekCompleted: null })
-  );
+  const [testAnalytics, setTestAnalytics] = useState({});
+  const [testBadges, setTestBadges] = useState({});
+  const [streakData, setStreakData] = useState({
+    streak: 0,
+    lastWeekCompleted: null,
+  });
 
   const originalTestRef = useRef(null);
   const questionTimeSpentRef = useRef([]);
@@ -241,6 +247,23 @@ const WeeklyTest = () => {
     fetchTests();
   }, []);
 
+  // Load user-scoped persisted analytics/scores when user changes
+  useEffect(() => {
+    const scoresKey = getUserScopedKey('testScores');
+    const savedScores =
+      typeof window !== 'undefined' ? localStorage.getItem(scoresKey) : null;
+    setScores(savedScores ? JSON.parse(savedScores) : {});
+
+    setTestAnalytics(getJSON(getUserScopedKey(STORAGE_KEYS.analytics), {}));
+    setTestBadges(getJSON(getUserScopedKey(STORAGE_KEYS.badges), {}));
+    setStreakData(
+      getJSON(getUserScopedKey(STORAGE_KEYS.streak), {
+        streak: 0,
+        lastWeekCompleted: null,
+      })
+    );
+  }, [getUserScopedKey]);
+
   const formatTime = (seconds) => {
     if (!Number.isFinite(seconds)) return '0:00';
     const mins = Math.floor(seconds / 60);
@@ -270,7 +293,7 @@ const WeeklyTest = () => {
 
   const restorePersistedState = useCallback(
     (fetchedTests) => {
-      const savedState = getJSON(STORAGE_KEYS.activeState, null);
+      const savedState = getJSON(getUserScopedKey(STORAGE_KEYS.activeState), null);
       if (!savedState?.testId) return;
       const matchedTest = fetchedTests.find((test) => test._id === savedState.testId);
       if (!matchedTest) return;
@@ -287,7 +310,7 @@ const WeeklyTest = () => {
         : 0;
       const restoredTimeLeft = Math.max(initialTimeLeft - elapsed, 0);
       if (restoredTimeLeft <= 0) {
-        localStorage.removeItem(STORAGE_KEYS.activeState);
+        localStorage.removeItem(getUserScopedKey(STORAGE_KEYS.activeState));
         return;
       }
 
@@ -310,7 +333,7 @@ const WeeklyTest = () => {
       setAutoSubmitTriggered(false);
       setPracticeRevealData(null);
     },
-    []
+    [getUserScopedKey]
   );
 
   useEffect(() => {
@@ -321,11 +344,11 @@ const WeeklyTest = () => {
 
   const saveActiveState = useCallback(() => {
     if (!selectedTest) {
-      localStorage.removeItem(STORAGE_KEYS.activeState);
+      localStorage.removeItem(getUserScopedKey(STORAGE_KEYS.activeState));
       return;
     }
 
-    setJSON(STORAGE_KEYS.activeState, {
+    setJSON(getUserScopedKey(STORAGE_KEYS.activeState), {
       testId: selectedTest._id,
       answers,
       timeLeft,
@@ -347,11 +370,12 @@ const WeeklyTest = () => {
     autoSubmitted,
     randomizationMeta,
     cheatingWarnings,
+    getUserScopedKey,
   ]);
 
   useEffect(() => {
     if (!selectedTest) {
-      localStorage.removeItem(STORAGE_KEYS.activeState);
+      localStorage.removeItem(getUserScopedKey(STORAGE_KEYS.activeState));
       if (autoSaveIntervalRef.current) {
         clearInterval(autoSaveIntervalRef.current);
         autoSaveIntervalRef.current = null;
@@ -392,7 +416,7 @@ const WeeklyTest = () => {
     questionTimeSpentRef.current = [];
     activeQuestionRef.current = 0;
     originalTestRef.current = null;
-    localStorage.removeItem(STORAGE_KEYS.activeState);
+    localStorage.removeItem(getUserScopedKey(STORAGE_KEYS.activeState));
     if (autoSaveIntervalRef.current) {
       clearInterval(autoSaveIntervalRef.current);
       autoSaveIntervalRef.current = null;
@@ -466,7 +490,7 @@ const WeeklyTest = () => {
         },
       };
       setScores(newScores);
-      localStorage.setItem('testScores', JSON.stringify(newScores));
+      localStorage.setItem(getUserScopedKey('testScores'), JSON.stringify(newScores));
 
       setLastResult({
         testTitle: testSnapshot.title,
@@ -498,7 +522,7 @@ const WeeklyTest = () => {
         [testSnapshot._id]: [...(testAnalytics[testSnapshot._id] || []), analyticsEntry],
       };
       setTestAnalytics(nextAnalytics);
-      setJSON(STORAGE_KEYS.analytics, nextAnalytics);
+      setJSON(getUserScopedKey(STORAGE_KEYS.analytics), nextAnalytics);
 
       if (testSnapshot.weekNumber !== undefined && testSnapshot.weekNumber !== null) {
         const nextStreak =
@@ -507,7 +531,7 @@ const WeeklyTest = () => {
             : 1;
         const streakPayload = { streak: nextStreak, lastWeekCompleted: testSnapshot.weekNumber };
         setStreakData(streakPayload);
-        setJSON(STORAGE_KEYS.streak, streakPayload);
+        setJSON(getUserScopedKey(STORAGE_KEYS.streak), streakPayload);
 
         const timeLimitSeconds = (testSnapshot.timeLimit || 0) * 60;
         const badges = evaluateBadges({
@@ -525,24 +549,24 @@ const WeeklyTest = () => {
             ),
           };
           setTestBadges(nextBadges);
-          setJSON(STORAGE_KEYS.badges, nextBadges);
+          setJSON(getUserScopedKey(STORAGE_KEYS.badges), nextBadges);
         }
       }
     },
-    [scores, streakData, testAnalytics, testBadges]
+    [scores, streakData, testAnalytics, testBadges, getUserScopedKey]
   );
 
   const queueOfflineSubmission = useCallback((entry) => {
-    const queue = getJSON(STORAGE_KEYS.offline, []);
+    const queue = getJSON(getUserScopedKey(STORAGE_KEYS.offline), []);
     queue.push(entry);
-    setJSON(STORAGE_KEYS.offline, queue);
-  }, []);
+    setJSON(getUserScopedKey(STORAGE_KEYS.offline), queue);
+  }, [getUserScopedKey]);
 
   const processOfflineSubmissions = useCallback(async () => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    const queue = getJSON(STORAGE_KEYS.offline, []);
+    const queue = getJSON(getUserScopedKey(STORAGE_KEYS.offline), []);
     if (!queue.length) return;
 
     const remaining = [];
@@ -569,8 +593,8 @@ const WeeklyTest = () => {
       }
     }
 
-    setJSON(STORAGE_KEYS.offline, remaining);
-  }, [handleSubmissionSuccess, tests]);
+    setJSON(getUserScopedKey(STORAGE_KEYS.offline), remaining);
+  }, [handleSubmissionSuccess, tests, getUserScopedKey]);
 
   useEffect(() => {
     processOfflineSubmissions();
@@ -609,16 +633,16 @@ const WeeklyTest = () => {
         [baseTest._id]: [...(testAnalytics[baseTest._id] || []), analyticsEntry],
       };
       setTestAnalytics(nextAnalytics);
-      setJSON(STORAGE_KEYS.analytics, nextAnalytics);
+      setJSON(getUserScopedKey(STORAGE_KEYS.analytics), nextAnalytics);
     },
-    [selectedTest, testAnalytics]
+    [selectedTest, testAnalytics, getUserScopedKey]
   );
 
   useEffect(() => {
     if (practiceRevealData) {
-      setJSON(STORAGE_KEYS.practiceReveal, practiceRevealData);
+      setJSON(getUserScopedKey(STORAGE_KEYS.practiceReveal), practiceRevealData);
     }
-  }, [practiceRevealData]);
+  }, [practiceRevealData, getUserScopedKey]);
 
   const handleStartTest = (test, mode = 'standard') => {
     if (!localStorage.getItem('token')) {

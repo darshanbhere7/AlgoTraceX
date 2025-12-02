@@ -15,7 +15,9 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [allQuestions, setAllQuestions] = useState([]);
   const [testResults, setTestResults] = useState([]);
-  const [progressData, setProgressData] = useState(() => getProgress());
+  const [progressData, setProgressData] = useState(() => getProgress(user?.id));
+
+  const getUserScopedKey = (baseKey) => (user?.id ? `${baseKey}::${user.id}` : baseKey);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,7 +32,7 @@ const Dashboard = () => {
         const questionsResponse = await axios.get(buildApiUrl('/questions'));
         setAllQuestions(questionsResponse.data);
 
-        const savedScores = localStorage.getItem('testScores');
+        const savedScores = localStorage.getItem(getUserScopedKey('testScores'));
         if (savedScores) {
           const parsedScores = JSON.parse(savedScores);
           const formattedTestResults = Object.keys(parsedScores).map(testId => ({
@@ -53,8 +55,10 @@ const Dashboard = () => {
 
   useEffect(() => {
     const handleProgressSync = () => {
-      setProgressData(getProgress());
+      setProgressData(getProgress(user?.id));
     };
+
+    handleProgressSync();
 
     window.addEventListener('storage', handleProgressSync);
     window.addEventListener('focus', handleProgressSync);
@@ -63,7 +67,7 @@ const Dashboard = () => {
       window.removeEventListener('storage', handleProgressSync);
       window.removeEventListener('focus', handleProgressSync);
     };
-  }, []);
+  }, [user]);
 
   const { totalQuestions, completedCount, overallProgress, topicProgress } = useMemo(() => {
     return calculateProgressStats(allQuestions, progressData);
